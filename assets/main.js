@@ -219,44 +219,26 @@ document.addEventListener('DOMContentLoaded', function () {
             '</a>';
     }
 
-    // 从每篇文章页直接读取元信息（单一数据源：文章本身）
-    // 这样改文章标题/日期/摘要，首页与列表页会自动同步，无需维护额外数据文件
-    function getArticleMeta(slug) {
-        return fetch('news/' + slug + '.html')
-            .then(function (r) { return r.text(); })
-            .then(function (html) {
-                var m = html.match(/<script id="articleMeta" type="application\/json">([\s\S]*?)<\/script>/);
-                if (!m) return null;
-                try { return JSON.parse(m[1]); } catch (e) { return null; }
-            })
-            .then(function (meta) {
-                return meta ? Object.assign({ slug: slug }, meta) : null;
-            });
-    }
-
-    function renderNewsFromArticles(containerId, limit) {
+    // 读取构建时自动生成的 news-manifest.json（由 generate-manifest.js 扫描 news/ 生成）
+    // 因此只需新建/修改文章 HTML（含 #articleMeta），部署即自动同步，无需手动维护列表
+    function renderNewsFromManifest(containerId, limit) {
         var box = document.getElementById(containerId);
-        if (!box || !window.NEWS_LIST) return;
-        Promise.all(window.NEWS_LIST.map(getArticleMeta))
+        if (!box) return;
+        fetch('news-manifest.json')
+            .then(function (r) { return r.json(); })
             .then(function (items) {
-                var valid = items.filter(Boolean)
-                    .sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+                var valid = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
                 var shown = (limit && limit > 0) ? valid.slice(0, limit) : valid;
                 box.innerHTML = shown.map(buildNewsCard).join('');
             })
             .catch(function () {
-                // 本地直接双击打开（file://）时 fetch 不可用，退化为显示可点击链接
-                box.innerHTML = window.NEWS_LIST.map(function (slug) {
-                    return '<a href="news/' + slug + '.html" class="bg-white rounded-xl shadow-md p-6 card-hover">' +
-                        '<h3 class="text-lg font-semibold text-primary">' + slug + '</h3>' +
-                        '<p class="text-gray-500 text-sm mt-2">阅读全文 <i class="fa fa-arrow-right"></i></p></a>';
-                }).join('');
+                box.innerHTML = '<p class="text-gray-500 col-span-full">本地预览请先运行：node generate-manifest.js</p>';
             });
     }
 
-    // 列表页：全部文章；首页预览：最新 3 条（按日期自动取最新，改文章即更新）
-    renderNewsFromArticles('newsGrid', 0);
-    renderNewsFromArticles('newsPreview', 3);
+    // 列表页：全部文章；首页预览：最新 3 条（按日期自动取最新）
+    renderNewsFromManifest('newsGrid', 0);
+    renderNewsFromManifest('newsPreview', 3);
 
     /* ---------- 返回顶部 ---------- */
     const backToTop = document.getElementById('backToTop');
