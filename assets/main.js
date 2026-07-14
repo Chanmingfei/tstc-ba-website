@@ -219,18 +219,44 @@ document.addEventListener('DOMContentLoaded', function () {
             '</a>';
     }
 
-    function renderNews(containerId, list, limit) {
-        const box = document.getElementById(containerId);
-        if (!box || !window.NEWS_DATA) return;
-        // 先按日期倒序（新文章在前），再决定是否只取前 N 条
-        const sorted = list.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
-        const shown = (limit && limit > 0) ? sorted.slice(0, limit) : sorted;
-        box.innerHTML = shown.map(buildNewsCard).join('');
+    // 从每篇文章页直接读取元信息（单一数据源：文章本身）
+    // 这样改文章标题/日期/摘要，首页与列表页会自动同步，无需维护额外数据文件
+    function getArticleMeta(slug) {
+        return fetch('news/' + slug + '.html')
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+                var m = html.match(/<script id="articleMeta" type="application\/json">([\s\S]*?)<\/script>/);
+                if (!m) return null;
+                try { return JSON.parse(m[1]); } catch (e) { return null; }
+            })
+            .then(function (meta) {
+                return meta ? Object.assign({ slug: slug }, meta) : null;
+            });
     }
 
-    // 列表页：全部新闻；首页预览：最新 3 条（先排序再截取，新增即更新）
-    renderNews('newsGrid', window.NEWS_DATA || [], 0);
-    renderNews('newsPreview', window.NEWS_DATA || [], 3);
+    function renderNewsFromArticles(containerId, limit) {
+        var box = document.getElementById(containerId);
+        if (!box || !window.NEWS_LIST) return;
+        Promise.all(window.NEWS_LIST.map(getArticleMeta))
+            .then(function (items) {
+                var valid = items.filter(Boolean)
+                    .sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+                var shown = (limit && limit > 0) ? valid.slice(0, limit) : valid;
+                box.innerHTML = shown.map(buildNewsCard).join('');
+            })
+            .catch(function () {
+                // 本地直接双击打开（file://）时 fetch 不可用，退化为显示可点击链接
+                box.innerHTML = window.NEWS_LIST.map(function (slug) {
+                    return '<a href="news/' + slug + '.html" class="bg-white rounded-xl shadow-md p-6 card-hover">' +
+                        '<h3 class="text-lg font-semibold text-primary">' + slug + '</h3>' +
+                        '<p class="text-gray-500 text-sm mt-2">阅读全文 <i class="fa fa-arrow-right"></i></p></a>';
+                }).join('');
+            });
+    }
+
+    // 列表页：全部文章；首页预览：最新 3 条（按日期自动取最新，改文章即更新）
+    renderNewsFromArticles('newsGrid', 0);
+    renderNewsFromArticles('newsPreview', 3);
 
     /* ---------- 返回顶部 ---------- */
     const backToTop = document.getElementById('backToTop');
