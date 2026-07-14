@@ -219,16 +219,18 @@ document.addEventListener('DOMContentLoaded', function () {
             '</a>';
     }
 
-    function renderNews(containerId, list) {
+    function renderNews(containerId, list, limit) {
         const box = document.getElementById(containerId);
         if (!box || !window.NEWS_DATA) return;
-        // 按日期倒序
+        // 先按日期倒序（新文章在前），再决定是否只取前 N 条
         const sorted = list.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
-        box.innerHTML = sorted.map(buildNewsCard).join('');
+        const shown = (limit && limit > 0) ? sorted.slice(0, limit) : sorted;
+        box.innerHTML = shown.map(buildNewsCard).join('');
     }
 
-    renderNews('newsGrid', window.NEWS_DATA || []);
-    renderNews('newsPreview', (window.NEWS_DATA || []).slice(0, 3));
+    // 列表页：全部新闻；首页预览：最新 3 条（先排序再截取，新增即更新）
+    renderNews('newsGrid', window.NEWS_DATA || [], 0);
+    renderNews('newsPreview', window.NEWS_DATA || [], 3);
 
     /* ---------- 返回顶部 ---------- */
     const backToTop = document.getElementById('backToTop');
