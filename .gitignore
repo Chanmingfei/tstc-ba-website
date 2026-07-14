@@ -1,0 +1,12 @@
+# Genie 内部目录（不纳入部署仓库）
+.codebuddy/
+.genie/
+.templates/
+docs/
+
+# 部署压缩包（已单独交付）
+*.zip
+
+# 系统文件
+.DS_Store
+Thumbs.db
