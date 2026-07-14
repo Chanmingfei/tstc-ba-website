@@ -1,6 +1,25 @@
 # Cloudflare Pages 响应头配置
-# 开启边缘缓存，加快免费节点访问速度。
-# 文章清单通过版本号（news-manifest.json?v=哈希）做缓存击穿：
-# 内容更新时版本号变化即立刻生效，无需关闭缓存。
+# 默认缓存 1 天，但会动态变化的文件（页面 / 脚本 / 文章清单）只缓存 5 分钟，
+# 兼顾访问速度与「新增文章几分钟内自动出现在列表」的体验。
+# 文章清单额外由 main.js 加时间戳强制绕过缓存，确保新增文章立即生效。
 /*
+  Cache-Control: public, max-age=86400
+
+# 文章清单：变化最频繁，只缓存 1 分钟
+/news-manifest.json*
+  Cache-Control: public, max-age=60
+
+# 共用脚本：内容偶发更新，缓存 5 分钟
+/assets/main.js
+  Cache-Control: public, max-age=300
+
+/assets/news-version.js
+  Cache-Control: public, max-age=300
+
+# 页面 HTML：含动态列表，缓存 5 分钟
+/*.html
+  Cache-Control: public, max-age=300
+
+# 样式表：基本不变，缓存 1 天保速度
+/assets/style.css
   Cache-Control: public, max-age=86400
