@@ -46,22 +46,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ---------- 一言功能 ---------- */
-    const hitokotoEl = document.getElementById('hitokoto');
-    if (hitokotoEl) {
-        fetch('https://v1.hitokoto.cn/?c=d')
-            .then(response => response.json())
-            .then(data => { hitokotoEl.textContent = data.hitokoto; })
-            .catch(() => {
-                const quotes = [
-                    '勤思笃学 修身律己',
-                    '学而不思则罔，思而不学则殆',
-                    '三人行，必有我师焉',
-                    '敏而好学，不耻下问',
-                    '学而不厌，诲人不倦'
-                ];
-                hitokotoEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
-            });
-    }
+ const hitokotoEl = document.getElementById('hitokoto');
+if (hitokotoEl) {
+    // 页面一执行就显示加载文字
+    hitokotoEl.textContent = '勤思笃学，修身律己 加载中...';
+    fetch('https://v1.hitokoto.cn/?c=d')
+        .then(response => response.json())
+        .then(data => { hitokotoEl.textContent = data.hitokoto; })
+        .catch(() => {
+            const quotes = [
+                '勤思笃学 修身律己',
+                '学而不思则罔，思而不学则殆',
+                '三人行，必有我师焉',
+                '敏而好学，不耻下问',
+                '学而不厌，诲人不倦'
+            ];
+            hitokotoEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+        });
+}
+
 
     /* ---------- 二维码弹窗 ---------- */
     const qrModal = document.getElementById('qrModal');
