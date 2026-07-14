@@ -1,0 +1,4 @@
+# Cloudflare Pages 响应头配置
+# 关闭缓存，确保每次推送部署后，首页与新闻数据立即更新（不会被旧文件缓存）
+/*
+  Cache-Control: public, max-age=0, must-revalidate
