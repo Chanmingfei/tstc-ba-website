@@ -1,4 +1,6 @@
 # Cloudflare Pages 响应头配置
-# 关闭缓存，确保每次推送部署后，首页与新闻数据立即更新（不会被旧文件缓存）
+# 开启边缘缓存，加快免费节点访问速度。
+# 文章清单通过版本号（news-manifest.json?v=哈希）做缓存击穿：
+# 内容更新时版本号变化即立刻生效，无需关闭缓存。
 /*
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=86400

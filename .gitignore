@@ -13,3 +13,4 @@ Thumbs.db
 
 # 自动生成的清单（部署时由构建命令重新生成，无需提交）
 news-manifest.json
+assets/news-version.js

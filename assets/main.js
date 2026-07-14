@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderNewsFromManifest(containerId, limit) {
         var box = document.getElementById(containerId);
         if (!box) return;
-        fetch('news-manifest.json')
+        fetch(window.NEWS_MANIFEST_URL || 'news-manifest.json')
             .then(function (r) { return r.json(); })
             .then(function (items) {
                 var valid = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
