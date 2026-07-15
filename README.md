@@ -7,6 +7,7 @@
 ```
 index.html              首页（含新闻动态预览）
 news.html               新闻列表页
+about.html              关于我们页面
 news/post-1.html        文章详情页（示例）
 news/post-2.html
 news/post-3.html

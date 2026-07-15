@@ -1,0 +1,208 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 - 唐山师范学院吧</title>
+    <meta name="description" content="唐山师范学院百度贴吧（唐山师范学院吧）是依托百度贴吧平台建立的校园网络社区，服务全体师院人，构建文明、开放、互助的校园交流空间。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0465bc',
+                        secondary: '#2575fc',
+                        accent: '#4c94ff',
+                        light: '#f0f4f8',
+                        dark: '#333333',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="font-inter bg-light text-dark">
+    <!-- 导航栏 -->
+    <nav id="mainNav" class="glass-effect fixed top-0 left-0 w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap justify-between items-center py-3">
+                <div class="flex items-center space-x-3">
+                    <img src="https://s1.imagehub.cc/images/2025/05/04/0458fef2ac8d47bc88ee2151cf193573.jpg" alt="唐山师范学院吧" class="w-10 h-10 rounded-full border-2 border-primary">
+                    <a href="index.html" class="text-primary font-bold text-xl md:text-2xl">唐山师范学院吧</a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html#quickLinks" class="text-gray-700 hover:text-primary font-medium transition-colors">快速链接</a>
+                    <a href="news.html" class="text-gray-700 hover:text-primary font-medium transition-colors" data-nav="news">新闻动态</a>
+                    <a href="index.html#team" class="text-gray-700 hover:text-primary font-medium transition-colors">吧务组公示</a>
+                    <a href="index.html#social" class="text-gray-700 hover:text-primary font-medium transition-colors">关注我们</a>
+                    <a href="about.html" class="text-primary font-semibold transition-colors" data-nav="about">关于我们</a>
+                    <a href="index.html#feedbackSection" class="text-gray-700 hover:text-primary font-medium transition-colors">意见反馈</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="menuBtn" class="text-gray-700 focus:outline-none">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="md:hidden hidden glass-effect border-t nav-shadow">
+            <div class="container mx-auto px-4 py-2 space-y-3">
+                <a href="index.html#quickLinks" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">快速链接</a>
+                <a href="news.html" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg" data-nav="news">新闻动态</a>
+                <a href="index.html#team" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">吧务组公示</a>
+                <a href="index.html#social" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">关注我们</a>
+                <a href="about.html" class="block py-3 text-primary bg-primary/5 px-3 rounded-lg" data-nav="about">关于我们</a>
+                <a href="index.html#feedbackSection" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">意见反馈</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <header class="pt-24 md:pt-28 bg-gradient-primary text-white shadow-lg relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <img src="https://s1.imagehub.cc/images/2025/05/04/46e0a76a0875740296805499009e7a4a.jpg" alt="背景" class="w-full h-full object-cover">
+        </div>
+        <div class="container mx-auto px-4 py-10 md:py-14 relative z-10">
+            <nav class="text-sm text-white/80 mb-3" aria-label="breadcrumb">
+                <a href="index.html" class="hover:underline">首页</a>
+                <span class="mx-2">/</span>
+                <span>关于我们</span>
+            </nav>
+            <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-shadow animate-slide-up">关于我们</h1>
+            <p class="text-[clamp(1rem,3vw,1.2rem)] text-white/90 mt-2 animate-slide-up" style="animation-delay: 0.2s">连接师院人 · 服务师院人的校园网络社区</p>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 pt-12 pb-20">
+        <!-- 简介 -->
+        <section class="mb-16 animate-fade-in" style="animation-delay: 0.3s">
+            <div class="bg-white rounded-xl shadow-md p-8 md:p-10 border-l-4 border-primary">
+                <div class="flex items-center mb-5">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                        <i class="fa fa-circle-info text-primary text-xl"></i>
+                    </div>
+                    <h2 class="text-[clamp(1.4rem,3vw,1.8rem)] font-bold text-primary">我们是谁</h2>
+                </div>
+                <p class="text-gray-700 leading-relaxed text-[1.05rem]">唐山师范学院百度贴吧（"唐山师范学院吧"）是依托百度贴吧平台建立的校园网络社区，是我校师生及校友自主交流、信息共享的重要线上阵地。贴吧以服务全体师院人为宗旨，秉承学校"勤思笃学，修身律己"的校训精神，致力于构建文明、开放、互助的校园交流空间。</p>
+            </div>
+        </section>
+
+        <!-- 平台定位与功能 -->
+        <section class="mb-16 animate-fade-in" style="animation-delay: 0.4s">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-layer-group text-secondary"></i>
+                </div>
+                <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-primary">平台定位与功能</h2>
+            </div>
+            <p class="text-gray-600 mb-8 max-w-3xl">作为校园信息集散与互动交流平台，贴吧内容涵盖学业发展、校园生活、新生答疑、就业考研、社团活动、二手交易等多个维度，全面覆盖师生日常学习与生活需求。</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <i class="fa fa-user-graduate text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-3">新生服务窗口</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">每年招生季，贴吧成为准新生了解学校的重要渠道。在校师生自发分享校园环境、专业介绍、食宿条件、报到流程等实用信息，搭建起新生与母校之间的第一座沟通桥梁，帮助新生快速适应大学生活。</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <i class="fa fa-book-open text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-3">学业交流平台</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">师生围绕课程学习、考研备考、考证规划、学术探讨等话题展开交流，分享学习资料与备考经验，形成互帮互助的良好学风，助力学生学业成长。</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <i class="fa fa-couch text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-3">生活服务阵地</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">汇聚校园周边资讯、食宿体验、出行指南、失物招领、二手置换等生活化内容，为师生提供便捷实用的校园生活参考。</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <i class="fa fa-flag text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary mb-3">校园文化载体</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">同步校园重大活动动态，展示师生精神风貌，传承师院人文精神，成为校园文化建设的线上延伸与补充。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 管理与运营 -->
+        <section class="mb-16 animate-fade-in" style="animation-delay: 0.5s">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-users-gear text-secondary"></i>
+                </div>
+                <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-primary">管理与运营</h2>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-8 md:p-10 space-y-5">
+                <p class="text-gray-700 leading-relaxed">贴吧由学生自主管理，设有吧务团队负责日常秩序维护、内容审核与活动组织。吧务团队严格遵守百度贴吧协议及校园相关规定，秉持公开、公正、透明的管理原则，倡导理性发言、文明交流，持续净化社区环境，营造健康向上的讨论氛围。</p>
+                <p class="text-gray-700 leading-relaxed">贴吧坚持学生自治、服务师生的运营理念，在学校指导下规范发展，既保留网络社区的活力与开放性，又坚守校园平台的正向价值导向。</p>
+            </div>
+        </section>
+
+        <!-- 发展愿景 -->
+        <section class="mb-8 animate-fade-in" style="animation-delay: 0.6s">
+            <div class="flex items-center mb-8">
+                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-compass text-secondary"></i>
+                </div>
+                <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-primary">发展愿景</h2>
+            </div>
+
+            <div class="bg-gradient-primary text-white rounded-xl shadow-md p-8 md:p-10">
+                <p class="text-white/95 leading-relaxed text-[1.05rem]">唐山师范学院百度贴吧始终以连接师院人、服务师院人为初心，不断优化社区生态，提升服务质量。未来将继续发挥线上社区优势，进一步畅通师生交流渠道，丰富校园文化生活，凝聚校友情感纽带，努力建设成为有温度、有深度、有广度的师院人精神家园。</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-primary text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-6 md:mb-0">
+                    <img src="https://s1.imagehub.cc/images/2025/05/04/0458fef2ac8d47bc88ee2151cf193573.jpg" alt="唐山师范学院吧" class="w-12 h-12 rounded-full border-2 border-white">
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold">唐山师范学院吧</h3>
+                        <p class="text-sm text-white/80">吧务组官网（非学校官方）</p>
+                    </div>
+                </div>
+
+                <div class="text-center md:text-right">
+                    <p class="mb-2">吧主信箱</p>
+                    <a href="mailto:bazhu@tstc.pp.ua" class="text-white hover:underline flex items-center justify-center md:justify-end">
+                        <i class="fa fa-envelope mr-2"></i>
+                        <span>bazhu@tstc.pp.ua</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/20 text-center text-sm text-white/70">
+                <p>© 2025 唐山师范学院吧务组（非学校官方） 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部 -->
+    <button id="backToTop" class="bg-primary hover:bg-secondary text-white shadow-lg" aria-label="返回顶部">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <script src="assets/news-version.js?v=2"></script>
+    <script src="assets/main.js?v=2"></script>
+</body></html>
