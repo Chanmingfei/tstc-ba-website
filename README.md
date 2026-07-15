@@ -8,6 +8,7 @@
 index.html              首页（含新闻动态预览 + 关于我们入口）
 news.html               新闻列表页
 about.html              关于我们页面
+404.html                自定义 404 页面（访问不存在的路径时展示）
 news/post-1.html        文章详情页（示例）
 news/post-2.html
 news/post-3.html
@@ -52,6 +53,7 @@ python3 -m http.server 8080
 
 > 说明：本站使用 Tailwind CSS Play CDN 与 Font Awesome CDN，部署后浏览器会自动加载，无需本地编译。
 > 若希望生产环境去掉控制台告警、进一步提速，可将 Tailwind 改为本地构建版本（属可选项，不影响上线）。
+> Cloudflare Pages 会自动把根目录下的 `404.html` 当作 404 页面，访问不存在的路径时会展示它。
 
 ## 新闻动态（自动同步，无需维护列表）
 
