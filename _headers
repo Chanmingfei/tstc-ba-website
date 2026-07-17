@@ -22,3 +22,13 @@
 # 样式表：基本不变，长缓存保速度
 /assets/style.css
   Cache-Control: public, max-age=86400
+
+# 特殊漂亮链接（无 .html 后缀）：Cloudflare 默认会给 7 天边缘缓存，
+# 一旦删除页面，/xxx 这个缓存键不会随 /xxx.html 一起失效。这里显式缩短到 5 分钟，
+# 即便将来删除也不会出现长达 7 天的陈旧页面。
+/dzl*
+  Cache-Control: public, max-age=300
+
+# 已删除的生日页路径：彻底禁止缓存，避免任何末端节点残留陈旧内容
+/cmf*
+  Cache-Control: public, max-age=0, no-store
