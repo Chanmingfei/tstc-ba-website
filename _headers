@@ -1,9 +1,7 @@
 # Cloudflare Pages 响应头配置
-# 默认缓存 1 天，但会动态变化的文件（页面 / 脚本 / 文章清单）只缓存 5 分钟，
-# 兼顾访问速度与「新增文章几分钟内自动出现在列表」的体验。
-# 文章清单额外由 main.js 加时间戳强制绕过缓存，确保新增文章立即生效。
-/*
-  Cache-Control: public, max-age=86400
+# 规则顺序很重要：Cloudflare 取【第一条匹配】的规则，所以具体的短缓存规则必须排在
+# 通配 `/*` 之前，否则 `/*` 会覆盖掉页面的 5 分钟缓存，导致删除后的页面赖一整天。
+# 另外文章清单由 main.js 加时间戳强制绕过缓存，确保新增文章立即生效。
 
 # 文章清单：变化最频繁，只缓存 1 分钟
 /news-manifest.json*
@@ -16,10 +14,14 @@
 /assets/news-version.js
   Cache-Control: public, max-age=300
 
-# 页面 HTML：含动态列表，缓存 5 分钟
+# 页面 HTML：含动态列表，缓存 5 分钟（务必排在 /* 之前）
 /*.html
   Cache-Control: public, max-age=300
 
 # 样式表：基本不变，缓存 1 天保速度
 /assets/style.css
+  Cache-Control: public, max-age=86400
+
+# 默认兜底：图片等静态资源缓存 1 天（放在最后，避免覆盖上面的页面/脚本规则）
+/*
   Cache-Control: public, max-age=86400
