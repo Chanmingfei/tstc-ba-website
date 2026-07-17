@@ -53,3 +53,34 @@ fs.writeFileSync(
     'utf8'
 );
 console.log('已生成 news-manifest.json（' + items.length + ' 篇），版本 ' + hash);
+
+// 用 main.js 内容哈希做脚本版本号：文件一改哈希就变，HTML 引用的 URL 随之变化，
+// Cloudflare 边缘缓存按「完整 URL（含查询串）」做键，旧 ?v= 变体不会被复用，彻底避免陈旧缓存。
+const mainJsPath = path.join(root, 'assets', 'main.js');
+let mainJsHash = '0';
+if (fs.existsSync(mainJsPath)) {
+    mainJsHash = crypto.createHash('md5').update(fs.readFileSync(mainJsPath, 'utf8')).digest('hex').slice(0, 8);
+}
+
+function walkHtml(dir) {
+    const out = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) out.push(...walkHtml(full));
+        else if (entry.name.endsWith('.html')) out.push(full);
+    }
+    return out;
+}
+
+const htmlFiles = walkHtml(root);
+let updated = 0;
+for (const file of htmlFiles) {
+    const before = fs.readFileSync(file, 'utf8');
+    // 匹配 main.js?v=<任意版本> 并替换为内容哈希版本
+    const after = before.replace(/(main\.js)\?v=[^"'>\s]*/g, '$1?v=' + mainJsHash);
+    if (after !== before) {
+        fs.writeFileSync(file, after, 'utf8');
+        updated++;
+    }
+}
+console.log('已更新 ' + updated + ' 个 HTML 中 main.js 版本为 ' + mainJsHash);
