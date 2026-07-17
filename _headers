@@ -1,27 +1,24 @@
 # Cloudflare Pages 响应头配置
-# 规则顺序很重要：Cloudflare 取【第一条匹配】的规则，所以具体的短缓存规则必须排在
-# 通配 `/*` 之前，否则 `/*` 会覆盖掉页面的 5 分钟缓存，导致删除后的页面赖一整天。
-# 另外文章清单由 main.js 加时间戳强制绕过缓存，确保新增文章立即生效。
+# 注意：Cloudflare 会合并「所有匹配」的规则（不是首条生效），
+# 因此不要写 `/*` 兜底去覆盖具体规则，否则会出现 max-age 重复叠加的畸形响应头。
+# 只对会变化的文件设短缓存，其余交给 Cloudflare 默认缓存。
 
-# 文章清单：变化最频繁，只缓存 1 分钟
+# 文章清单：URL 已带内容哈希版本号（news-version.js 注入），可长缓存，版本变化即自动失效
 /news-manifest.json*
+  Cache-Control: public, max-age=86400
+
+# 版本号文件：内容随每次部署变化，必须短缓存，保证新文章列表及时生效
+/assets/news-version.js
   Cache-Control: public, max-age=60
 
-# 共用脚本：内容偶发更新，缓存 5 分钟
+# 共用脚本：仅在部署时变化（部署后请同步升级 HTML 中的 ?v 参数），缓存 1 小时
 /assets/main.js
-  Cache-Control: public, max-age=300
+  Cache-Control: public, max-age=3600
 
-/assets/news-version.js
-  Cache-Control: public, max-age=300
-
-# 页面 HTML：含动态列表，缓存 5 分钟（务必排在 /* 之前）
+# 页面 HTML：含动态列表，缓存 5 分钟（删除页面最多 5 分钟失效）
 /*.html
   Cache-Control: public, max-age=300
 
-# 样式表：基本不变，缓存 1 天保速度
+# 样式表：基本不变，长缓存保速度
 /assets/style.css
-  Cache-Control: public, max-age=86400
-
-# 默认兜底：图片等静态资源缓存 1 天（放在最后，避免覆盖上面的页面/脚本规则）
-/*
   Cache-Control: public, max-age=86400

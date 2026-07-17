@@ -227,11 +227,10 @@ if (hitokotoEl) {
     function renderNewsFromManifest(containerId, limit) {
         var box = document.getElementById(containerId);
         if (!box) return;
-        // 加时间戳并禁用缓存，强制每次读取最新清单，新增文章立即出现在列表
-        var base = window.NEWS_MANIFEST_URL || 'news-manifest.json';
-        var sep = base.indexOf('?') >= 0 ? '&' : '?';
-        var url = base + sep + '_t=' + Date.now();
-        fetch(url, { cache: 'no-store' })
+        // 使用构建时生成的带版本号清单地址（news-version.js 已注入 ?v=<内容哈希>）。
+        // 版本不变 → 浏览器/边缘缓存命中，列表秒开；新增文章后哈希变化 → URL 自动失效，立即取最新。
+        var url = window.NEWS_MANIFEST_URL || 'news-manifest.json';
+        fetch(url)
             .then(function (r) { return r.json(); })
             .then(function (items) {
                 var valid = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
