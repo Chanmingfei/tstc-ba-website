@@ -108,14 +108,12 @@ function navCell(isPrev, n) {
         '                </div>';
 }
 
-// 生成完整导航块（含占位标记，便于下次构建幂等替换）
+// 生成导航块内部的 <div> 内容（不含占位标记，标记在插入时统一包裹）
 function buildNav(prev, next) {
-    return NAV_START + '\n' +
-        '            <div class="mt-10 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">\n' +
+    return '            <div class="mt-10 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">\n' +
         navCell(true, prev) + '\n' +
         navCell(false, next) + '\n' +
-        '            </div>\n' +
-        '            ' + NAV_END;
+        '            </div>';
 }
 
 // 系列文章（post-6 及以后），继承 items 的日期倒序：index 越小越新
@@ -169,23 +167,26 @@ for (const file of htmlFiles) {
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + dataScript + '\n    $1');
     }
     // 4) 自动注入「上一篇 / 下一篇」导航（仅 post-N.html 且 N>=6）
+    //    不论文章里是旧版手写块、还是之前生成的带标记块，统一先清掉，
+    //    再在「返回新闻列表」之前插入一份最新生成的导航，避免重复出现两组按钮。
     const pm = file.match(/[\\/]news[\\/]post-(\d+)\.html$/);
     if (pm && parseInt(pm[1], 10) >= 6) {
-        // 若文件尚未放置导航占位符，则在其「返回新闻列表」之前自动插入
-        if (!NAV_RE.test(html)) {
+        const slug = path.basename(file, '.html');
+        const idx = seriesItems.findIndex(it => it.slug === slug);
+        if (idx !== -1) {
+            const prev = seriesItems[idx + 1] || null; // 更旧一篇
+            const next = seriesItems[idx - 1] || null; // 更新一篇
+            // 清除旧导航：新占位标记整块 + 残留标记 + 老式「<!-- 上一篇 / 下一篇 -->」手写块
+            html = html.replace(new RegExp(
+                NAV_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\S]*?' + NAV_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+            html = html.replace(/<!--\s*AUTO_PREV_NEXT_START\s*-->/g, '');
+            html = html.replace(/<!--\s*AUTO_PREV_NEXT_END\s*-->/g, '');
+            html = html.replace(/<!--\s*上一篇[\s\S]*?下一篇\s*-->\s*<div class="mt-10 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">[\s\S]*?(?=<div class="mt-10 pt-6 border-t border-gray-200 flex items-center justify-between">)/g, '');
+            // 在「返回新闻列表」之前统一插入一份自动生成的导航
             html = html.replace(
-                /(\s*)(<div class="mt-10 pt-6 border-t border-gray-200 flex items-center justify-between">)/,
-                '$1' + NAV_START + '\n$1' + NAV_END + '\n$1$2'
+                /([ \t]*)(<div class="mt-10 pt-6 border-t border-gray-200 flex items-center justify-between">)/,
+                '$1' + NAV_START + '\n' + buildNav(prev, next) + '\n$1' + NAV_END + '\n$1$2'
             );
-        }
-        if (NAV_RE.test(html)) {
-            const slug = path.basename(file, '.html');
-            const idx = seriesItems.findIndex(it => it.slug === slug);
-            if (idx !== -1) {
-                const prev = seriesItems[idx + 1] || null; // 更旧一篇
-                const next = seriesItems[idx - 1] || null; // 更新一篇
-                html = html.replace(NAV_RE, buildNav(prev, next));
-            }
         }
     }
     if (html !== orig) {
