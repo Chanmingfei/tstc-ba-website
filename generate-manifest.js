@@ -70,6 +70,7 @@ fs.writeFileSync(
     'utf8'
 );
 console.log('已生成 news-manifest.json（' + items.length + ' 篇），版本 ' + hash);
+// 触发 Cloudflare 重新构建（确保全部 post-N 导航块均被注入）
 
 // ---- 自动生成「上一篇 / 下一篇」导航 ----
 // 仅对 post-N.html 且 N>=6 的文章生成（N<6 为测试性质文章，按需求不加导航）。
