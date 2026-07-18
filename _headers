@@ -1,33 +1,38 @@
 # Cloudflare Pages 响应头配置
 # 注意：Cloudflare 会合并「所有匹配」的规则（不是首条生效），
 # 因此不要写 `/*` 兜底去覆盖具体规则，否则会出现 max-age 重复叠加的畸形响应头。
-# 只对会变化的文件设短缓存，其余交给 Cloudflare 默认缓存。
+#
+# 关键点：规则路径要带 `*` 通配查询串（/assets/main.js*），否则带 ?v= 的 URL 匹配不到，
+# 会退化成 Cloudflare 默认缓存。要让 Cloudflare 边缘真正缓存，必须显式写 s-maxage。
 
 # 文章清单：URL 已带内容哈希版本号（news-version.js 注入），可长缓存，版本变化即自动失效
 /news-manifest.json*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=86400, s-maxage=86400
 
 # 版本号文件：内容随每次部署变化，必须短缓存，保证新文章列表及时生效
-/assets/news-version.js
-  Cache-Control: public, max-age=60
+/assets/news-version.js*
+  Cache-Control: public, max-age=60, s-maxage=60
 
 # 共用脚本：仅在部署时变化（部署后请同步升级 HTML 中的 ?v 参数），缓存 1 小时
-/assets/main.js
-  Cache-Control: public, max-age=3600
+/assets/main.js*
+  Cache-Control: public, max-age=3600, s-maxage=3600
 
-# 页面 HTML：含动态列表，缓存 5 分钟（删除页面最多 5 分钟失效）
+# 页面 HTML（含 .html 与无后缀的漂亮链接）：静态外壳，缓存 5 分钟
+# 列表由前端按需拉取清单，因此 HTML 本身可安全缓存
 /*.html
-  Cache-Control: public, max-age=300
+  Cache-Control: public, max-age=300, s-maxage=300
+/
+  Cache-Control: public, max-age=300, s-maxage=300
+/news
+  Cache-Control: public, max-age=300, s-maxage=300
+/about
+  Cache-Control: public, max-age=300, s-maxage=300
+/dzl
+  Cache-Control: public, max-age=300, s-maxage=300
 
 # 样式表：基本不变，长缓存保速度
-/assets/style.css
-  Cache-Control: public, max-age=86400
-
-# 特殊漂亮链接（无 .html 后缀）：Cloudflare 默认会给 7 天边缘缓存，
-# 一旦删除页面，/xxx 这个缓存键不会随 /xxx.html 一起失效。这里显式缩短到 5 分钟，
-# 即便将来删除也不会出现长达 7 天的陈旧页面。
-/dzl*
-  Cache-Control: public, max-age=300
+/assets/style.css*
+  Cache-Control: public, max-age=86400, s-maxage=86400
 
 # 已删除的生日页路径：彻底禁止缓存，避免任何末端节点残留陈旧内容
 /cmf*
