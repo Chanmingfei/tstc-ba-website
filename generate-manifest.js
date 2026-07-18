@@ -71,6 +71,59 @@ fs.writeFileSync(
 );
 console.log('已生成 news-manifest.json（' + items.length + ' 篇），版本 ' + hash);
 
+// ---- 自动生成「上一篇 / 下一篇」导航 ----
+// 仅对 post-N.html 且 N>=6 的文章生成（N<6 为测试性质文章，按需求不加导航）。
+// 同一系列内按日期排序相邻的文章互相关联，测试文章不会出现在导航中。
+const NAV_START = '<!-- AUTO_PREV_NEXT_START -->';
+const NAV_END = '<!-- AUTO_PREV_NEXT_END -->';
+const NAV_RE = new RegExp(
+    NAV_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+    '[\\s\\S]*?' +
+    NAV_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+);
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
+// 生成单个导航格子：有邻篇则渲染为可点击链接，无则渲染为占位说明
+function navCell(isPrev, n) {
+    const icon = isPrev
+        ? '<i class="fa fa-arrow-left mr-1"></i> 上一篇'
+        : '下一篇 <i class="fa fa-arrow-right ml-1"></i>';
+    const align = isPrev ? '' : ' text-right';
+    if (n) {
+        return '                <a href="' + n.slug + '.html" class="border border-gray-200 rounded-xl p-4 flex flex-col' + align +
+            ' text-secondary hover:text-primary hover:bg-gray-100 transition-colors font-medium">\n' +
+            '                    <span class="text-sm text-gray-500 mb-1">' + icon + '</span>\n' +
+            '                    <span class="leading-tight">' + escapeHtml(n.title) + '</span>\n' +
+            '                </a>';
+    }
+    const text = isPrev ? '已是本系列第一篇' : '已是最新一篇';
+    return '                <div class="border border-gray-200 rounded-xl p-4 flex flex-col' + align + '">\n' +
+        '                    <span class="text-sm text-gray-500 mb-1">' + icon + '</span>\n' +
+        '                    <span class="leading-tight text-gray-500">' + text + '</span>\n' +
+        '                </div>';
+}
+
+// 生成完整导航块（含占位标记，便于下次构建幂等替换）
+function buildNav(prev, next) {
+    return NAV_START + '\n' +
+        '            <div class="mt-10 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">\n' +
+        navCell(true, prev) + '\n' +
+        navCell(false, next) + '\n' +
+        '            </div>\n' +
+        '            ' + NAV_END;
+}
+
+// 系列文章（post-6 及以后），继承 items 的日期倒序：index 越小越新
+const seriesItems = items.filter(it => {
+    const mm = it.slug.match(/^post-(\d+)$/);
+    return mm && parseInt(mm[1], 10) >= 6;
+});
+
 // main.js 版本号随内容哈希变化，HTML 引用的 URL 随之变化，避免陈旧缓存
 const mainJsPath = path.join(root, 'assets', 'main.js');
 let mainJsHash = '0';
@@ -111,9 +164,29 @@ for (const file of htmlFiles) {
     html = html.replace(/(href="[^"]*style\.css)(\?v=[^"]*)?"/g, '$1?v=' + styleHash + '"');
     html = html.replace(/(href="[^"]*fa\.min\.css)(\?v=[^"]*)?"/g, '$1?v=' + faHash + '"');
     // 3) 仅在真正渲染新闻列表的页面内联数据（放在 main.js 之前，确保渲染前已就绪）
-    if (/id="newsGrid"|id="newsPreview"/.test(html)) {
+        if (/id="newsGrid"|id="newsPreview"/.test(html)) {
         const dataScript = '<script>window.__NEWS__ = ' + JSON.stringify(items) + ';</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + dataScript + '\n    $1');
+    }
+    // 4) 自动注入「上一篇 / 下一篇」导航（仅 post-N.html 且 N>=6）
+    const pm = file.match(/[\\/]news[\\/]post-(\d+)\.html$/);
+    if (pm && parseInt(pm[1], 10) >= 6) {
+        // 若文件尚未放置导航占位符，则在其「返回新闻列表」之前自动插入
+        if (!NAV_RE.test(html)) {
+            html = html.replace(
+                /(\s*)(<div class="mt-10 pt-6 border-t border-gray-200 flex items-center justify-between">)/,
+                '$1' + NAV_START + '\n$1' + NAV_END + '\n$1$2'
+            );
+        }
+        if (NAV_RE.test(html)) {
+            const slug = path.basename(file, '.html');
+            const idx = seriesItems.findIndex(it => it.slug === slug);
+            if (idx !== -1) {
+                const prev = seriesItems[idx + 1] || null; // 更旧一篇
+                const next = seriesItems[idx - 1] || null; // 更新一篇
+                html = html.replace(NAV_RE, buildNav(prev, next));
+            }
+        }
     }
     if (html !== orig) {
         fs.writeFileSync(file, html, 'utf8');
