@@ -78,6 +78,15 @@ if (fs.existsSync(mainJsPath)) {
     mainJsHash = crypto.createHash('md5').update(fs.readFileSync(mainJsPath, 'utf8')).digest('hex').slice(0, 8);
 }
 
+// style.css / fa.min.css 同样加内容哈希版本号，避免浏览器/边缘长期缓存旧文件
+// （之前它们没有版本号，部署后用户仍看到旧的缺类样式）
+function fileHash(p) {
+    try { return crypto.createHash('md5').update(fs.readFileSync(p, 'utf8')).digest('hex').slice(0, 8); }
+    catch (e) { return '0'; }
+}
+const styleHash = fileHash(path.join(root, 'assets', 'style.css'));
+const faHash = fileHash(path.join(root, 'assets', 'fontawesome', 'fa.min.css'));
+
 function walkHtml(dir) {
     const out = [];
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -98,6 +107,9 @@ for (const file of htmlFiles) {
     html = html.replace(/\s*<script src="assets\/news-data\.js[^"]*"><\/script>/g, '');
     // 2) main.js 版本号随内容哈希变化
     html = html.replace(/(main\.js)\?v=[^"'>\s]*/g, '$1?v=' + mainJsHash);
+    // 2b) style.css / fa.min.css 加版本号，防止陈旧缓存（覆盖根目录与 news/ 子目录两种路径）
+    html = html.replace(/(href="[^"]*style\.css)(\?v=[^"]*)?"/g, '$1?v=' + styleHash + '"');
+    html = html.replace(/(href="[^"]*fa\.min\.css)(\?v=[^"]*)?"/g, '$1?v=' + faHash + '"');
     // 3) 仅在真正渲染新闻列表的页面内联数据（放在 main.js 之前，确保渲染前已就绪）
     if (/id="newsGrid"|id="newsPreview"/.test(html)) {
         const dataScript = '<script>window.__NEWS__ = ' + JSON.stringify(items) + ';</script>';
