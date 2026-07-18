@@ -227,14 +227,21 @@ if (hitokotoEl) {
     function renderNewsFromManifest(containerId, limit) {
         var box = document.getElementById(containerId);
         if (!box) return;
-        // 使用构建时生成的带版本号清单地址（news-version.js 已注入 ?v=<内容哈希>）。
-        // 版本不变 → 浏览器/边缘缓存命中，列表秒开；新增文章后哈希变化 → URL 自动失效，立即取最新。
+        // 优先使用构建时内联的文章数据（assets/news-data.js → window.__NEWS__），
+        // 数据随页面脚本一起加载，无需额外网络请求，刷新即秒开。
+        if (window.__NEWS__) {
+            var valid = (window.__NEWS__ || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+            var shown = (limit && limit > 0) ? valid.slice(0, limit) : valid;
+            box.innerHTML = shown.map(buildNewsCard).join('');
+            return;
+        }
+        // 兜底：本地未生成 news-data.js 时，回退到带版本号的清单地址
         var url = window.NEWS_MANIFEST_URL || 'news-manifest.json';
         fetch(url)
             .then(function (r) { return r.json(); })
             .then(function (items) {
-                var valid = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-                var shown = (limit && limit > 0) ? valid.slice(0, limit) : valid;
+                var valid2 = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+                var shown = (limit && limit > 0) ? valid2.slice(0, limit) : valid2;
                 box.innerHTML = shown.map(buildNewsCard).join('');
             })
             .catch(function () {
