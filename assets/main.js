@@ -49,8 +49,11 @@ document.addEventListener('DOMContentLoaded', function () {
  const hitokotoEl = document.getElementById('hitokoto');
 if (hitokotoEl) {
     // 页面一执行就显示加载文字
-    hitokotoEl.textContent = '勤思笃学，修身律己 加载中...';
-    fetch('https://v1.hitokoto.cn/?c=d')
+    hitokotoEl.textContent = '勤思笃学，修身律己';
+    // 带超时的请求：外部接口慢或被墙时，3 秒内自动回退到本地名言，避免一直转圈
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    fetch('https://v1.hitokoto.cn/?c=d', { signal: controller.signal })
         .then(response => response.json())
         .then(data => { hitokotoEl.textContent = data.hitokoto; })
         .catch(() => {
@@ -62,7 +65,8 @@ if (hitokotoEl) {
                 '学而不厌，诲人不倦'
             ];
             hitokotoEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
-        });
+        })
+        .finally(() => clearTimeout(timer));
 }
 
 

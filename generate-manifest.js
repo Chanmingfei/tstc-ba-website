@@ -10,13 +10,25 @@
  * Cloudflare 对带 ?v= 查询串的静态资源偶发 404 的问题。
  *
  * 部署说明：
- *   - Cloudflare Pages 的「构建命令」设为：node generate-manifest.js
- *   - 本地预览前也先运行一次：node generate-manifest.js
+ *   - Cloudflare Pages 的「构建命令」建议设为：npm run build
+ *     （= 预编译 Tailwind CSS + 生成清单/内联数据；本脚本也会自动先编译 CSS）
+ *   - 也可直接设为：node generate-manifest.js（脚本内部已包含 CSS 预编译）
+ *   - 本地预览前先运行一次：npm run build
  * 新增/修改文章只需动 news/<slug>.html，构建会自动同步，无需手动维护列表。
  */
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { execSync } = require('child_process');
+
+// 构建前先把 Tailwind 预编译为本地 CSS，保证部署产物自洽、彻底脱离外部 CDN。
+// 若环境没有 tailwindcss（如仅预览已提交产物），则退回到已提交的 assets/style.css。
+try {
+  console.log('▶ 预编译 Tailwind CSS ...');
+  execSync('npm run build:css', { stdio: 'inherit' });
+} catch (e) {
+  console.warn('⚠ 跳过 Tailwind 构建，使用已提交的 assets/style.css：', e.message);
+}
 
 const root = __dirname;
 const newsDir = path.join(root, 'news');
