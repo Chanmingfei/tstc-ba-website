@@ -116,11 +116,8 @@ function buildNav(prev, next) {
         '            </div>';
 }
 
-// 系列文章（post-6 及以后），继承 items 的日期倒序：index 越小越新
-const seriesItems = items.filter(it => {
-    const mm = it.slug.match(/^post-(\d+)$/);
-    return mm && parseInt(mm[1], 10) >= 6;
-});
+// 系列文章（全部 post-N 新闻），继承 items 的日期倒序：index 越小越新
+const seriesItems = items.filter(it => /^post-\d+$/.test(it.slug));
 
 // main.js 版本号随内容哈希变化，HTML 引用的 URL 随之变化，避免陈旧缓存
 const mainJsPath = path.join(root, 'assets', 'main.js');
@@ -166,11 +163,11 @@ for (const file of htmlFiles) {
         const dataScript = '<script>window.__NEWS__ = ' + JSON.stringify(items) + ';</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + dataScript + '\n    $1');
     }
-    // 4) 自动注入「上一篇 / 下一篇」导航（仅 post-N.html 且 N>=6）
+    // 4) 自动注入「上一篇 / 下一篇」导航（所有 post-N.html 新闻）
     //    不论文章里是旧版手写块、还是之前生成的带标记块，统一先清掉，
     //    再在「返回新闻列表」之前插入一份最新生成的导航，避免重复出现两组按钮。
     const pm = file.match(/[\\/]news[\\/]post-(\d+)\.html$/);
-    if (pm && parseInt(pm[1], 10) >= 6) {
+    if (pm) {
         const slug = path.basename(file, '.html');
         const idx = seriesItems.findIndex(it => it.slug === slug);
         if (idx !== -1) {
