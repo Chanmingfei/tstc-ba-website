@@ -2,12 +2,17 @@
 /**
  * 扫描 news/ 下的所有文章 HTML，提取每篇的 #articleMeta 元信息，
  * 生成 news-manifest.json（按日期倒序），并据此生成 assets/news-version.js
- * （内含带哈希的清单地址，用于缓存击穿：内容变了版本号就变，立即生效）。
+ * （内含带哈希的清单地址，作为本地预览的兜底）。
+ *
+ * 关键优化：文章数据会直接「内联」进渲染列表的页面（index.html / news.html），
+ * 以 <script>window.__NEWS__=[...]</script> 形式放在 main.js 之前。
+ * 这样前端无需任何额外网络请求即可渲染列表，刷新即秒开，也彻底规避了
+ * Cloudflare 对带 ?v= 查询串的静态资源偶发 404 的问题。
  *
  * 部署说明：
  *   - Cloudflare Pages 的「构建命令」设为：node generate-manifest.js
  *   - 本地预览前也先运行一次：node generate-manifest.js
- * 这样新增/修改文章只需动 news/<slug>.html，清单会自动更新，首页随之同步。
+ * 新增/修改文章只需动 news/<slug>.html，构建会自动同步，无需手动维护列表。
  */
 const fs = require('fs');
 const path = require('path');
@@ -43,7 +48,7 @@ for (const f of files) {
 items.sort((a, b) => (a.date < b.date ? 1 : -1));
 
 const manifest = JSON.stringify(items, null, 2);
-// 用内容哈希做版本号，内容一变哈希就变，清单 URL 随之变化，缓存立即失效
+// 用内容哈希做版本号，内容一变哈希就变，清单 URL 随之变化（仅作兜底用途）
 const hash = crypto.createHash('md5').update(manifest).digest('hex').slice(0, 8);
 
 fs.writeFileSync(path.join(root, 'news-manifest.json'), manifest, 'utf8');
@@ -52,18 +57,9 @@ fs.writeFileSync(
     'window.NEWS_MANIFEST_URL = "news-manifest.json?v=' + hash + '";\n',
     'utf8'
 );
-// 把文章数据直接写成脚本（放在 /assets/ 下，Cloudflare 会稳定边缘缓存）。
-// 前端直接读 window.__NEWS__ 渲染列表，省掉一次额外的清单网络请求，刷新即秒开；
-// 即使边缘没命中，/assets/ 下的文件浏览器也会按版本号缓存，二次刷新即时生效。
-fs.writeFileSync(
-    path.join(root, 'assets', 'news-data.js'),
-    'window.__NEWS__ = ' + JSON.stringify(items) + ';\n',
-    'utf8'
-);
 console.log('已生成 news-manifest.json（' + items.length + ' 篇），版本 ' + hash);
 
-// 用 main.js 内容哈希做脚本版本号：文件一改哈希就变，HTML 引用的 URL 随之变化，
-// Cloudflare 边缘缓存按「完整 URL（含查询串）」做键，旧 ?v= 变体不会被复用，彻底避免陈旧缓存。
+// main.js 版本号随内容哈希变化，HTML 引用的 URL 随之变化，避免陈旧缓存
 const mainJsPath = path.join(root, 'assets', 'main.js');
 let mainJsHash = '0';
 if (fs.existsSync(mainJsPath)) {
@@ -80,24 +76,24 @@ function walkHtml(dir) {
     return out;
 }
 
-// news-data.js 同样按内容哈希做版本号，内容变化 URL 即变，缓存立即失效
-const newsDataPath = path.join(root, 'assets', 'news-data.js');
-let newsDataHash = '0';
-if (fs.existsSync(newsDataPath)) {
-    newsDataHash = crypto.createHash('md5').update(fs.readFileSync(newsDataPath, 'utf8')).digest('hex').slice(0, 8);
-}
-
 const htmlFiles = walkHtml(root);
 let updated = 0;
 for (const file of htmlFiles) {
-    const before = fs.readFileSync(file, 'utf8');
-    // 匹配 main.js / news-data.js 的 ?v=<任意版本> 并替换为内容哈希版本
-    const after = before
-        .replace(/(main\.js)\?v=[^"'>\s]*/g, '$1?v=' + mainJsHash)
-        .replace(/(news-data\.js)\?v=[^"'>\s]*/g, '$1?v=' + newsDataHash);
-    if (after !== before) {
-        fs.writeFileSync(file, after, 'utf8');
+    let html = fs.readFileSync(file, 'utf8');
+    const orig = html;
+    // 1) 幂等清理：去掉上一次注入的内联数据脚本，以及任何残留的 news-data.js 外链
+    html = html.replace(/<script>\s*window\.__NEWS__\s*=\s*[\s\S]*?<\/script>\s*/g, '');
+    html = html.replace(/\s*<script src="assets\/news-data\.js[^"]*"><\/script>/g, '');
+    // 2) main.js 版本号随内容哈希变化
+    html = html.replace(/(main\.js)\?v=[^"'>\s]*/g, '$1?v=' + mainJsHash);
+    // 3) 仅在真正渲染新闻列表的页面内联数据（放在 main.js 之前，确保渲染前已就绪）
+    if (/id="newsGrid"|id="newsPreview"/.test(html)) {
+        const dataScript = '<script>window.__NEWS__ = ' + JSON.stringify(items) + ';</script>';
+        html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + dataScript + '\n    $1');
+    }
+    if (html !== orig) {
+        fs.writeFileSync(file, html, 'utf8');
         updated++;
     }
 }
-console.log('已更新 ' + updated + ' 个 HTML 中 main.js/news.js 版本（main=' + mainJsHash + ' data=' + newsDataHash + '）');
+console.log('已更新 ' + updated + ' 个 HTML（main.js 版本=' + mainJsHash + '，含新闻列表的页面已内联数据）');

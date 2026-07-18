@@ -17,10 +17,6 @@
 /assets/main.js*
   Cache-Control: public, max-age=3600, s-maxage=3600
 
-# 文章数据：内容随文章增删变化，已用内容哈希做 ?v 版本号，可放心长缓存
-/assets/news-data.js*
-  Cache-Control: public, max-age=3600, s-maxage=3600
-
 # 页面 HTML（含 .html 与无后缀的漂亮链接）：静态外壳，缓存 5 分钟
 # 列表由前端按需拉取清单，因此 HTML 本身可安全缓存
 /*.html
