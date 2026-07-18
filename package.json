@@ -5,7 +5,8 @@
   "description": "唐山师范学院吧务组官网（静态站，Tailwind 预编译为本地 CSS，无外部 CDN 依赖）",
   "scripts": {
     "build:css": "tailwindcss -c tailwind.config.js -i src/tailwind-input.css -o assets/style.css --minify",
-    "build": "npm run build:css && node generate-manifest.js"
+    "build:critical": "python3 build-critical-css.py",
+    "build": "npm run build:css && npm run build:critical && node generate-manifest.js"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.19"
