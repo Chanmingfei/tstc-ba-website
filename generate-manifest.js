@@ -159,6 +159,10 @@ for (const file of htmlFiles) {
     // 2b) style.css / fa.min.css 加版本号，防止陈旧缓存（覆盖根目录与 news/ 子目录两种路径）
     html = html.replace(/(href="[^"]*style\.css)(\?v=[^"]*)?"/g, '$1?v=' + styleHash + '"');
     html = html.replace(/(href="[^"]*fa\.min\.css)(\?v=[^"]*)?"/g, '$1?v=' + faHash + '"');
+    // 2c) 注入 favicon（吧徽图标，所有页面统一）
+    const FAVICON_LINK = '<link rel="icon" type="image/jpeg" href="https://s1.imagehub.cc/images/2025/05/04/0458fef2ac8d47bc88ee2151cf193573.jpg">';
+    html = html.replace(/<link[^>]*rel=["']icon["'][^>]*>/g, '');  // 幂等：先清旧
+    html = html.replace(/(<\/head>)/, '    ' + FAVICON_LINK + '\n$1');  // 再注入
     // 3) 仅在真正渲染新闻列表的页面内联数据（放在 main.js 之前，确保渲染前已就绪）
         if (/id="newsGrid"|id="newsPreview"/.test(html)) {
         const dataScript = '<script>window.__NEWS__ = ' + JSON.stringify(items) + ';</script>';
