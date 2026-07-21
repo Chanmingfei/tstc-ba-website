@@ -6,6 +6,9 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    /* ---------- 基础路径（区分首页与 news/ 子目录） ---------- */
+    const basePath = (location.pathname.indexOf('/news/') !== -1) ? '../' : '';
+
     /* ---------- 导航栏滚动阴影 ---------- */
     const mainNav = document.getElementById('mainNav');
     if (mainNav) {
@@ -81,18 +84,18 @@ if (hitokotoEl) {
     const socialMedia = {
         wechat: {
             title: '微信公众号',
-            image: 'https://s1.imagehub.cc/images/2025/06/20/ef716bfeb41938fafd3995220fd9cb8d.jpg',
+            image: basePath + 'assets/images/qr-wechat.jpg',
             desc: '扫码关注唐山师范学院吧微信公众号'
         },
         xiaohongshu: {
             title: '小红书',
-            image: 'https://s1.imagehub.cc/images/2025/06/20/90c6c918f3e512ae3d838c9ce3e6afc6.md.jpg',
-            desc: '扫码关注唐山师范学院吧小红书账号'
+            image: basePath + 'assets/images/qr-xiaohongshu.jpg',
+            desc: '扫码关注唐山师范学院吧务组小红书账号（5973380211）'
         },
         qq: {
             title: 'QQ迎新群',
-            image: 'https://s1.imagehub.cc/images/2025/06/20/9893542468a9a508411ae5056c56143d.md.jpg',
-            desc: '扫码加入唐山师范学院吧QQ群'
+            image: basePath + 'assets/images/qq-group-qr.jpg',
+            desc: '扫码加入唐山师范学院吧QQ迎新群（1046185965）'
         }
     };
 
