@@ -12,7 +12,7 @@
  * 部署说明：
  *   - Cloudflare Pages 的「构建命令」建议设为：npm run build
  *     （= 预编译 Tailwind CSS + 生成清单/内联数据；本脚本也会自动先编译 CSS）
- *   - 也可直接设为：node generate-manifest.js（脚本内部已包含 CSS 预编译）
+ *   - 也可直接设为：node build/generate-manifest.js（脚本内部已包含 CSS 预编译）
  *   - 本地预览前先运行一次：npm run build
  * 新增/修改文章只需动 news/<slug>.html，构建会自动同步，无需手动维护列表。
  */
@@ -30,7 +30,7 @@ try {
   console.warn('⚠ 跳过 Tailwind 构建，使用已提交的 assets/style.css：', e.message);
 }
 
-const root = __dirname;
+const root = path.resolve(__dirname, '..');
 const newsDir = path.join(root, 'news');
 
 if (!fs.existsSync(newsDir)) {

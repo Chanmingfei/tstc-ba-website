@@ -19,7 +19,7 @@ import os
 import re
 import html as html_module
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STYLE_CSS = os.path.join(ROOT, "assets", "style.css")
 CRITICAL_CSS = os.path.join(ROOT, "assets", "critical.css")
 INDEX_HTML = os.path.join(ROOT, "index.html")

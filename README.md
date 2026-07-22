@@ -17,11 +17,12 @@ news.html               新闻列表页
 about.html              关于我们页面
 dzl.html                其他单页（如独立栏目）
 404.html                自定义 404 页面
-news/post-1.html … post-8.html   文章详情页（共 8 篇）
-src/tailwind-input.css  Tailwind 入口样式（被编译为 assets/style.css）
-tailwind.config.js      Tailwind 配置（含 safelist，保证动态类不被清除）
-build-critical-css.py  生成并内联关键 CSS
-generate-manifest.js   构建脚本：编译清单、注入上一篇/下一篇导航、内联资源版本
+news/post-1.html … post-10.html  文章详情页（共 10 篇）
+build/                 构建脚本与配置集中目录（不参与线上部署，仅本地构建用）
+  tailwind.config.js      Tailwind 配置（含 safelist，保证动态类不被清除）
+  tailwind-input.css      Tailwind 入口样式（被编译为 assets/style.css）
+  build-critical-css.py   生成并内联关键 CSS
+  generate-manifest.js    构建脚本：编译清单、注入上一篇/下一篇导航、内联资源版本
 news-manifest.json     新闻清单（自动生成，列表的单一数据源）
 assets/style.css        全站共用样式（构建生成）
 assets/critical.css     首屏关键样式（构建生成）
