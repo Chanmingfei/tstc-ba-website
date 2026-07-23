@@ -17,7 +17,7 @@ news.html               新闻列表页
 about.html              关于我们页面
 dzl.html                其他单页（如独立栏目）
 404.html                自定义 404 页面
-news/post-1.html … post-10.html  文章详情页（共 10 篇）
+news/post-1.html … post-11.html  文章详情页（共 11 篇）
 build/                 构建脚本与配置集中目录（不参与线上部署，仅本地构建用）
   tailwind.config.js      Tailwind 配置（含 safelist，保证动态类不被清除）
   tailwind-input.css      Tailwind 入口样式（被编译为 assets/style.css）
