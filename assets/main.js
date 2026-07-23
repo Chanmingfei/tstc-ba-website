@@ -79,27 +79,32 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ---------- 一言功能 ---------- */
- const hitokotoEl = document.getElementById('hitokoto');
+    const hitokotoEl = document.getElementById('hitokoto');
 if (hitokotoEl) {
-    // 页面一执行就显示加载文字
-    hitokotoEl.textContent = '勤思笃学，修身律己';
-    // 带超时的请求：外部接口慢或被墙时，3 秒内自动回退到本地名言，避免一直转圈
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
-    fetch('https://v1.hitokoto.cn/?c=d', { signal: controller.signal })
-        .then(response => response.json())
-        .then(data => { hitokotoEl.textContent = data.hitokoto; })
-        .catch(() => {
-            const quotes = [
-                '勤思笃学 修身律己',
-                '学而不思则罔，思而不学则殆',
-                '三人行，必有我师焉',
-                '敏而好学，不耻下问',
-                '学而不厌，诲人不倦'
-            ];
-            hitokotoEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
-        })
-        .finally(() => clearTimeout(timer));
+    if (isEn) {
+        // 英文版：一言接口返回的是中文语录，改为一句固定的英文名言
+        hitokotoEl.textContent = 'Education is the kindling of a flame, not the filling of a vessel.';
+    } else {
+        // 页面一执行就显示加载文字
+        hitokotoEl.textContent = '勤思笃学，修身律己';
+        // 带超时的请求：外部接口慢或被墙时，3 秒内自动回退到本地名言，避免一直转圈
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3000);
+        fetch('https://v1.hitokoto.cn/?c=d', { signal: controller.signal })
+            .then(response => response.json())
+            .then(data => { hitokotoEl.textContent = data.hitokoto; })
+            .catch(() => {
+                const quotes = [
+                    '勤思笃学 修身律己',
+                    '学而不思则罔，思而不学则殆',
+                    '三人行，必有我师焉',
+                    '敏而好学，不耻下问',
+                    '学而不厌，诲人不倦'
+                ];
+                hitokotoEl.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+            })
+            .finally(() => clearTimeout(timer));
+    }
 }
 
 
@@ -111,7 +116,7 @@ if (hitokotoEl) {
     const qrDesc = document.getElementById('qrDesc');
     const saveQrBtn = document.getElementById('saveQrBtn');
 
-    const socialMedia = {
+    const socialMediaZh = {
         wechat: {
             title: '微信公众号',
             image: basePath + 'assets/images/qr-wechat.jpg',
@@ -128,6 +133,24 @@ if (hitokotoEl) {
             desc: '扫码加入唐山师范学院吧QQ迎新群（1046185965）'
         }
     };
+    const socialMediaEn = {
+        wechat: {
+            title: 'WeChat Official Account',
+            image: basePath + 'assets/images/qr-wechat.jpg',
+            desc: 'Scan to follow the Tangshan Normal University Bar WeChat Official Account.'
+        },
+        xiaohongshu: {
+            title: 'Xiaohongshu',
+            image: basePath + 'assets/images/qr-xiaohongshu.jpg',
+            desc: 'Scan to follow the TSNU Bar Mod Team Xiaohongshu account (5973380211).'
+        },
+        qq: {
+            title: 'QQ New Student Group',
+            image: basePath + 'assets/images/qq-group-qr.jpg',
+            desc: 'Scan to join the TSNU Bar QQ New Student Group (1046185965).'
+        }
+    };
+    const socialMedia = isEn ? socialMediaEn : socialMediaZh;
 
     function openQrModal(type) {
         const data = socialMedia[type];
