@@ -59,17 +59,22 @@ for (const f of files) {
 
 items.sort((a, b) => (a.date < b.date ? 1 : -1));
 
-const manifest = JSON.stringify(items, null, 2);
+// 按语言拆分为中文 / 英文两套清单（英文文章 slug 以 -en 结尾）
+const itemsZh = items.filter(it => !/-en$/.test(it.slug));
+const itemsEn = items.filter(it => /-en$/.test(it.slug));
+
+const manifest = JSON.stringify(itemsZh, null, 2);
 // 用内容哈希做版本号，内容一变哈希就变，清单 URL 随之变化（仅作兜底用途）
 const hash = crypto.createHash('md5').update(manifest).digest('hex').slice(0, 8);
 
 fs.writeFileSync(path.join(root, 'news-manifest.json'), manifest, 'utf8');
+fs.writeFileSync(path.join(root, 'news-manifest-en.json'), JSON.stringify(itemsEn, null, 2), 'utf8');
 fs.writeFileSync(
     path.join(root, 'assets', 'news-version.js'),
     'window.NEWS_MANIFEST_URL = "news-manifest.json?v=' + hash + '";\n',
     'utf8'
 );
-console.log('已生成 news-manifest.json（' + items.length + ' 篇），版本 ' + hash);
+console.log('已生成 news-manifest.json（' + itemsZh.length + ' 篇）/ news-manifest-en.json（' + itemsEn.length + ' 篇），版本 ' + hash);
 // 触发 Cloudflare 重新构建（确保全部 post-N 导航块均被注入）
 
 // ---- 自动生成「上一篇 / 下一篇」导航 ----
@@ -90,10 +95,11 @@ function escapeHtml(s) {
 }
 
 // 生成单个导航格子：有邻篇则渲染为可点击链接，无则渲染为占位说明
-function navCell(isPrev, n) {
+// isEn 控制按钮文案（中文 / English）
+function navCell(isPrev, n, isEn) {
     const icon = isPrev
-        ? '<i class="fa fa-arrow-left mr-1"></i> 上一篇'
-        : '下一篇 <i class="fa fa-arrow-right ml-1"></i>';
+        ? (isEn ? '<i class="fa fa-arrow-left mr-1"></i> Previous' : '<i class="fa fa-arrow-left mr-1"></i> 上一篇')
+        : (isEn ? 'Next <i class="fa fa-arrow-right ml-1"></i>' : '下一篇 <i class="fa fa-arrow-right ml-1"></i>');
     const align = isPrev ? '' : ' text-right';
     if (n) {
         return '                <a href="' + n.slug + '.html" class="border border-gray-200 rounded-xl p-4 flex flex-col' + align +
@@ -102,7 +108,9 @@ function navCell(isPrev, n) {
             '                    <span class="leading-tight">' + escapeHtml(n.title) + '</span>\n' +
             '                </a>';
     }
-    const text = isPrev ? '已是本系列第一篇' : '已是最新一篇';
+    const text = isPrev
+        ? (isEn ? 'First in this series' : '已是本系列第一篇')
+        : (isEn ? 'Latest post' : '已是最新一篇');
     return '                <div class="border border-gray-200 rounded-xl p-4 flex flex-col' + align + '">\n' +
         '                    <span class="text-sm text-gray-500 mb-1">' + icon + '</span>\n' +
         '                    <span class="leading-tight text-gray-500">' + text + '</span>\n' +
@@ -110,15 +118,15 @@ function navCell(isPrev, n) {
 }
 
 // 生成导航块内部的 <div> 内容（不含占位标记，标记在插入时统一包裹）
-function buildNav(prev, next) {
+function buildNav(prev, next, isEn) {
     return '            <div class="mt-10 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">\n' +
-        navCell(true, prev) + '\n' +
-        navCell(false, next) + '\n' +
+        navCell(true, prev, isEn) + '\n' +
+        navCell(false, next, isEn) + '\n' +
         '            </div>';
 }
 
-// 系列文章（全部 post-N 新闻），继承 items 的日期倒序：index 越小越新
-const seriesItems = items.filter(it => /^post-\d+$/.test(it.slug));
+// 系列文章（全部 post-N 新闻，含 -en 英文版），继承 items 的日期倒序：index 越小越新
+const seriesItems = items.filter(it => /^post-\d+(-en)?$/.test(it.slug));
 
 // main.js 版本号随内容哈希变化，HTML 引用的 URL 随之变化，避免陈旧缓存
 const mainJsPath = path.join(root, 'assets', 'main.js');
@@ -164,20 +172,26 @@ for (const file of htmlFiles) {
     html = html.replace(/<link[^>]*rel=["']icon["'][^>]*>/g, '');  // 幂等：先清旧
     html = html.replace(/(<\/head>)/, '    ' + FAVICON_LINK + '\n$1');  // 再注入
     // 3) 仅在真正渲染新闻列表的页面内联数据（放在 main.js 之前，确保渲染前已就绪）
+    //    按页面语言注入对应清单：英文页用 window.__NEWS_EN__，中文页用 window.__NEWS__
         if (/id="newsGrid"|id="newsPreview"/.test(html)) {
-        const dataScript = '<script>window.__NEWS__ = ' + JSON.stringify(items) + ';</script>';
+        const pageIsEn = /\-en\.html$/.test(file);
+        const dataArr = pageIsEn ? itemsEn : itemsZh;
+        const varName = pageIsEn ? 'window.__NEWS_EN__' : 'window.__NEWS__';
+        const dataScript = '<script>' + varName + ' = ' + JSON.stringify(dataArr) + ';</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + dataScript + '\n    $1');
     }
-    // 4) 自动注入「上一篇 / 下一篇」导航（所有 post-N.html 新闻）
+    // 4) 自动注入「上一篇 / 下一篇」导航（所有 post-N.html 新闻，含 -en 英文版）
     //    不论文章里是旧版手写块、还是之前生成的带标记块，统一先清掉，
     //    再在「返回新闻列表」之前插入一份最新生成的导航，避免重复出现两组按钮。
-    const pm = file.match(/[\\/]news[\\/]post-(\d+)\.html$/);
+    const pm = file.match(/[\\/]news[\\/]post-(\d+)(-en)?\.html$/);
     if (pm) {
+        const pageIsEn = !!pm[2];
         const slug = path.basename(file, '.html');
-        const idx = seriesItems.findIndex(it => it.slug === slug);
+        const langSeries = seriesItems.filter(it => /-en$/.test(it.slug) === pageIsEn);
+        const idx = langSeries.findIndex(it => it.slug === slug);
         if (idx !== -1) {
-            const prev = seriesItems[idx + 1] || null; // 更旧一篇
-            const next = seriesItems[idx - 1] || null; // 更新一篇
+            const prev = langSeries[idx + 1] || null; // 更旧一篇
+            const next = langSeries[idx - 1] || null; // 更新一篇
             // 清除旧导航：新占位标记整块 + 残留标记 + 老式「<!-- 上一篇 / 下一篇 -->」手写块
             html = html.replace(new RegExp(
                 NAV_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\\s\\S]*?' + NAV_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
@@ -187,7 +201,7 @@ for (const file of htmlFiles) {
             // 在「返回新闻列表」之前统一插入一份自动生成的导航
             html = html.replace(
                 /([ \t]*)(<div class="mt-10 pt-6 border-t border-gray-200 flex items-center justify-between">)/,
-                '$1' + NAV_START + '\n' + buildNav(prev, next) + '\n$1' + NAV_END + '\n$1$2'
+                '$1' + NAV_START + '\n' + buildNav(prev, next, pageIsEn) + '\n$1' + NAV_END + '\n$1$2'
             );
         }
     }

@@ -9,6 +9,36 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ---------- 基础路径（区分首页与 news/ 子目录） ---------- */
     const basePath = (location.pathname.indexOf('/news/') !== -1) ? '../' : '';
 
+    /* ---------- 当前语言 & 语言切换按钮 ---------- */
+    const isEn = /\-en\.html$/.test(window.location.pathname);
+    const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+    const counterpart = isEn
+        ? currentFile.replace(/-en\.html$/, '.html')
+        : currentFile.replace(/\.html$/, '-en.html');
+
+    function addLangToggle() {
+        const toggleText = isEn ? '中文' : 'English';
+        const newsNavLink = document.querySelector('#mainNav [data-nav="news"]');
+        if (newsNavLink && newsNavLink.parentElement) {
+            const desktopLinks = newsNavLink.parentElement;
+            const a = document.createElement('a');
+            a.href = counterpart;
+            a.textContent = toggleText;
+            a.className = 'text-gray-700 hover:text-primary font-medium transition-colors';
+            desktopLinks.appendChild(a);
+        }
+        const mobileMenuEl = document.getElementById('mobileMenu');
+        if (mobileMenuEl) {
+            const mobileContainer = mobileMenuEl.querySelector('.space-y-3') || mobileMenuEl;
+            const ma = document.createElement('a');
+            ma.href = counterpart;
+            ma.textContent = toggleText;
+            ma.className = 'block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg';
+            mobileContainer.appendChild(ma);
+        }
+    }
+    addLangToggle();
+
     /* ---------- 导航栏滚动阴影 ---------- */
     const mainNav = document.getElementById('mainNav');
     if (mainNav) {
@@ -210,12 +240,13 @@ if (hitokotoEl) {
 
     function buildNewsCard(item) {
         const icon = CATEGORY_ICON[item.category] || 'fa-newspaper';
+        const suffix = isEn ? '-en' : '';
         const coverHtml = item.cover
             ? '<img src="' + item.cover + '" alt="" class="w-full h-44 object-cover">'
             : '<div class="w-full h-44 bg-gradient-primary flex items-center justify-center">' +
                 '<i class="fa ' + icon + ' text-white/80 text-4xl"></i></div>';
         return '' +
-            '<a href="news/' + item.slug + '.html" class="bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
+            '<a href="news/' + item.slug + suffix + '.html" class="bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
                 coverHtml +
                 '<div class="p-6 flex-1 flex flex-col">' +
                     '<div class="flex items-center text-xs text-gray-500 mb-3">' +
@@ -229,21 +260,21 @@ if (hitokotoEl) {
             '</a>';
     }
 
-    // 读取构建时自动生成的 news-manifest.json（由 generate-manifest.js 扫描 news/ 生成）
+    // 读取构建时自动生成的 news-manifest.json / news-manifest-en.json
+    // （由 generate-manifest.js 扫描 news/ 生成，英文页使用 __NEWS_EN__）
     // 因此只需新建/修改文章 HTML（含 #articleMeta），部署即自动同步，无需手动维护列表
     function renderNewsFromManifest(containerId, limit) {
         var box = document.getElementById(containerId);
         if (!box) return;
-        // 优先使用构建时内联的文章数据（assets/news-data.js → window.__NEWS__），
-        // 数据随页面脚本一起加载，无需额外网络请求，刷新即秒开。
-        if (window.__NEWS__) {
-            var valid = (window.__NEWS__ || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+        var data = isEn ? (window.__NEWS_EN__ || []) : (window.__NEWS__ || []);
+        if (data && data.length) {
+            var valid = data.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
             var shown = (limit && limit > 0) ? valid.slice(0, limit) : valid;
             box.innerHTML = shown.map(buildNewsCard).join('');
             return;
         }
-        // 兜底：本地未生成 news-data.js 时，回退到带版本号的清单地址
-        var url = window.NEWS_MANIFEST_URL || 'news-manifest.json';
+        // 兜底：本地未生成内联数据时，回退到对应语言清单地址
+        var url = isEn ? 'news-manifest-en.json' : (window.NEWS_MANIFEST_URL || 'news-manifest.json');
         fetch(url)
             .then(function (r) { return r.json(); })
             .then(function (items) {

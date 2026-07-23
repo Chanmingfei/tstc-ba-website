@@ -18,6 +18,8 @@ about.html              关于我们页面
 dzl.html                其他单页（如独立栏目）
 404.html                自定义 404 页面
 news/post-1.html … post-11.html  文章详情页（共 11 篇）
+# 英文版：所有页面均有对应英文版，文件名加 -en 后缀（如 index-en.html、news/post-1-en.html）。
+# 电脑版导航右上角与手机版菜单均含 English / 中文 切换按钮，由 assets/main.js 自动生成。
 build/                 构建脚本与配置集中目录（不参与线上部署，仅本地构建用）
   tailwind.config.js      Tailwind 配置（含 safelist，保证动态类不被清除）
   tailwind-input.css      Tailwind 入口样式（被编译为 assets/style.css）
