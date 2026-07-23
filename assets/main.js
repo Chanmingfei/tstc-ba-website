@@ -268,13 +268,13 @@ if (hitokotoEl) {
 
     function buildNewsCard(item) {
         const icon = CATEGORY_ICON[item.category] || 'fa-newspaper';
-        const suffix = isEn ? '-en' : '';
+        const readMore = isEn ? 'Read More' : '阅读全文';
         const coverHtml = item.cover
             ? '<img src="' + item.cover + '" alt="" class="w-full h-44 object-cover">'
             : '<div class="w-full h-44 bg-gradient-primary flex items-center justify-center">' +
                 '<i class="fa ' + icon + ' text-white/80 text-4xl"></i></div>';
         return '' +
-            '<a href="news/' + item.slug + suffix + '.html" class="bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
+            '<a href="news/' + item.slug + '.html" class="bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
                 coverHtml +
                 '<div class="p-6 flex-1 flex flex-col">' +
                     '<div class="flex items-center text-xs text-gray-500 mb-3">' +
@@ -283,7 +283,7 @@ if (hitokotoEl) {
                     '</div>' +
                     '<h3 class="text-lg font-semibold text-primary mb-2 leading-snug">' + item.title + '</h3>' +
                     '<p class="text-gray-600 text-sm flex-1 line-clamp-2">' + item.excerpt + '</p>' +
-                    '<span class="text-secondary text-sm font-medium mt-4">阅读全文 <i class="fa fa-arrow-right"></i></span>' +
+                    '<span class="text-secondary text-sm font-medium mt-4">' + readMore + ' <i class="fa fa-arrow-right"></i></span>' +
                 '</div>' +
             '</a>';
     }
