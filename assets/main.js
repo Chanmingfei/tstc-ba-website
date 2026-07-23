@@ -9,12 +9,17 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ---------- 基础路径（区分首页与 news/ 子目录） ---------- */
     const basePath = (location.pathname.indexOf('/news/') !== -1) ? '../' : '';
 
-    /* ---------- 当前语言 & 语言切换按钮 ---------- */
-    const isEn = /\-en\.html$/.test(window.location.pathname);
+    /* ---------- 当前语言 & 语言切换按钮 ----------
+       注意：Cloudflare Pages 开启了「纯净 URL」，会把 /xxx-en.html 重定向到 /xxx-en
+       （去掉 .html 后缀），所以 pathname 末尾可能没有 .html。
+       这里统一按「去掉 .html 后的文件名」是否以 -en 结尾判断语言，兼容带/不带后缀两种访问方式。 */
     const currentFile = window.location.pathname.split('/').pop() || 'index.html';
+    const currentBase = currentFile.replace(/\.html$/, '');
+    const isEn = /-en$/.test(currentBase);
+    const hasExt = /\.html$/.test(currentFile);
     const counterpart = isEn
-        ? currentFile.replace(/-en\.html$/, '.html')
-        : currentFile.replace(/\.html$/, '-en.html');
+        ? currentBase.replace(/-en$/, '') + (hasExt ? '.html' : '')
+        : currentBase + '-en' + (hasExt ? '.html' : '');
 
     function addLangToggle() {
         const toggleText = isEn ? '中文' : 'English';
@@ -71,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ---------- 高亮当前导航（新闻相关页面） ---------- */
     const path = window.location.pathname;
-    if (path.includes('/news/') || path.endsWith('/news.html')) {
+    if (/(\/news(-en)?)(\.html)?$/.test(path) || path.includes('/news/')) {
         document.querySelectorAll('[data-nav="news"]').forEach(el => {
             el.classList.add('text-primary', 'font-semibold');
             el.classList.remove('text-gray-700');
