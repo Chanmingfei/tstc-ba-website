@@ -159,8 +159,8 @@ let updated = 0;
 for (const file of htmlFiles) {
     let html = fs.readFileSync(file, 'utf8');
     const orig = html;
-    // 1) 幂等清理：去掉上一次注入的内联数据脚本，以及任何残留的 news-data.js 外链
-    html = html.replace(/<script>\s*window\.__NEWS__\s*=\s*[\s\S]*?<\/script>\s*/g, '');
+    // 1) 幂等清理：去掉上一次注入的内联数据脚本（中/英两套都要清），以及任何残留的 news-data.js 外链
+    html = html.replace(/<script>\s*window\.__NEWS(_EN)?__\s*=\s*[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/\s*<script src="assets\/news-data\.js[^"]*"><\/script>/g, '');
     // 2) main.js 版本号随内容哈希变化
     html = html.replace(/(main\.js)\?v=[^"'>\s]*/g, '$1?v=' + mainJsHash);
