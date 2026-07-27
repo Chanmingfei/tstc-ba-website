@@ -243,19 +243,146 @@ if (hitokotoEl) {
         });
     });
 
-    /* ---------- 搜索功能 ---------- */
+    /* ---------- 站内搜索功能 ---------- */
     const searchInput = document.getElementById('searchInput');
     const searchButton = document.getElementById('searchButton');
-    function performSearch() {
-        const query = searchInput ? searchInput.value.trim() : '';
-        if (query) {
-            window.open('https://www.baidu.com/s?wd=' + encodeURIComponent(query), '_blank');
-        }
+
+    // 搜索索引只抓取一次并缓存（由构建期 generate-manifest.js 生成，按语言拆分为 zh / en）
+    let searchIndexCache = null;
+    function loadSearchIndex() {
+        if (searchIndexCache) return Promise.resolve(searchIndexCache);
+        const url = window.__SEARCH_INDEX_URL__ || 'assets/search-index.json';
+        return fetch(url)
+            .then(r => r.json())
+            .then(d => { searchIndexCache = d; return d; });
     }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+    }
+
+    // 生成带高亮的片段：命中词前后各取 radius 个字符，命中处用 <mark> 高亮
+    function buildSnippet(text, query, radius) {
+        const q = query.toLowerCase();
+        const lower = text.toLowerCase();
+        let idx = lower.indexOf(q);
+        if (idx === -1) idx = 0;
+        const start = Math.max(0, idx - radius);
+        const end = Math.min(text.length, idx + query.length + radius);
+        let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+        const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp('(' + safeQ + ')', 'gi');
+        return escapeHtml(snippet).replace(re,
+            '<mark style="background:#fde68a;color:inherit;padding:0 2px;border-radius:3px">$1</mark>');
+    }
+
+    // 懒创建搜索结果弹层（复用二维码弹层已有的 Tailwind 类，保证样式已编译）
+    function ensureSearchModal() {
+        let modal = document.getElementById('searchModal');
+        if (modal) return modal;
+        modal = document.createElement('div');
+        modal.id = 'searchModal';
+        modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300';
+        modal.style.zIndex = '60';
+        modal.innerHTML =
+            '<div class="bg-white rounded-xl shadow-2xl w-full mx-4 flex flex-col" style="max-width:42rem;max-height:82vh">' +
+                '<div class="p-5 border-b border-gray-200 flex justify-between items-center">' +
+                    '<h3 class="text-xl font-semibold text-primary" id="searchModalTitle"></h3>' +
+                    '<button id="searchModalClose" class="text-gray-500 hover:text-gray-700"><i class="fa fa-times text-xl"></i></button>' +
+                '</div>' +
+                '<div id="searchModalBody" class="p-5" style="overflow-y:auto"></div>' +
+            '</div>';
+        document.body.appendChild(modal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeSearchModal(); });
+        document.getElementById('searchModalClose').addEventListener('click', closeSearchModal);
+        return modal;
+    }
+
+    function openSearchModal() {
+        const modal = ensureSearchModal();
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            const box = modal.querySelector('div');
+            box.classList.remove('scale-95');
+            box.classList.add('scale-100');
+        }, 10);
+    }
+
+    function closeSearchModal() {
+        const modal = document.getElementById('searchModal');
+        if (!modal) return;
+        modal.classList.add('opacity-0');
+        const box = modal.querySelector('div');
+        box.classList.remove('scale-100');
+        box.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    function showResults(query, results) {
+        const modal = ensureSearchModal();
+        document.getElementById('searchModalTitle').textContent =
+            (isEn ? 'Search Results: ' : '搜索结果：') + query;
+        const body = document.getElementById('searchModalBody');
+        if (!results.length) {
+            body.innerHTML = '<p class="text-gray-600">' +
+                (isEn ? 'No matching pages found.' : '未找到相关页面。') + '</p>';
+            openSearchModal();
+            return;
+        }
+        const header = '<p class="text-gray-500 text-sm mb-4">' +
+            (isEn ? 'Found ' : '共找到 ') + results.length +
+            (isEn ? ' pages' : ' 个相关页面') + '</p>';
+        const itemsHtml = results.map(r => {
+            const item = r.item;
+            return '<a href="' + item.url + '" class="block border border-gray-200 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors">' +
+                '<div class="text-primary font-semibold text-lg mb-1">' + escapeHtml(item.title) + '</div>' +
+                '<div class="text-gray-600 text-sm leading-relaxed">' + buildSnippet(item.text, query, 70) + '</div>' +
+                '<div class="text-secondary text-xs mt-2">' + escapeHtml(item.url) + '</div>' +
+            '</a>';
+        }).join('');
+        body.innerHTML = header + itemsHtml;
+        body.scrollTop = 0;
+        openSearchModal();
+    }
+
+    function performSearch() {
+        const query = (searchInput ? searchInput.value : '').trim();
+        if (!query) return;
+        loadSearchIndex().then(data => {
+            const list = isEn ? (data.en || []) : (data.zh || []);
+            const q = query.toLowerCase();
+            const results = [];
+            for (const item of list) {
+                const inTitle = (item.title || '').toLowerCase().indexOf(q) !== -1;
+                const inText = (item.text || '').toLowerCase().indexOf(q) !== -1;
+                if (inTitle || inText) {
+                    results.push({ item: item, score: inTitle ? 2 : 1 });
+                }
+            }
+            results.sort((a, b) => b.score - a.score);
+            showResults(query, results);
+        }).catch(() => {
+            const modal = ensureSearchModal();
+            document.getElementById('searchModalTitle').textContent = isEn ? 'Search' : '搜索';
+            document.getElementById('searchModalBody').innerHTML =
+                '<p class="text-gray-600">' +
+                (isEn ? 'Search index failed to load. Please refresh and try again.' :
+                        '搜索索引加载失败，请刷新后重试。') + '</p>';
+            openSearchModal();
+        });
+    }
+
     if (searchButton) searchButton.addEventListener('click', performSearch);
     if (searchInput) {
         searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
     }
+    // ESC 关闭搜索结果弹层
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSearchModal();
+    });
 
     /* ---------- 新闻卡片渲染 ---------- */
     const CATEGORY_ICON = {

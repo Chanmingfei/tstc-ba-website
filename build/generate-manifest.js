@@ -155,6 +155,60 @@ function walkHtml(dir) {
 }
 
 const htmlFiles = walkHtml(root);
+
+// ---- 生成全站搜索索引（标题 + 正文，按语言拆分为中/英两套） ----
+// 供 assets/main.js 的站内搜索使用：构建期一次性抓取所有页面的纯文本，
+// 避免浏览器端实时抓取/解析带来的额外请求与 404 风险。
+function extractSearchText(html) {
+    // 先剔除 <style>（含巨型 Tailwind 重置样式）与 <script>（含内联数据/脚本）内容，
+    // 否则这些非正文会污染搜索结果（例如 CSS 类名会被全文命中）。
+    let h = html.replace(/<style[\s\S]*?<\/style>/gi, ' ');
+    h = h.replace(/<script[\s\S]*?<\/script>/gi, ' ');
+    h = h.replace(/<[^>]+>/g, ' ');
+    h = h.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&apos;/gi, "'");
+    return h.replace(/\s+/g, ' ').trim();
+}
+function extractSearchTitle(html) {
+    const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+    let t = m ? m[1].replace(/\s+/g, ' ').trim() : '';
+    // 解码常见 HTML 实体（标题里可能出现 &amp; 等）
+    t = t.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&apos;/gi, "'");
+    // 去掉站点名/品牌后缀，让搜索结果标题更干净（中英文各几种写法）
+    t = t.replace(/\s*-\s*TSNU Bar\s*$/i, '')
+         .replace(/\s*-\s*Tangshan Normal University Bar\s*$/i, '')
+         .replace(/\s*-\s*Moderator Team Official Site \(Unofficial, Not Affiliated with the School\)\s*$/i, '')
+         .replace(/\s*-\s*唐山师范学院吧\s*$/, '');
+    return t.trim() || '(untitled)';
+}
+
+const searchZh = [];
+const searchEn = [];
+for (const file of htmlFiles) {
+    // 仅收录真实站点页面：根目录下的 .html 与 news/ 下的文章，
+    // 排除 .templates / docs / .codebuddy 等目录里的模板与文档页，避免它们出现在搜索结果中。
+    const rel = path.relative(root, file).split(path.sep);
+    const inRoot = rel.length === 1;
+    const inNews = rel.length === 2 && rel[0] === 'news';
+    if (!inRoot && !inNews) continue;
+    const fb = path.basename(file).replace(/\.html$/, '');
+    const isEnPage = /-en$/.test(fb);
+    const html = fs.readFileSync(file, 'utf8');
+    const entry = {
+        title: extractSearchTitle(html),
+        url: rel.join('/'),
+        text: extractSearchText(html)
+    };
+    (isEnPage ? searchEn : searchZh).push(entry);
+}
+const searchDataStr = JSON.stringify({ zh: searchZh, en: searchEn });
+const searchHash = crypto.createHash('md5').update(searchDataStr).digest('hex').slice(0, 8);
+fs.writeFileSync(path.join(root, 'assets', 'search-index.json'), searchDataStr, 'utf8');
+console.log('已生成 search-index.json（中文 ' + searchZh.length + ' 页 / 英文 ' + searchEn.length + ' 页），版本 ' + searchHash);
+
 let updated = 0;
 for (const file of htmlFiles) {
     let html = fs.readFileSync(file, 'utf8');
@@ -162,6 +216,8 @@ for (const file of htmlFiles) {
     // 1) 幂等清理：去掉上一次注入的内联数据脚本（中/英两套都要清），以及任何残留的 news-data.js 外链
     html = html.replace(/<script>\s*window\.__NEWS(_EN)?__\s*=\s*[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/\s*<script src="assets\/news-data\.js[^"]*"><\/script>/g, '');
+    // 幂等清理：去掉上一次注入的搜索索引地址脚本，避免重复堆积
+    html = html.replace(/<script>\s*window\.__SEARCH_INDEX_URL__\s*=\s*[\s\S]*?<\/script>\s*/g, '');
     // 2) main.js 版本号随内容哈希变化
     html = html.replace(/(main\.js)\?v=[^"'>\s]*/g, '$1?v=' + mainJsHash);
     // 2b) style.css / fa.min.css 加版本号，防止陈旧缓存（覆盖根目录与 news/ 子目录两种路径）
@@ -179,6 +235,11 @@ for (const file of htmlFiles) {
         const varName = pageIsEn ? 'window.__NEWS_EN__' : 'window.__NEWS__';
         const dataScript = '<script>' + varName + ' = ' + JSON.stringify(dataArr) + ';</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + dataScript + '\n    $1');
+    }
+    // 4b) 含搜索框的页面注入全站搜索索引地址（版本哈希随内容变化，避免陈旧缓存）
+    if (/id="searchInput"/.test(html)) {
+        const searchUrlScript = '<script>window.__SEARCH_INDEX_URL__ = "assets/search-index.json?v=' + searchHash + '";</script>';
+        html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + searchUrlScript + '\n    $1');
     }
     // 4) 自动注入「上一篇 / 下一篇」导航（所有 post-N.html 新闻，含 -en 英文版）
     //    不论文章里是旧版手写块、还是之前生成的带标记块，统一先清掉，
