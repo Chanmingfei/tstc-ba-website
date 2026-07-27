@@ -160,10 +160,24 @@ const htmlFiles = walkHtml(root);
 // 供 assets/main.js 的站内搜索使用：构建期一次性抓取所有页面的纯文本，
 // 避免浏览器端实时抓取/解析带来的额外请求与 404 风险。
 function extractSearchText(html) {
+    // 只取 <main> 内容，排除顶栏导航、页脚、弹窗等全站公共骨架。
+    // 若页面异常没有 <main>，则回退到整个 <body>。
+    let h = html;
+    const mainMatch = h.match(/<main[\s\S]*?<\/main>/i);
+    if (mainMatch) {
+        h = mainMatch[0];
+    } else {
+        const bodyMatch = h.match(/<body[\s\S]*?<\/body>/i);
+        h = bodyMatch ? bodyMatch[0] : h;
+    }
     // 先剔除 <style>（含巨型 Tailwind 重置样式）与 <script>（含内联数据/脚本）内容，
     // 否则这些非正文会污染搜索结果（例如 CSS 类名会被全文命中）。
-    let h = html.replace(/<style[\s\S]*?<\/style>/gi, ' ');
+    h = h.replace(/<style[\s\S]*?<\/style>/gi, ' ');
     h = h.replace(/<script[\s\S]*?<\/script>/gi, ' ');
+    // 去掉自动生成的「上一篇 / 下一篇」导航块
+    h = h.replace(/<!--\s*AUTO_PREV_NEXT_START\s*-->[\s\S]*?<!--\s*AUTO_PREV_NEXT_END\s*-->/gi, ' ');
+    // 去掉文章底部的「返回新闻列表 / 返回首页」按钮行（中英文页面共用同一套 class）
+    h = h.replace(/<div class="mt-10 pt-6 border-t border-gray-200 flex items-center justify-between">[\s\S]*?<\/div>/gi, ' ');
     h = h.replace(/<[^>]+>/g, ' ');
     h = h.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
         .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')

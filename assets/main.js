@@ -278,7 +278,7 @@ if (hitokotoEl) {
             '<mark style="background:#fde68a;color:inherit;padding:0 2px;border-radius:3px">$1</mark>');
     }
 
-    // 懒创建搜索结果弹层（自带输入框；复用站点已有的 search-container 等样式，弹层结构复用二维码弹层类）
+    // 懒创建搜索结果弹层（标题 + 圆角搜索条 + 结果列表）
     function ensureSearchModal() {
         let modal = document.getElementById('searchModal');
         if (modal) return modal;
@@ -288,12 +288,17 @@ if (hitokotoEl) {
         modal.style.zIndex = '60';
         modal.innerHTML =
             '<div class="bg-white rounded-xl shadow-2xl w-full mx-4 flex flex-col" style="max-width:42rem;max-height:82vh">' +
-                '<div class="p-4 border-b border-gray-200 flex items-center">' +
-                    '<div class="search-container" style="flex:1">' +
-                        '<input type="text" placeholder="' + (isEn ? 'Search the site...' : '搜索全站内容...') + '" class="search-input" id="searchModalInput">' +
-                        '<button class="search-button" id="searchModalBtn"><i class="fa fa-search text-lg"></i></button>' +
+                '<div class="p-5 border-b border-gray-200">' +
+                    '<div class="flex justify-between items-center mb-4">' +
+                        '<h3 class="text-xl font-semibold text-primary">' + (isEn ? 'Site Search' : '全站搜索') + '</h3>' +
+                        '<button id="searchModalClose" class="text-gray-500 hover:text-gray-700"><i class="fa fa-times text-xl"></i></button>' +
                     '</div>' +
-                    '<button id="searchModalClose" class="text-gray-500 hover:text-gray-700 ml-3"><i class="fa fa-times text-xl"></i></button>' +
+                    '<div class="search-container">' +
+                        '<input type="text" placeholder="' + (isEn ? 'Search keywords...' : '输入关键词搜索...') + '" class="search-input" id="searchModalInput" style="flex:1;padding-right:2.5rem">' +
+                        '<button id="searchModalBtn" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#6b7280;cursor:pointer;font-size:1.125rem;padding:0">' +
+                            '<i class="fa fa-search"></i>' +
+                        '</button>' +
+                    '</div>' +
                 '</div>' +
                 '<div id="searchModalBody" class="p-5" style="overflow-y:auto"></div>' +
             '</div>';
@@ -342,7 +347,7 @@ if (hitokotoEl) {
         const itemsHtml = results.map(r => {
             const item = r.item;
             const url = '/' + item.url.replace(/^\/+/, ''); // 绝对路径，任意层级页面均可跳转
-            return '<a href="' + url + '" class="block border border-gray-200 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors">' +
+            return '<a href="' + url + '" class="block border border-gray-200 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors border-l-4 border-primary">' +
                 '<div class="text-primary font-semibold text-lg mb-1">' + escapeHtml(item.title) + '</div>' +
                 '<div class="text-gray-600 text-sm leading-relaxed">' + buildSnippet(item.text, query, 70) + '</div>' +
                 '<div class="text-secondary text-xs mt-2">' + escapeHtml(url) + '</div>' +
@@ -388,7 +393,7 @@ if (hitokotoEl) {
         if ((prefill || '').trim()) runSearch(prefill);
     }
 
-    // 顶栏（桌面端 + 移动端菜单）注入搜索入口，使任意页面都能打开搜索
+    // 顶栏注入搜索入口：桌面端导航末尾 + 移动端顶栏（汉堡菜单左侧）
     function addSearchButtons() {
         const desktopLinks = document.querySelector('#mainNav .hidden.md\\:flex');
         if (desktopLinks && !document.getElementById('navSearchBtn')) {
@@ -400,22 +405,18 @@ if (hitokotoEl) {
             desktopLinks.appendChild(btn);
             btn.addEventListener('click', () => openSearch(''));
         }
-        const mobileMenuEl = document.getElementById('mobileMenu');
-        if (mobileMenuEl) {
-            const mobileContainer = mobileMenuEl.querySelector('.space-y-3') || mobileMenuEl;
-            if (!document.getElementById('navSearchBtnMobile')) {
-                const ma = document.createElement('button');
-                ma.id = 'navSearchBtnMobile';
-                ma.className = 'block w-full text-left py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg';
-                ma.innerHTML = '<i class="fa fa-search mr-2"></i>' + (isEn ? 'Search' : '搜索');
-                mobileContainer.appendChild(ma);
-                ma.addEventListener('click', () => {
-                    mobileMenuEl.classList.add('hidden');
-                    const mb = document.getElementById('menuBtn');
-                    if (mb) mb.innerHTML = '<i class="fa fa-bars text-xl"></i>';
-                    openSearch('');
-                });
-            }
+        const menuBtn = document.getElementById('menuBtn');
+        if (menuBtn && menuBtn.parentElement && !document.getElementById('mobileTopSearchBtn')) {
+            const container = menuBtn.parentElement;
+            container.classList.add('flex', 'items-center');
+            const topSearchBtn = document.createElement('button');
+            topSearchBtn.id = 'mobileTopSearchBtn';
+            topSearchBtn.className = 'text-gray-700 hover:text-primary transition-colors mr-4';
+            topSearchBtn.innerHTML = '<i class="fa fa-search text-lg"></i>';
+            topSearchBtn.title = isEn ? 'Search' : '搜索';
+            topSearchBtn.setAttribute('aria-label', isEn ? 'Search' : '搜索');
+            container.insertBefore(topSearchBtn, menuBtn);
+            topSearchBtn.addEventListener('click', () => openSearch(''));
         }
     }
     addSearchButtons();
