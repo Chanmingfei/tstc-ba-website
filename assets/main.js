@@ -251,7 +251,7 @@ if (hitokotoEl) {
     let searchIndexCache = null;
     function loadSearchIndex() {
         if (searchIndexCache) return Promise.resolve(searchIndexCache);
-        const url = window.__SEARCH_INDEX_URL__ || 'assets/search-index.json';
+        const url = window.__SEARCH_INDEX_URL__ || '/assets/search-index.json';
         return fetch(url)
             .then(r => r.json())
             .then(d => { searchIndexCache = d; return d; });
@@ -278,7 +278,7 @@ if (hitokotoEl) {
             '<mark style="background:#fde68a;color:inherit;padding:0 2px;border-radius:3px">$1</mark>');
     }
 
-    // 懒创建搜索结果弹层（复用二维码弹层已有的 Tailwind 类，保证样式已编译）
+    // 懒创建搜索结果弹层（自带输入框；复用站点已有的 search-container 等样式，弹层结构复用二维码弹层类）
     function ensureSearchModal() {
         let modal = document.getElementById('searchModal');
         if (modal) return modal;
@@ -288,15 +288,22 @@ if (hitokotoEl) {
         modal.style.zIndex = '60';
         modal.innerHTML =
             '<div class="bg-white rounded-xl shadow-2xl w-full mx-4 flex flex-col" style="max-width:42rem;max-height:82vh">' +
-                '<div class="p-5 border-b border-gray-200 flex justify-between items-center">' +
-                    '<h3 class="text-xl font-semibold text-primary" id="searchModalTitle"></h3>' +
-                    '<button id="searchModalClose" class="text-gray-500 hover:text-gray-700"><i class="fa fa-times text-xl"></i></button>' +
+                '<div class="p-4 border-b border-gray-200 flex items-center">' +
+                    '<div class="search-container" style="flex:1">' +
+                        '<input type="text" placeholder="' + (isEn ? 'Search the site...' : '搜索全站内容...') + '" class="search-input" id="searchModalInput">' +
+                        '<button class="search-button" id="searchModalBtn"><i class="fa fa-search text-lg"></i></button>' +
+                    '</div>' +
+                    '<button id="searchModalClose" class="text-gray-500 hover:text-gray-700 ml-3"><i class="fa fa-times text-xl"></i></button>' +
                 '</div>' +
                 '<div id="searchModalBody" class="p-5" style="overflow-y:auto"></div>' +
             '</div>';
         document.body.appendChild(modal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeSearchModal(); });
         document.getElementById('searchModalClose').addEventListener('click', closeSearchModal);
+        const input = document.getElementById('searchModalInput');
+        const runFromModal = () => openSearch(input.value);
+        document.getElementById('searchModalBtn').addEventListener('click', runFromModal);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') runFromModal(); });
         return modal;
     }
 
@@ -322,9 +329,6 @@ if (hitokotoEl) {
     }
 
     function showResults(query, results) {
-        const modal = ensureSearchModal();
-        document.getElementById('searchModalTitle').textContent =
-            (isEn ? 'Search Results: ' : '搜索结果：') + query;
         const body = document.getElementById('searchModalBody');
         if (!results.length) {
             body.innerHTML = '<p class="text-gray-600">' +
@@ -337,10 +341,11 @@ if (hitokotoEl) {
             (isEn ? ' pages' : ' 个相关页面') + '</p>';
         const itemsHtml = results.map(r => {
             const item = r.item;
-            return '<a href="' + item.url + '" class="block border border-gray-200 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors">' +
+            const url = '/' + item.url.replace(/^\/+/, ''); // 绝对路径，任意层级页面均可跳转
+            return '<a href="' + url + '" class="block border border-gray-200 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors">' +
                 '<div class="text-primary font-semibold text-lg mb-1">' + escapeHtml(item.title) + '</div>' +
                 '<div class="text-gray-600 text-sm leading-relaxed">' + buildSnippet(item.text, query, 70) + '</div>' +
-                '<div class="text-secondary text-xs mt-2">' + escapeHtml(item.url) + '</div>' +
+                '<div class="text-secondary text-xs mt-2">' + escapeHtml(url) + '</div>' +
             '</a>';
         }).join('');
         body.innerHTML = header + itemsHtml;
@@ -348,16 +353,16 @@ if (hitokotoEl) {
         openSearchModal();
     }
 
-    function performSearch() {
-        const query = (searchInput ? searchInput.value : '').trim();
-        if (!query) return;
+    function runSearch(query) {
+        const q = (query || '').trim();
+        if (!q) return;
         loadSearchIndex().then(data => {
             const list = isEn ? (data.en || []) : (data.zh || []);
-            const q = query.toLowerCase();
+            const ql = q.toLowerCase();
             const results = [];
             for (const item of list) {
-                const inTitle = (item.title || '').toLowerCase().indexOf(q) !== -1;
-                const inText = (item.text || '').toLowerCase().indexOf(q) !== -1;
+                const inTitle = (item.title || '').toLowerCase().indexOf(ql) !== -1;
+                const inText = (item.text || '').toLowerCase().indexOf(ql) !== -1;
                 if (inTitle || inText) {
                     results.push({ item: item, score: inTitle ? 2 : 1 });
                 }
@@ -365,19 +370,60 @@ if (hitokotoEl) {
             results.sort((a, b) => b.score - a.score);
             showResults(query, results);
         }).catch(() => {
-            const modal = ensureSearchModal();
-            document.getElementById('searchModalTitle').textContent = isEn ? 'Search' : '搜索';
-            document.getElementById('searchModalBody').innerHTML =
-                '<p class="text-gray-600">' +
+            const body = document.getElementById('searchModalBody');
+            if (body) body.innerHTML = '<p class="text-gray-600">' +
                 (isEn ? 'Search index failed to load. Please refresh and try again.' :
                         '搜索索引加载失败，请刷新后重试。') + '</p>';
             openSearchModal();
         });
     }
 
-    if (searchButton) searchButton.addEventListener('click', performSearch);
+    // 打开搜索弹层：可选预填关键词并立即检索；为空则仅聚焦输入框
+    function openSearch(prefill) {
+        const modal = ensureSearchModal();
+        const input = document.getElementById('searchModalInput');
+        if (prefill != null) input.value = prefill;
+        openSearchModal();
+        setTimeout(() => input.focus(), 50);
+        if ((prefill || '').trim()) runSearch(prefill);
+    }
+
+    // 顶栏（桌面端 + 移动端菜单）注入搜索入口，使任意页面都能打开搜索
+    function addSearchButtons() {
+        const desktopLinks = document.querySelector('#mainNav .hidden.md\\:flex');
+        if (desktopLinks && !document.getElementById('navSearchBtn')) {
+            const btn = document.createElement('button');
+            btn.id = 'navSearchBtn';
+            btn.className = 'text-gray-700 hover:text-primary transition-colors p-1';
+            btn.innerHTML = '<i class="fa fa-search text-lg"></i>';
+            btn.title = isEn ? 'Search' : '搜索';
+            desktopLinks.appendChild(btn);
+            btn.addEventListener('click', () => openSearch(''));
+        }
+        const mobileMenuEl = document.getElementById('mobileMenu');
+        if (mobileMenuEl) {
+            const mobileContainer = mobileMenuEl.querySelector('.space-y-3') || mobileMenuEl;
+            if (!document.getElementById('navSearchBtnMobile')) {
+                const ma = document.createElement('button');
+                ma.id = 'navSearchBtnMobile';
+                ma.className = 'block w-full text-left py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg';
+                ma.innerHTML = '<i class="fa fa-search mr-2"></i>' + (isEn ? 'Search' : '搜索');
+                mobileContainer.appendChild(ma);
+                ma.addEventListener('click', () => {
+                    mobileMenuEl.classList.add('hidden');
+                    const mb = document.getElementById('menuBtn');
+                    if (mb) mb.innerHTML = '<i class="fa fa-bars text-xl"></i>';
+                    openSearch('');
+                });
+            }
+        }
+    }
+    addSearchButtons();
+
+    // 首页头部搜索框：输入并回车/点击 → 打开弹层并检索
+    if (searchButton) searchButton.addEventListener('click', () => openSearch(searchInput.value));
     if (searchInput) {
-        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
+        searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') openSearch(searchInput.value); });
     }
     // ESC 关闭搜索结果弹层
     document.addEventListener('keydown', (e) => {

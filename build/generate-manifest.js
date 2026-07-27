@@ -236,9 +236,10 @@ for (const file of htmlFiles) {
         const dataScript = '<script>' + varName + ' = ' + JSON.stringify(dataArr) + ';</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + dataScript + '\n    $1');
     }
-    // 4b) 含搜索框的页面注入全站搜索索引地址（版本哈希随内容变化，避免陈旧缓存）
-    if (/id="searchInput"/.test(html)) {
-        const searchUrlScript = '<script>window.__SEARCH_INDEX_URL__ = "assets/search-index.json?v=' + searchHash + '";</script>';
+    // 4b) 所有页面注入全站搜索索引地址（顶栏导航现也带搜索入口，故不再限定含搜索框的页面）
+    //     使用站点根绝对路径，确保从 news/ 子页面也能正确加载；版本哈希随内容变化避免陈旧缓存
+    {
+        const searchUrlScript = '<script>window.__SEARCH_INDEX_URL__ = "/assets/search-index.json?v=' + searchHash + '";</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + searchUrlScript + '\n    $1');
     }
     // 4) 自动注入「上一篇 / 下一篇」导航（所有 post-N.html 新闻，含 -en 英文版）
