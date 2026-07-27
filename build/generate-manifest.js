@@ -209,6 +209,8 @@ for (const file of htmlFiles) {
     const inNews = rel.length === 2 && rel[0] === 'news';
     if (!inRoot && !inNews) continue;
     const fb = path.basename(file).replace(/\.html$/, '');
+    // 404 错误页不进入搜索索引
+    if (fb === '404' || fb === '404-en') continue;
     const isEnPage = /-en$/.test(fb);
     const html = fs.readFileSync(file, 'utf8');
     const entry = {
