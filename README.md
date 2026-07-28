@@ -104,11 +104,26 @@ python3 -m http.server 8080
 ### 如何新增一篇新闻
 
 1. 复制 `news/post-1.html` 为一个新文件，例如 `news/post-14.html`（同时建议提供英文版 `news/post-14-en.html`）。
-2. 改写正文，并修改文件顶部那段 `#articleMeta` 元信息（标题 / 日期 / 分类 / 作者 / 摘要）。
+2. **只改两处，其余原样保留**：
+   - **文件顶部 `#articleMeta` 元信息**（必须保留整个 `<script id="articleMeta">` 块，仅替换里面的字段值）：
+     ```html
+     <script id="articleMeta" type="application/json">
+     {
+       "title": "文章标题",
+       "date": "2026-08-01",
+       "category": "指南",          <!-- 分类：中文用 公告/通知/指南/总结/活动；英文用 Announcement/Notice/Guide/Summary/Activity -->
+       "author": "TSNU Bar Mod Team",
+       "excerpt": "一句话摘要，显示在卡片与搜索结果里",
+       "cover": "assets/images/xxx.jpg"   <!-- 封面图（可选，留空则显示分类图标占位） -->
+     }
+     </script>
+     ```
+   - **`<main>` 内的正文**（自由编辑，可加图片；正文图片请加上 `loading="lazy"` 以加快加载，例如 `<img src="..." alt="..." loading="lazy">`）。
+3. 其余骨架（顶栏导航、上一篇 / 下一篇、页脚、返回按钮、脚本引用等）**一律不要改**，构建脚本会自动处理。
    - 首页与列表页会直接读取这段元信息，**不需要再改任何列表文件**。
    - 上一篇 / 下一篇导航会在构建时自动按日期重排，无需手动维护。
    - 搜索索引会在构建时自动包含新文章（全文可被检索）。
-3. 运行 `npm run build` 并提交推送：Cloudflare 会自动构建并重新部署，首页、列表页与搜索结果立即同步。
+4. 运行 `npm run build` 并提交推送：Cloudflare 会自动构建并重新部署，首页、列表页与搜索结果立即同步。
 
 ## 缓存说明
 

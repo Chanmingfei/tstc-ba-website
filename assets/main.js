@@ -432,19 +432,25 @@ if (hitokotoEl) {
     });
 
     /* ---------- 新闻卡片渲染 ---------- */
+    // 中英文分类统一映射到 Font Awesome 图标（新增文章请保持分类名与此一致）
     const CATEGORY_ICON = {
         '公告': 'fa-bullhorn',
         '通知': 'fa-bell',
         '指南': 'fa-compass',
         '总结': 'fa-chart-line',
-        '活动': 'fa-calendar-days'
+        '活动': 'fa-calendar-days',
+        'Announcement': 'fa-bullhorn',
+        'Notice': 'fa-bell',
+        'Guide': 'fa-compass',
+        'Summary': 'fa-chart-line',
+        'Activity': 'fa-calendar-days'
     };
 
     function buildNewsCard(item) {
         const icon = CATEGORY_ICON[item.category] || 'fa-newspaper';
         const readMore = isEn ? 'Read More' : '阅读全文';
         const coverHtml = item.cover
-            ? '<img src="' + item.cover + '" alt="" class="w-full h-44 object-cover">'
+            ? '<img src="' + item.cover + '" alt="" loading="lazy" class="w-full h-44 object-cover">'
             : '<div class="w-full h-44 bg-gradient-primary flex items-center justify-center">' +
                 '<i class="fa ' + icon + ' text-white/80 text-4xl"></i></div>';
         return '' +
