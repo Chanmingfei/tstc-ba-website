@@ -505,3 +505,23 @@ if (hitokotoEl) {
         });
     }
 });
+
+/* ---------- 唐山大地震五十周年悼念置灰 ---------- */
+// 7月28日 00:00 至 7月29日 00:00（北京时间）全站置灰以志哀，届时自动恢复，无需重新部署。
+// 采用 backdrop-filter 遮罩：只对背景内容去色，不影响固定导航 / 弹窗的定位与点击。
+(function applyMourningGray() {
+    try {
+        const start = new Date('2026-07-28T00:00:00+08:00').getTime();
+        const end = new Date('2026-07-29T00:00:00+08:00').getTime();
+        const now = Date.now();
+        if (now < start || now >= end) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'mourningGray';
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.cssText =
+            'position:fixed;inset:0;z-index:9999;pointer-events:none;' +
+            'background:rgba(110,110,110,0.06);' +
+            'backdrop-filter:grayscale(1);-webkit-backdrop-filter:grayscale(1);';
+        document.body.appendChild(overlay);
+    } catch (e) { /* 出错也不阻断正常浏览 */ }
+})();
