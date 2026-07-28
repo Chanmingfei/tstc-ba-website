@@ -504,6 +504,24 @@ if (hitokotoEl) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
+
+    /* ---------- 唐山大地震五十周年悼念标语 ---------- */
+    // 7月28日 00:00 至 7月29日 00:00（北京时间）在顶栏与标题之间显示，届时自动消失。
+    (function insertMemorialBanner() {
+        try {
+            const start = new Date('2026-07-28T00:00:00+08:00').getTime();
+            const end = new Date('2026-07-29T00:00:00+08:00').getTime();
+            if (Date.now() < start || Date.now() >= end) return;
+            const header = document.querySelector('body > header');
+            const container = header && header.querySelector('.container');
+            if (!header || !container) return;
+            const text = isEn ? 'We will never forget the victims of the Tangshan Earthquake.' : '唐山大地震罹难同胞永垂不朽！';
+            const banner = document.createElement('div');
+            banner.className = 'relative z-10 text-center text-[clamp(1rem,2vw,1.2rem)] font-bold text-white animate-fade-in pt-4 pb-2';
+            banner.textContent = text;
+            header.insertBefore(banner, container);
+        } catch (e) { /* 忽略，不影响正常浏览 */ }
+    })();
 });
 
 /* ---------- 唐山大地震五十周年悼念置灰 ---------- */
