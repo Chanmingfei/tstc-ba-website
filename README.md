@@ -114,7 +114,7 @@ python3 -m http.server 8080
        "category": "指南",          <!-- 分类：中文用 公告/通知/指南/总结/活动；英文用 Announcement/Notice/Guide/Summary/Activity -->
        "author": "TSNU Bar Mod Team",
        "excerpt": "一句话摘要，显示在卡片与搜索结果里",
-       "cover": "assets/images/xxx.jpg"   <!-- 封面图（可选，留空则显示分类图标占位） -->
+       "cover": "assets/images/xxx.jpg"   <!-- 封面图（可选）：留空时构建会自动取文章正文中第一张非二维码/非品牌图作为封面；也可在此手动指定以强制覆盖 -->
      }
      </script>
      ```

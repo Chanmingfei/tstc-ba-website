@@ -41,6 +41,30 @@ if (!fs.existsSync(newsDir)) {
 const files = fs.readdirSync(newsDir).filter(f => f.endsWith('.html'));
 const items = [];
 
+// 自动提取文章封面：
+// 取 <main> 正文中第一张「非二维码 / 非品牌图」的图片作为卡片封面。
+// 文章位于 news/ 子目录，图片通常以 ../assets/... 引用，这里统一转成站点根相对路径，
+// 使封面在首页 / 新闻列表页（根目录）都能正确显示。若文章无合适图片，则留空，
+// 前端（assets/main.js）会回退为文章分类对应的图标。
+// 若 #articleMeta 中已手动指定 cover，则以手动为准（仍可强制指定封面）。
+function extractCover(html, fallback) {
+    if (fallback && String(fallback).trim()) return String(fallback).trim(); // 手动指定优先
+    const mainMatch = html.match(/<main[\s\S]*?<\/main>/i);
+    const body = mainMatch ? mainMatch[0] : html;
+    const imgs = body.match(/<img\b[^>]*>/gi) || [];
+    for (const tag of imgs) {
+        const srcMatch = tag.match(/\ssrc=["']([^"']+)["']/i);
+        if (!srcMatch) continue;
+        const src = srcMatch[1];
+        // 排除二维码（含群二维码 qq-group-qr、微信/小红书二维码）与品牌图（logo / 横幅）
+        if (/qr|bar-logo|bg-banner/i.test(src)) continue;
+        let p = src.replace(/^\.\//, '').replace(/^(\.\.\/)+/, ''); // ../assets → assets
+        if (!p) continue;
+        return p;
+    }
+    return '';
+}
+
 for (const f of files) {
     const slug = f.replace(/\.html$/, '');
     const html = fs.readFileSync(path.join(newsDir, f), 'utf8');
@@ -54,6 +78,7 @@ for (const f of files) {
         continue;
     }
     meta.slug = slug;
+    meta.cover = extractCover(html, meta.cover);
     items.push(meta);
 }
 
