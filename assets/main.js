@@ -263,19 +263,27 @@ if (hitokotoEl) {
         ));
     }
 
-    // 生成带高亮的片段：命中词前后各取 radius 个字符，命中处用 <mark> 高亮
+    // 高亮任意文本中的命中词
+    function highlightHtml(text, query) {
+        const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp('(' + safeQ + ')', 'gi');
+        return escapeHtml(text).replace(re,
+            '<mark style="background:#fde68a;color:inherit;padding:0 2px;border-radius:3px">$1</mark>');
+    }
+
+    // 生成带高亮的片段：命中词前后各取 radius 个字符；若正文未命中则取前 140 字作为摘要
     function buildSnippet(text, query, radius) {
         const q = query.toLowerCase();
         const lower = text.toLowerCase();
         let idx = lower.indexOf(q);
-        if (idx === -1) idx = 0;
+        if (idx === -1) {
+            const snippet = text.slice(0, 140);
+            return escapeHtml(snippet) + (text.length > 140 ? '…' : '');
+        }
         const start = Math.max(0, idx - radius);
         const end = Math.min(text.length, idx + query.length + radius);
         let snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
-        const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const re = new RegExp('(' + safeQ + ')', 'gi');
-        return escapeHtml(snippet).replace(re,
-            '<mark style="background:#fde68a;color:inherit;padding:0 2px;border-radius:3px">$1</mark>');
+        return highlightHtml(snippet, query);
     }
 
     // 懒创建搜索结果弹层（重新设计：渐变图标 + 圆角输入框 + 结果卡片 + 入场动画）
@@ -368,10 +376,15 @@ if (hitokotoEl) {
         const itemsHtml = results.map((r, i) => {
             const item = r.item;
             const url = '/' + item.url.replace(/^\/+/, ''); // 绝对路径，任意层级页面均可跳转
+            const ql = query.toLowerCase();
+            const inText = (item.text || '').toLowerCase().indexOf(ql) !== -1;
             return '<a href="' + url + '" class="group mb-3 flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg animate-result-in" style="animation-delay:' + (i * 45) + 'ms">' +
                 '<span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><i class="fa fa-file-lines"></i></span>' +
                 '<div class="min-w-0 flex-1">' +
-                    '<div class="truncate text-[15px] font-semibold text-gray-800 transition-colors group-hover:text-primary">' + escapeHtml(item.title) + '</div>' +
+                    '<div class="flex items-center gap-2 min-w-0">' +
+                        '<div class="truncate text-[15px] font-semibold text-gray-800 transition-colors group-hover:text-primary">' + highlightHtml(item.title, query) + '</div>' +
+                        (inText ? '' : '<span class="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">' + (isEn ? 'Title' : '标题') + '</span>') +
+                    '</div>' +
                     '<div class="mt-1 line-clamp-2 text-sm leading-relaxed text-gray-500">' + buildSnippet(item.text, query, 70) + '</div>' +
                     '<div class="mt-1.5 text-xs text-secondary">' + escapeHtml(url) + '</div>' +
                 '</div>' +
