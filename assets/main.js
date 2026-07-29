@@ -71,14 +71,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 mobileMenu.classList.remove('menu-pop');
                 mobileMenu.classList.add('menu-pop-out');
                 menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
-                setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 200);
+                setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 240);
             }
         });
         document.querySelectorAll('#mobileMenu a').forEach(link => {
             link.addEventListener('click', () => {
                 if (!mobileMenu.classList.contains('hidden')) {
                     mobileMenu.classList.add('menu-pop-out');
-                    setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 200);
+                    setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 240);
                 }
                 menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
             });
@@ -86,31 +86,47 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ---------- 滚动渐入（默认可见，仅 JS 启用后渐入，不影响无 JS 环境） ---------- */
-    (function scrollReveal() {
-        try {
-            if (!('IntersectionObserver' in window)) return;
-            const els = Array.from(document.querySelectorAll('main section:not([class*="animate"]), .news-card, .reveal'));
-            if (!els.length) return;
-            const io = new IntersectionObserver((entries) => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) {
-                        e.target.classList.add('in-view');
-                        io.unobserve(e.target);
+    (function () {
+        let done = false;
+        function init() {
+            if (done) return;
+            done = true;
+            try {
+                if (!('IntersectionObserver' in window)) return;
+                const els = Array.from(document.querySelectorAll('main section, main article, .news-card, .reveal'));
+                if (!els.length) return;
+                let revealed = 0;
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('in-view');
+                            revealed++;
+                            io.unobserve(e.target);
+                        }
+                    });
+                }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+                els.forEach(el => {
+                    el.classList.add('reveal-item');
+                    if (el.classList.contains('news-card')) {
+                        const sibs = Array.from(el.parentNode.children).filter(c => c.classList.contains('news-card'));
+                        el.style.transitionDelay = (sibs.indexOf(el) * 80) + 'ms';
                     }
+                    io.observe(el);
                 });
-            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-            els.forEach(el => {
-                el.classList.add('reveal-item');
-                if (el.classList.contains('news-card')) {
-                    const sibs = Array.from(el.parentNode.children).filter(c => c.classList.contains('news-card'));
-                    el.style.transitionDelay = (sibs.indexOf(el) * 70) + 'ms';
-                }
-                io.observe(el);
-            });
-            document.body.classList.add('reveal-ready');
-        } catch (err) {
-            document.body.classList.remove('reveal-ready');
+                document.body.classList.add('reveal-ready');
+                // 兜底：若 1.5s 后仍未有任何元素被揭示（IO 异常或不支持），强制全部显示，
+                // 避免整页内容停留在 opacity:0 而变成空白页。
+                setTimeout(() => {
+                    if (revealed === 0) els.forEach(el => el.classList.add('in-view'));
+                }, 1500);
+            } catch (err) {
+                document.body.classList.remove('reveal-ready');
+            }
         }
+        // 新闻卡片由 JS 渲染，需等其注入完成后再绑定，否则选择器无法命中
+        if (document.readyState === 'complete') init();
+        else window.addEventListener('load', init);
+        setTimeout(init, 0);
     })();
 
     /* ---------- 高亮当前导航（新闻相关页面） ---------- */

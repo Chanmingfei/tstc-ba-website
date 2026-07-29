@@ -239,37 +239,52 @@ body {
 }
 
 /* ---------- 移动端菜单与滚动渐入动画 ---------- */
+/* 菜单：从顶栏下方平滑下滑 + 淡入（使用等比缩放，避免文字被纵向拉伸变形） */
 @keyframes menuPop {
-    from { opacity: 0; transform: scaleY(0.92); }
-    to { opacity: 1; transform: scaleY(1); }
+    from { opacity: 0; transform: translateY(-14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .menu-pop {
-    animation: menuPop 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-    transform-origin: top;
+    animation: menuPop 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    transform-origin: top center;
 }
 
 @keyframes menuPopOut {
-    from { opacity: 1; transform: scaleY(1); }
-    to { opacity: 0; transform: scaleY(0.92); }
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(-14px) scale(0.98); }
 }
 
 .menu-pop-out {
-    animation: menuPopOut 0.2s ease-in forwards;
-    transform-origin: top;
+    animation: menuPopOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
+    transform-origin: top center;
 }
 
-/* 滚动渐入：默认可见，仅 JS 启用后先隐藏再随滚动渐入，保证无 JS 也能正常浏览 */
+/* 滚动渐入：默认可见，仅 JS 启用后先隐藏再随滚动渐入，保证无 JS 也能正常浏览。
+   位移更明显、缓动更柔和（参考高校官网电脑端的优雅入场感）。 */
 .reveal-item {
-    transition: opacity 0.6s ease, transform 0.6s ease;
+    will-change: opacity, transform;
+    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body.reveal-ready .reveal-item {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(48px);
 }
 
 body.reveal-ready .reveal-item.in-view {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* 若某块同时带有 animate-fade-in（旧的开场动画），改为随滚动渐入，避免两种动画互相打架 */
+.reveal-item.animate-fade-in {
+    animation: none;
+}
+
+/* 尊重系统「减少动态效果」偏好，避免个别用户感到眩晕 */
+@media (prefers-reduced-motion: reduce) {
+    body.reveal-ready .reveal-item { opacity: 1; transform: none; }
+    .menu-pop, .menu-pop-out { animation: none; }
 }
