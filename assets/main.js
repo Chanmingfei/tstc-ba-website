@@ -61,18 +61,57 @@ document.addEventListener('DOMContentLoaded', function () {
     const mobileMenu = document.getElementById('mobileMenu');
     if (menuBtn && mobileMenu) {
         menuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-            menuBtn.innerHTML = mobileMenu.classList.contains('hidden')
-                ? '<i class="fa fa-bars text-xl"></i>'
-                : '<i class="fa fa-times text-xl"></i>';
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.remove('menu-pop');
+                void mobileMenu.offsetWidth; // 重放展开动画
+                mobileMenu.classList.add('menu-pop');
+                menuBtn.innerHTML = '<i class="fa fa-times text-xl"></i>';
+            } else {
+                mobileMenu.classList.remove('menu-pop');
+                mobileMenu.classList.add('menu-pop-out');
+                menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
+                setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 200);
+            }
         });
         document.querySelectorAll('#mobileMenu a').forEach(link => {
             link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('menu-pop-out');
+                    setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 200);
+                }
                 menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
             });
         });
     }
+
+    /* ---------- 滚动渐入（默认可见，仅 JS 启用后渐入，不影响无 JS 环境） ---------- */
+    (function scrollReveal() {
+        try {
+            if (!('IntersectionObserver' in window)) return;
+            const els = Array.from(document.querySelectorAll('main section:not([class*="animate"]), .news-card, .reveal'));
+            if (!els.length) return;
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('in-view');
+                        io.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+            els.forEach(el => {
+                el.classList.add('reveal-item');
+                if (el.classList.contains('news-card')) {
+                    const sibs = Array.from(el.parentNode.children).filter(c => c.classList.contains('news-card'));
+                    el.style.transitionDelay = (sibs.indexOf(el) * 70) + 'ms';
+                }
+                io.observe(el);
+            });
+            document.body.classList.add('reveal-ready');
+        } catch (err) {
+            document.body.classList.remove('reveal-ready');
+        }
+    })();
 
     /* ---------- 高亮当前导航（新闻相关页面） ---------- */
     const path = window.location.pathname;
