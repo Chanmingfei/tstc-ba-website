@@ -538,7 +538,7 @@ if (hitokotoEl) {
             : '<div class="w-full h-44 bg-gradient-primary flex items-center justify-center">' +
                 '<i class="fa ' + icon + ' text-white/80 text-4xl"></i></div>';
         return '' +
-            '<a href="news/' + item.slug + '.html" class="bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
+            '<a href="news/' + item.slug + '.html" class="news-card bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
                 coverHtml +
                 '<div class="p-6 flex-1 flex flex-col">' +
                     '<div class="flex items-center text-xs text-gray-500 mb-3">' +

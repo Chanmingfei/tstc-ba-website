@@ -240,21 +240,23 @@ body {
 
 /* ---------- 移动端菜单与滚动渐入动画 ---------- */
 @keyframes menuPop {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: scaleY(0.92); }
+    to { opacity: 1; transform: scaleY(1); }
 }
 
 .menu-pop {
-    animation: menuPop 0.25s ease-out;
+    animation: menuPop 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top;
 }
 
 @keyframes menuPopOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-10px); }
+    from { opacity: 1; transform: scaleY(1); }
+    to { opacity: 0; transform: scaleY(0.92); }
 }
 
 .menu-pop-out {
     animation: menuPopOut 0.2s ease-in forwards;
+    transform-origin: top;
 }
 
 /* 滚动渐入：默认可见，仅 JS 启用后先隐藏再随滚动渐入，保证无 JS 也能正常浏览 */
