@@ -278,29 +278,31 @@ if (hitokotoEl) {
             '<mark style="background:#fde68a;color:inherit;padding:0 2px;border-radius:3px">$1</mark>');
     }
 
-    // 懒创建搜索结果弹层（标题 + 圆角搜索条 + 结果列表）
+    // 懒创建搜索结果弹层（重新设计：渐变图标 + 圆角输入框 + 结果卡片 + 入场动画）
     function ensureSearchModal() {
         let modal = document.getElementById('searchModal');
         if (modal) return modal;
         modal = document.createElement('div');
         modal.id = 'searchModal';
-        modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300';
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
         modal.style.zIndex = '60';
         modal.innerHTML =
-            '<div class="bg-white rounded-xl shadow-2xl w-full mx-4 flex flex-col" style="max-width:42rem;max-height:82vh">' +
-                '<div class="p-5 border-b border-gray-200">' +
-                    '<div class="flex justify-between items-center mb-4">' +
-                        '<h3 class="text-xl font-semibold text-primary">' + (isEn ? 'Site Search' : '全站搜索') + '</h3>' +
-                        '<button id="searchModalClose" class="text-gray-500 hover:text-gray-700"><i class="fa fa-times text-xl"></i></button>' +
+            '<div class="relative w-full origin-center overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 flex flex-col transition-all duration-200 animate-search-pop" style="max-width:42rem;max-height:84vh">' +
+                '<div class="px-6 pt-6 pb-4">' +
+                    '<div class="flex items-center justify-between">' +
+                        '<div class="flex items-center gap-3">' +
+                            '<span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-md"><i class="fa fa-search"></i></span>' +
+                            '<h3 class="text-lg font-bold text-gray-800">' + (isEn ? 'Site Search' : '全站搜索') + '</h3>' +
+                        '</div>' +
+                        '<button id="searchModalClose" aria-label="' + (isEn ? 'Close' : '关闭') + '" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"><i class="fa fa-times"></i></button>' +
                     '</div>' +
-                    '<div class="search-container">' +
-                        '<input type="text" placeholder="' + (isEn ? 'Search keywords...' : '输入关键词搜索...') + '" class="search-input" id="searchModalInput" style="flex:1;padding-right:2.5rem">' +
-                        '<button id="searchModalBtn" style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#6b7280;cursor:pointer;font-size:1.125rem;padding:0">' +
-                            '<i class="fa fa-search"></i>' +
-                        '</button>' +
+                    '<div class="relative mt-4">' +
+                        '<i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>' +
+                        '<input id="searchModalInput" type="text" placeholder="' + (isEn ? 'Search keywords...' : '输入关键词搜索...') + '" class="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-24 text-gray-700 placeholder-gray-400 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" />' +
+                        '<button id="searchModalBtn" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-secondary">' + (isEn ? 'Search' : '搜索') + '</button>' +
                     '</div>' +
                 '</div>' +
-                '<div id="searchModalBody" class="p-5" style="overflow-y:auto"></div>' +
+                '<div id="searchModalBody" class="px-6 pb-6 pt-1" style="overflow-y:auto"></div>' +
             '</div>';
         document.body.appendChild(modal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeSearchModal(); });
@@ -315,11 +317,13 @@ if (hitokotoEl) {
     function openSearchModal() {
         const modal = ensureSearchModal();
         modal.classList.remove('hidden');
+        const box = modal.querySelector('div');
+        box.classList.remove('opacity-0', 'scale-95');
+        box.classList.remove('animate-search-pop');
+        void box.offsetWidth; // 触发重排以重放入场动画
         setTimeout(() => {
             modal.classList.remove('opacity-0');
-            const box = modal.querySelector('div');
-            box.classList.remove('scale-95');
-            box.classList.add('scale-100');
+            box.classList.add('animate-search-pop');
         }, 10);
     }
 
@@ -328,29 +332,50 @@ if (hitokotoEl) {
         if (!modal) return;
         modal.classList.add('opacity-0');
         const box = modal.querySelector('div');
-        box.classList.remove('scale-100');
-        box.classList.add('scale-95');
+        box.classList.add('opacity-0', 'scale-95');
         setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    // 三种占位：空状态 / 加载中 / 使用提示
+    function searchEmpty() {
+        return '<div class="flex flex-col items-center justify-center py-12 text-center">' +
+            '<span class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-400"><i class="fa fa-search-minus text-xl"></i></span>' +
+            '<p class="text-gray-500">' + (isEn ? 'No matching pages found.' : '未找到相关页面') + '</p>' +
+            '<p class="mt-1 text-xs text-gray-400">' + (isEn ? 'Try different keywords.' : '换个关键词试试吧') + '</p>' +
+        '</div>';
+    }
+    function searchLoading() {
+        return '<div class="flex items-center justify-center py-12 text-gray-400"><i class="fa fa-spinner fa-spin text-2xl"></i></div>';
+    }
+    function searchHint() {
+        return '<div class="flex flex-col items-center justify-center py-10 text-center">' +
+            '<span class="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 text-primary"><i class="fa fa-compass text-xl"></i></span>' +
+            '<p class="text-gray-500">' + (isEn ? 'Type to search the whole site' : '输入关键词，跨全站搜索标题与正文') + '</p>' +
+            '<p class="mt-3 text-xs text-gray-400"><kbd class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5">Enter</kbd> ' + (isEn ? 'to search' : '搜索') + ' · <kbd class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5">Esc</kbd> ' + (isEn ? 'to close' : '关闭') + '</p>' +
+        '</div>';
     }
 
     function showResults(query, results) {
         const body = document.getElementById('searchModalBody');
         if (!results.length) {
-            body.innerHTML = '<p class="text-gray-600">' +
-                (isEn ? 'No matching pages found.' : '未找到相关页面。') + '</p>';
+            body.innerHTML = searchEmpty();
             openSearchModal();
             return;
         }
-        const header = '<p class="text-gray-500 text-sm mb-4">' +
+        const header = '<p class="mb-4 text-sm text-gray-400">' +
             (isEn ? 'Found ' : '共找到 ') + results.length +
             (isEn ? ' pages' : ' 个相关页面') + '</p>';
-        const itemsHtml = results.map(r => {
+        const itemsHtml = results.map((r, i) => {
             const item = r.item;
             const url = '/' + item.url.replace(/^\/+/, ''); // 绝对路径，任意层级页面均可跳转
-            return '<a href="' + url + '" class="block border border-gray-200 rounded-xl p-4 mb-3 hover:bg-gray-100 transition-colors border-l-4 border-primary">' +
-                '<div class="text-primary font-semibold text-lg mb-1">' + escapeHtml(item.title) + '</div>' +
-                '<div class="text-gray-600 text-sm leading-relaxed">' + buildSnippet(item.text, query, 70) + '</div>' +
-                '<div class="text-secondary text-xs mt-2">' + escapeHtml(url) + '</div>' +
+            return '<a href="' + url + '" class="group mb-3 flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg animate-result-in" style="animation-delay:' + (i * 45) + 'ms">' +
+                '<span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><i class="fa fa-file-lines"></i></span>' +
+                '<div class="min-w-0 flex-1">' +
+                    '<div class="truncate text-[15px] font-semibold text-gray-800 transition-colors group-hover:text-primary">' + escapeHtml(item.title) + '</div>' +
+                    '<div class="mt-1 line-clamp-2 text-sm leading-relaxed text-gray-500">' + buildSnippet(item.text, query, 70) + '</div>' +
+                    '<div class="mt-1.5 text-xs text-secondary">' + escapeHtml(url) + '</div>' +
+                '</div>' +
+                '<i class="fa fa-arrow-right self-center text-gray-300 transition group-hover:translate-x-1 group-hover:text-primary"></i>' +
             '</a>';
         }).join('');
         body.innerHTML = header + itemsHtml;
@@ -361,6 +386,8 @@ if (hitokotoEl) {
     function runSearch(query) {
         const q = (query || '').trim();
         if (!q) return;
+        const body = document.getElementById('searchModalBody');
+        body.innerHTML = searchLoading();
         loadSearchIndex().then(data => {
             const list = isEn ? (data.en || []) : (data.zh || []);
             const ql = q.toLowerCase();
@@ -375,19 +402,22 @@ if (hitokotoEl) {
             results.sort((a, b) => b.score - a.score);
             showResults(query, results);
         }).catch(() => {
-            const body = document.getElementById('searchModalBody');
-            if (body) body.innerHTML = '<p class="text-gray-600">' +
+            const b = document.getElementById('searchModalBody');
+            if (b) b.innerHTML = '<div class="py-12 text-center text-gray-500">' +
                 (isEn ? 'Search index failed to load. Please refresh and try again.' :
-                        '搜索索引加载失败，请刷新后重试。') + '</p>';
+                        '搜索索引加载失败，请刷新后重试。') + '</div>';
             openSearchModal();
         });
     }
 
-    // 打开搜索弹层：可选预填关键词并立即检索；为空则仅聚焦输入框
+    // 打开搜索弹层：可预填关键词并立即检索；为空则展示使用提示
     function openSearch(prefill) {
         const modal = ensureSearchModal();
         const input = document.getElementById('searchModalInput');
         if (prefill != null) input.value = prefill;
+        if (!(prefill || '').trim()) {
+            document.getElementById('searchModalBody').innerHTML = searchHint();
+        }
         openSearchModal();
         setTimeout(() => input.focus(), 50);
         if ((prefill || '').trim()) runSearch(prefill);
