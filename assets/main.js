@@ -164,11 +164,13 @@ if (hitokotoEl) {
         qrImage.src = data.image;
         qrDesc.textContent = data.desc;
         qrModal.classList.remove('hidden');
+        const box = qrModal.querySelector('div');
+        box.classList.remove('opacity-0', 'scale-95');
+        box.classList.remove('animate-search-pop');
+        void box.offsetWidth;
         setTimeout(() => {
             qrModal.classList.remove('opacity-0');
-            const box = qrModal.querySelector('div');
-            box.classList.remove('scale-95');
-            box.classList.add('scale-100');
+            box.classList.add('animate-search-pop');
         }, 10);
     }
 
@@ -176,8 +178,7 @@ if (hitokotoEl) {
         if (!qrModal) return;
         qrModal.classList.add('opacity-0');
         const box = qrModal.querySelector('div');
-        box.classList.remove('scale-100');
-        box.classList.add('scale-95');
+        box.classList.add('opacity-0', 'scale-95');
         setTimeout(() => qrModal.classList.add('hidden'), 300);
     }
 
@@ -208,11 +209,13 @@ if (hitokotoEl) {
     function openFeedbackModal() {
         if (!feedbackModal) return;
         feedbackModal.classList.remove('hidden');
+        const box = feedbackModal.querySelector('div');
+        box.classList.remove('opacity-0', 'scale-95');
+        box.classList.remove('animate-search-pop');
+        void box.offsetWidth;
         setTimeout(() => {
             feedbackModal.classList.remove('opacity-0');
-            const box = feedbackModal.querySelector('div');
-            box.classList.remove('scale-95');
-            box.classList.add('scale-100');
+            box.classList.add('animate-search-pop');
         }, 10);
     }
 
@@ -220,8 +223,7 @@ if (hitokotoEl) {
         if (!feedbackModal) return;
         feedbackModal.classList.add('opacity-0');
         const box = feedbackModal.querySelector('div');
-        box.classList.remove('scale-100');
-        box.classList.add('scale-95');
+        box.classList.add('opacity-0', 'scale-95');
         setTimeout(() => feedbackModal.classList.add('hidden'), 300);
     }
 
