@@ -239,25 +239,30 @@ body {
 }
 
 /* ---------- 移动端菜单与滚动渐入动画 ---------- */
-/* 菜单：从顶栏下方平滑下滑 + 淡入（使用等比缩放，避免文字被纵向拉伸变形） */
+/* 菜单：自顶栏下沿等比展开 + 淡入（纯 transform/opacity，无上移位移，绝不遮挡顶栏；
+   不使用 backdrop-filter，避免每帧重绘造成的卡顿） */
 @keyframes menuPop {
-    from { opacity: 0; transform: translateY(-14px) scale(0.98); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
 }
 
 .menu-pop {
-    animation: menuPop 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: menuPop 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     transform-origin: top center;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 @keyframes menuPopOut {
-    from { opacity: 1; transform: translateY(0) scale(1); }
-    to   { opacity: 0; transform: translateY(-14px) scale(0.98); }
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.96); }
 }
 
 .menu-pop-out {
     animation: menuPopOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
     transform-origin: top center;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* 滚动渐入：默认可见，仅 JS 启用后先隐藏再随滚动渐入，保证无 JS 也能正常浏览。

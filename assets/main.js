@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function () {
             done = true;
             try {
                 if (!('IntersectionObserver' in window)) return;
-                const els = Array.from(document.querySelectorAll('main section, main article, .news-card, .reveal'));
+                const els = Array.from(document.querySelectorAll('main section, .news-card, .reveal'));
                 if (!els.length) return;
                 let revealed = 0;
                 const io = new IntersectionObserver((entries) => {
