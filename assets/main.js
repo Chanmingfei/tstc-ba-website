@@ -401,6 +401,161 @@ if (hitokotoEl) {
         setTimeout(() => modal.classList.add('hidden'), 300);
     }
 
+    /* ---------- 更新日志弹窗 ---------- */
+    // 完整更新日志 HTML（与 CHANGELOG.md 保持一致，按日期归档）
+    const CHANGELOG_HTML = [
+        { d: '2026-07-31', items: [
+            '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
+            '【新增】文章阅读时长；新闻列表分类筛选标签',
+            '【新增】图片灯箱（打开上浮淡入、关闭反向弹出）；文章面包屑(首页›新闻›标题) + 相关阅读',
+            '【修复】英文版相关阅读误列当前文章；移动端排版与封面路径；英文面包屑跳转；指南九地图改 PNG 显示'
+        ]},
+        { d: '2026-07-30', items: [
+            '【修复】文章详情页关闭滚动渐入，避免慢网环境长时间空白',
+            '【修复】移动端菜单改为自顶栏下沿展开并去除模糊，解决遮挡顶栏与卡顿'
+        ]},
+        { d: '2026-07-29', items: [
+            '【新增/优化】滚动渐入、移动端菜单下滑淡入动画',
+            '【优化】二维码/反馈/搜索弹窗风格统一；搜索弹窗重设计与动画；标题命中高亮',
+            '【优化】新闻卡片封面自动取正文首图（排除二维码/品牌图）'
+        ]},
+        { d: '2026-07-28', items: [
+            '【新增】唐山大地震五十周年悼念置灰（7/28 00:00–7/29 00:00 自动恢复）',
+            '【新增】顶栏与标题间增加悼念标语（7/29 00:00 自动消失）',
+            '【优化】合规审查：图片懒加载、英文分类图标、新增文章指引'
+        ]},
+        { d: '2026-07-27', items: [
+            '【新增】新生指南（八）-公共浴室和校园一卡通（中英双语，8 张流程截图）',
+            '【重大】新增站内搜索引擎：构建期生成索引，标题+全文检索，结果弹层可跳转；顶栏加入搜索入口',
+            '【优化】全站英文专有名词统一、地址笔误修正、校园电话卡与校园一卡通区分；统一「特别提醒」为浅蓝模块'
+        ]},
+        { d: '2026-07-24', items: [
+            '【新增】新生指南（七）-大学道校区如何找教室（中英文）',
+            '【优化】统一英文版标题层级、品牌名、导航翻译（News / Mod Team）；修复配图裁剪与桌面端限宽'
+        ]},
+        { d: '2026-07-23', items: [
+            '【重大】全站英文版上线（English 切换 + 翻译全部页面）',
+            '【新增】新生指南（六）-大学道校区如何取快递',
+            '【优化】图标本地化；统一并列图片高度；构建脚本整理至 build/ 目录'
+        ]},
+        { d: '2026-07-22', items: [
+            '【新增】新生指南（五）-交通出行相关（post-10）',
+            '【优化】吧徽与背景图本地化，全站图床图片改为本地资源',
+            '【修复】404 页资源改根绝对路径，修复二级子路径下素材失效'
+        ]},
+        { d: '2026-07-21', items: [
+            '【优化】新生指南(3/6/7/8/9) 文末统一添加 QQ 迎新群二维码；电脑端图片限宽',
+            '【优化】首页联系我们二维码全部本地化（QQ/微信/小红书）'
+        ]},
+        { d: '2026-07-20', items: [
+            '【新增】新生指南（四）-宿舍生活相关（post-9）',
+            '【优化】全站注入 favicon（吧徽图标，浏览器标签页显示）'
+        ]},
+        { d: '2026-07-19', items: [
+            '【优化】重新编号文章(post-1~post-12)；上/下一篇导航扩展到全部文章按日期倒序串联',
+            '【新增】新生指南（三）-体育课选课；post-7/8 增加食堂/商场、体育课评分卡片'
+        ]},
+        { d: '2026-07-18', items: [
+            '【性能】内联文章数据到页面 HTML，去掉额外清单请求，列表刷新秒开',
+            '【性能】移除阻塞渲染的外部 CDN，改本地预编译 CSS + 自托管 Font Awesome；内联首屏关键 CSS',
+            '【修复】预编译 CSS 缺失工具类(safelist)；style.css/fa.min.css 加内容哈希版本号；main.js 加 defer 消除卡顿',
+            '【新增】新生指南（二）-食堂购物攻略(post-7)；构建按日期倒序自动生成上/下一篇导航'
+        ]},
+        { d: '2026-07-17', items: [
+            '【彩蛋】新增 /cmf 生日快乐子页面（陈铭霏专属，后下线）'
+        ]},
+        { d: '2026-07-16', items: [
+            '【新增】测试文章《校园卡是否值得办》(post-6，分类：指南)',
+            '【彩蛋】新增 /dzl 页（404 数字替换为「戴泽龙」）'
+        ]},
+        { d: '2026-07-15', items: [
+            '【新增】全网反诈防骗公告(post-5)；「关于我们」页面；自定义 404 页面（Cloudflare 内置兜底）',
+            '【优化】自动扫描 news/ 生成清单，首页/列表零配置自动同步'
+        ]},
+        { d: '2026-07-14', items: [
+            '【站点】唐山师范学院吧官网正式上线，含新闻动态模块，可部署至 Cloudflare Pages',
+            '【优化】首页新闻预览按日期倒序取最新 3 条；首页/列表直接读取 #articleMeta 单一数据源'
+        ]}
+    ].map(function (g) {
+        return '<div class="mb-6">' +
+            '<h3 class="mb-2 text-base font-bold text-primary">' + g.d + '</h3>' +
+            '<ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-gray-600">' +
+            g.items.map(function (it) { return '<li>' + it + '</li>'; }).join('') +
+            '</ul></div>';
+    }).join('');
+
+    function initChangelog() {
+        // 1) 在页脚「版权所有」一句后注入入口
+        let copyP = null;
+        document.querySelectorAll('footer p').forEach(function (p) {
+            if (p.textContent.indexOf('版权所有') !== -1) copyP = p;
+        });
+        if (!copyP) return;
+        const sep = document.createElement('span');
+        sep.className = 'mx-2 text-white/40';
+        sep.textContent = '·';
+        const link = document.createElement('a');
+        link.href = 'javascript:void(0)';
+        link.id = 'changelogOpen';
+        link.className = 'underline hover:text-white transition-colors';
+        link.textContent = '更新日志';
+        copyP.appendChild(sep);
+        copyP.appendChild(link);
+
+        // 2) 懒创建弹层
+        function ensureModal() {
+            let modal = document.getElementById('changelogModal');
+            if (modal) return modal;
+            modal = document.createElement('div');
+            modal.id = 'changelogModal';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
+            modal.style.zIndex = '80';
+            modal.innerHTML =
+                '<div class="relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 flex flex-col transition-all duration-200 animate-search-pop" style="max-width:44rem;max-height:86vh">' +
+                    '<div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">' +
+                        '<div class="flex items-center gap-3">' +
+                            '<span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-md"><i class="fa fa-list-alt"></i></span>' +
+                            '<h3 class="text-lg font-bold text-gray-800">' + (isEn ? 'Changelog' : '更新日志') + '</h3>' +
+                        '</div>' +
+                        '<button id="changelogClose" aria-label="' + (isEn ? 'Close' : '关闭') + '" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"><i class="fa fa-times"></i></button>' +
+                    '</div>' +
+                    '<div id="changelogBody" class="px-6 py-5" style="overflow-y:auto">' + CHANGELOG_HTML + '</div>' +
+                '</div>';
+            document.body.appendChild(modal);
+            modal.addEventListener('click', function (e) { if (e.target === modal) closeChangelogModal(); });
+            document.getElementById('changelogClose').addEventListener('click', closeChangelogModal);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    const m = document.getElementById('changelogModal');
+                    if (m && !m.classList.contains('hidden')) closeChangelogModal();
+                }
+            });
+            return modal;
+        }
+        function openChangelogModal() {
+            const modal = ensureModal();
+            modal.classList.remove('hidden');
+            const box = modal.querySelector('div');
+            box.classList.remove('animate-search-pop');
+            void box.offsetWidth;
+            setTimeout(function () {
+                modal.classList.remove('opacity-0');
+                box.classList.add('animate-search-pop');
+            }, 10);
+            const body = document.getElementById('changelogBody');
+            if (body) body.scrollTop = 0;
+        }
+        function closeChangelogModal() {
+            const modal = document.getElementById('changelogModal');
+            if (!modal) return;
+            modal.classList.add('opacity-0');
+            const box = modal.querySelector('div');
+            box.classList.add('opacity-0', 'scale-95');
+            setTimeout(function () { modal.classList.add('hidden'); }, 300);
+        }
+        link.addEventListener('click', function (e) { e.preventDefault(); openChangelogModal(); });
+    }
+
     // 三种占位：空状态 / 加载中 / 使用提示
     function searchEmpty() {
         return '<div class="flex flex-col items-center justify-center py-12 text-center">' +
@@ -819,6 +974,9 @@ if (hitokotoEl) {
             header.insertBefore(banner, container);
         } catch (e) { /* 忽略，不影响正常浏览 */ }
     })();
+
+    // 更新日志：页脚入口 + 弹窗
+    initChangelog();
 });
 
 /* ---------- 唐山大地震五十周年悼念置灰 ---------- */
