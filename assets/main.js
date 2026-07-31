@@ -405,6 +405,25 @@ if (hitokotoEl) {
     // 完整更新日志 HTML（与 CHANGELOG.md 保持一致，按日期归档）
     // 完整更新日志（中英文各一份，按日期归档，与 CHANGELOG.md 保持一致）
     const CHANGELOG_DATA = [
+        { d: '2026-08-01', zh: [
+            '【新增】全站社交分享浮动按钮（微博 / QQ / X / Facebook / Telegram / 微信），并附带同尺寸同风格的「复制链接」按钮（中英文标签自适应，剪贴板复制带降级回退）',
+            '【新增】社交分享卡片（Open Graph / Twitter Card）与站点地图 sitemap.xml、robots.txt，利于搜索引擎收录与社交平台预览',
+            '【新增】弹窗键盘焦点陷阱（Tab 限制在弹窗内，无障碍优化）',
+            '【优化】删除唐山大地震悼念置灰一次性死代码',
+            '【修复】更新日志弹窗二次打开内容不显示（打开时重置遮罩状态）',
+            '【修复】英文版页脚无「更新日志」入口（版权段落改为中英文通用匹配）；英文版更新日志内容未随语言切换（补全英文记录）',
+            '【修复】分享按钮品牌图标不显示（补 fa-brands 类以使用 Brands 字体）；统一分享按钮与「回到顶部」按钮视觉风格',
+            '【优化】重写 README，补充近期重大更新与功能说明'
+        ], en: [
+            '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
+            '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
+            '[New] Modal keyboard focus trap (Tab confined inside open modals) for accessibility',
+            '[Opt] Removed the one-time Tangshan Earthquake memorial grayscale dead code',
+            '[Fix] Changelog modal showed no content on second open (reset overlay state on open)',
+            '[Fix] Missing "Changelog" entry in the English footer (now matches the copyright line in both languages); English changelog body was not localized (added English entries)',
+            '[Fix] Social brand icons were invisible (added fa-brands class for the Brands font); unified the share button and back-to-top button styling',
+            '[Opt] Rewrote README with recent updates and feature docs'
+        ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
             '【新增】文章阅读时长；新闻列表分类筛选标签',
