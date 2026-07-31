@@ -4,12 +4,29 @@
 
 站点定位：唐山师范学院吧务组官网（非学校官方），提供快速链接、吧务组公示、新闻动态与意见反馈。
 
+## 近期更新亮点
+
+完整历史见仓库根目录 `CHANGELOG.md`。近期重点：
+
+- **2026-07-31 新生指南（九）-报到当天**：新增中英双语文章，含北院 / 南院校区地图、迎新帐篷、食堂等 5 张配图与防骗提醒。
+- **2026-07-31 阅读体验增强**：文章显示阅读时长；新闻列表增加分类筛选标签；文章内图片点击可灯箱放大（打开上浮淡入、关闭反向弹出）；文章顶部增加面包屑与文末「相关阅读」推荐（已修复英文版误列当前文章）。
+- **2026-07-28 唐山大地震五十周年悼念**：全站自动置灰一天（7/28 00:00–7/29 00:00 自动恢复），顶栏加悼念标语。
+- **2026-07-27 站内搜索引擎上线**：构建期生成索引，支持标题 + 全文检索、命中高亮、中英文各自独立检索。
+- **2026-07-23 全站英文版上线**：所有页面（含新闻详情）均提供 English 版本，顶栏自动注入语言切换。
+- **2026-07-14 网站正式上线**：新闻动态模块可用，首页 / 列表零配置自动同步，可部署至 Cloudflare Pages。
+
 ## 功能特性
 
 - **站内搜索引擎**：顶栏（桌面端导航、移动端顶栏）及首页头部均可打开搜索，跨全站检索标题与正文，结果弹层带高亮片段与可点击跳转，中英文各自独立检索。
 - **双语站点**：所有页面均有中文版与英文版（文件名加 `-en` 后缀），顶栏自动注入「中文 / English」切换按钮。
-- **新闻动态自动同步**：新增 / 修改 `news/` 下文章即自动更新首页与列表页，无需维护列表文件。
+- **新闻动态自动同步**：新增 / 修改 `news/` 下文章即自动更新首页与列表页，无需维护列表文件。现已累计 14 篇（中 / 英各 14 篇）。
 - **上一篇 / 下一篇导航**：文章末尾按日期自动串联，由构建脚本统一管理。
+- **图片灯箱（Lightbox）**：文章内图片点击放大查看，打开上浮淡入、关闭反向弹出，与首页弹窗风格一致。
+- **文章面包屑 + 相关阅读**：文章顶部显示「首页 › 新闻动态 › 标题」面包屑（英文页正确跳转英文对应页）；文末按同分类优先推荐「相关阅读」，并排除当前文章。
+- **文章阅读时长**：文章头部显示预计阅读时长（中文「约 X 分钟阅读」/ 英文「X min read」）。
+- **新闻列表分类筛选**：列表页顶部提供分类标签，一键筛选对应分类文章。
+- **更新日志弹窗**：页脚「版权所有」后新增「更新日志」入口，点击弹窗展示按日期归档的全部更新记录（支持 Esc / 点击遮罩关闭）。
+- **悼念置灰（临时）**：特定纪念日（如唐山大地震五十周年）全站自动置灰并在顶栏显示悼念标语，到点自动恢复。
 - **响应式 + 无外部依赖**：Tailwind 本地预编译、Font Awesome 本地托管，首屏关键 CSS 内联，加载快且稳定。
 - **意见反馈 / 社交账号弹窗**：二维码弹窗、反馈邮箱弹窗等。
 
@@ -19,7 +36,7 @@
 - **Tailwind CSS v3.4.19**：本地 CLI 预编译（`assets/style.css`），不在浏览器里跑 CDN
 - **Font Awesome 6.7.2**：本地托管于 `assets/fontawesome/`，无外部请求
 - **关键 CSS 内联**：首屏关键样式写入 `assets/critical.css` 并内联进每个页面 `<head>`，全量 `style.css` 异步加载，首屏更快
-- **构建期生成搜索索引**：`generate-manifest.js` 扫描全站页面，产出 `assets/search-index.json`（中 / 英两套），前端 `assets/main.js` 加载并检索
+- **构建期生成搜索索引**：`build/generate-manifest.js` 扫描全站页面，产出 `assets/search-index.json`（中 / 英两套），前端 `assets/main.js` 加载并检索
 
 ## 目录结构
 
@@ -29,8 +46,8 @@ news.html / news-en.html                新闻列表页
 about.html / about-en.html              关于我们页面
 dzl.html / dzl-en.html                  自定义「页面不存在」错误页（不进入搜索索引）
 404.html / 404-en.html                  标准 404 错误页（不进入搜索索引）
-news/post-1.html … post-13.html         文章详情页（中文共 13 篇）
-news/post-1-en.html … post-13-en.html   对应英文版（英文共 13 篇）
+news/post-1.html … post-14.html         文章详情页（中文共 14 篇）
+news/post-1-en.html … post-14-en.html   对应英文版（英文共 14 篇）
 build/                                  构建脚本与配置集中目录（不参与线上部署）
   tailwind.config.js      Tailwind 配置（含 safelist，保证动态类不被清除）
   tailwind-input.css      Tailwind 入口样式（被编译为 assets/style.css）
@@ -39,10 +56,11 @@ build/                                  构建脚本与配置集中目录（不�
 news-manifest.json / news-manifest-en.json   新闻清单（自动生成）
 assets/style.css          全站共用样式（构建生成）
 assets/critical.css       首屏关键样式（构建生成）
-assets/main.js            全站共用脚本（导航、弹窗、新闻渲染、站内搜索）
+assets/main.js            全站共用脚本（导航、弹窗、新闻渲染、站内搜索、更新日志）
 assets/news-version.js    清单版本号（自动生成，用于缓存击穿）
 assets/search-index.json  全站搜索索引（构建生成，中/英两套，含内容哈希版本）
 assets/fontawesome/       Font Awesome 本地字体与样式
+CHANGELOG.md              按日期归档的全部更新记录
 ```
 
 > 说明：`news-manifest.json`、`news-manifest-en.json`、`assets/news-version.js`、`assets/style.css`、`assets/critical.css`、`assets/search-index.json` 均由构建脚本自动生成，无需手写，也不要手动修改。
@@ -51,7 +69,7 @@ assets/fontawesome/       Font Awesome 本地字体与样式
 
 搜索是**构建期生成索引 + 浏览器端检索**，不依赖后端、不产生额外请求：
 
-1. **构建期**：`generate-manifest.js` 扫描所有真实站点页面（根目录 `.html` 与 `news/*.html`），对每个页面提取 `<title>` 与 `<main>` 正文（已剔除 `<style>`/`<script>`、顶栏导航、页脚、上一篇 / 下一篇区块、返回按钮等公共骨架，并排除 404 / dzl 等错误页），生成 `assets/search-index.json`，按语言拆分为 `zh` / `en` 两套，并附带内容哈希版本号。
+1. **构建期**：`build/generate-manifest.js` 扫描所有真实站点页面（根目录 `.html` 与 `news/*.html`），对每个页面提取 `<title>` 与 `<main>` 正文（已剔除 `<style>`/`<script>`、顶栏导航、页脚、上一篇 / 下一篇区块、返回按钮等公共骨架，并排除 404 / dzl 等错误页），生成 `assets/search-index.json`，按语言拆分为 `zh` / `en` 两套，并附带内容哈希版本号。
 2. **运行期**：`assets/main.js` 加载一次索引并缓存；在标题 + 正文中做大小写不敏感的子串匹配，标题命中者排序靠前；弹出结果面板，每条显示标题、带 `<mark>` 高亮的关键词片段（命中处前后各约 70 字）与可点击链接。
 3. **语言隔离**：中文页面只搜索中文页面，英文页面只搜索英文页面。
 4. **入口**：首页头部搜索框、顶栏导航搜索图标（桌面端在导航末尾、移动端在汉堡菜单左侧）。按 ESC 或点击遮罩关闭。
@@ -93,7 +111,7 @@ python3 -m http.server 8080
 ## 新闻动态（自动同步，无需维护列表）
 
 每篇文章是一个独立 HTML 文件（`news/post-x.html`），文件顶部有一段 `#articleMeta` 元信息（标题 / 日期 / 分类 / 作者 / 摘要）。
-`generate-manifest.js` 在构建时扫描 `news/` 目录、提取元信息、生成 `news-manifest.json`（及英文版）；首页与新闻列表页读取该清单自动渲染卡片。
+`build/generate-manifest.js` 在构建时扫描 `news/` 目录、提取元信息、生成 `news-manifest.json`（及英文版）；首页与新闻列表页读取该清单自动渲染卡片。
 因此新增 / 修改文章**只需动 `news/` 下的 HTML 文件，不需要改任何列表文件**。
 
 ### 上一篇 / 下一篇导航（自动生成）
@@ -103,7 +121,7 @@ python3 -m http.server 8080
 
 ### 如何新增一篇新闻
 
-1. 复制 `news/post-1.html` 为一个新文件，例如 `news/post-14.html`（同时建议提供英文版 `news/post-14-en.html`）。
+1. 复制 `news/post-1.html` 为一个新文件，例如 `news/post-15.html`（同时建议提供英文版 `news/post-15-en.html`）。
 2. **只改两处，其余原样保留**：
    - **文件顶部 `#articleMeta` 元信息**（必须保留整个 `<script id="articleMeta">` 块，仅替换里面的字段值）：
      ```html
