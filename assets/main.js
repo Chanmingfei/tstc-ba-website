@@ -484,10 +484,14 @@ if (hitokotoEl) {
     }).join('');
 
     function initChangelog() {
-        // 1) 在页脚「版权所有」一句后注入入口
+        // 1) 在页脚版权声明一句后注入入口（中英文页通用：匹配 © / 版权所有 / All Rights Reserved）
         let copyP = null;
+        const isCopy = function (t) {
+            return t.indexOf('©') !== -1 || t.indexOf('版权所有') !== -1 ||
+                /all rights reserved/i.test(t);
+        };
         document.querySelectorAll('footer p').forEach(function (p) {
-            if (p.textContent.indexOf('版权所有') !== -1) copyP = p;
+            if (isCopy(p.textContent)) copyP = p;
         });
         if (!copyP) return;
         const sep = document.createElement('span');
@@ -497,7 +501,7 @@ if (hitokotoEl) {
         link.href = 'javascript:void(0)';
         link.id = 'changelogOpen';
         link.className = 'underline hover:text-white transition-colors';
-        link.textContent = '更新日志';
+        link.textContent = isEn ? 'Changelog' : '更新日志';
         copyP.appendChild(sep);
         copyP.appendChild(link);
 
