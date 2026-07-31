@@ -216,6 +216,13 @@ body {
     max-width: 100%;
 }
 
+/* 移动端文章页：减小白色卡片内边距，避免内容被挤得太窄 */
+@media (max-width: 768px) {
+    main article.max-w-3xl {
+        padding: 1.25rem;
+    }
+}
+
 /* ---------- 返回顶部按钮 ---------- */
 #backToTop {
     position: fixed;

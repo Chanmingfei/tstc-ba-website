@@ -641,15 +641,17 @@ if (hitokotoEl) {
         var meta = {};
         try { meta = JSON.parse(metaEl.textContent); } catch (e) { /* 忽略解析错误 */ }
 
-        // 1) 面包屑：首页 › 新闻动态 › 标题
+        // 1) 面包屑：首页 › 新闻动态 › 标题（英文页跳转英文对应页）
         var crumb = document.querySelector('header nav[aria-label="breadcrumb"]');
         if (crumb && meta.title) {
             var home = isEn ? 'Home' : '首页';
             var news = isEn ? 'News' : '新闻动态';
+            var homeLink = basePath + (isEn ? 'index-en.html' : 'index.html');
+            var newsLink = basePath + (isEn ? 'news-en.html' : 'news.html');
             crumb.innerHTML =
-                '<a href="' + basePath + 'index.html" class="hover:underline">' + home + '</a>' +
+                '<a href="' + homeLink + '" class="hover:underline">' + home + '</a>' +
                 '<span class="mx-2">/</span>' +
-                '<a href="' + basePath + 'news.html" class="hover:underline">' + news + '</a>' +
+                '<a href="' + newsLink + '" class="hover:underline">' + news + '</a>' +
                 '<span class="mx-2">/</span>' +
                 '<span>' + escapeHtml(meta.title) + '</span>';
         }
@@ -669,6 +671,7 @@ if (hitokotoEl) {
             if (userIcon) {
                 var metaDiv = userIcon.closest('.flex.items-center');
                 if (metaDiv) {
+                    metaDiv.classList.add('flex-wrap', 'gap-y-2');
                     var rt = document.createElement('span');
                     rt.className = 'ml-3';
                     rt.innerHTML = '<i class="fa fa-clock mr-1"></i>' +
@@ -745,8 +748,10 @@ if (hitokotoEl) {
             grid.className = 'grid grid-cols-1 sm:grid-cols-3 gap-4';
             related.forEach(function (item) {
                 var icon = CATEGORY_ICON[item.category] || 'fa-newspaper';
-                var cover = item.cover
-                    ? '<img src="' + item.cover + '" alt="" loading="lazy" class="w-full h-32 object-cover">'
+                // 文章页位于 news/ 子目录，封面路径需加上 ../ 才能正确指向根目录 assets/
+                var coverPath = item.cover ? (basePath + item.cover) : '';
+                var cover = coverPath
+                    ? '<img src="' + coverPath + '" alt="" loading="lazy" class="w-full h-32 object-cover">'
                     : '<div class="w-full h-32 bg-gradient-primary flex items-center justify-center"><i class="fa ' + icon + ' text-white/80 text-3xl"></i></div>';
                 var card = document.createElement('a');
                 card.href = item.slug + '.html';
@@ -754,7 +759,7 @@ if (hitokotoEl) {
                 card.innerHTML = cover +
                     '<div class="p-4">' +
                         '<div class="flex items-center text-xs text-gray-500 mb-2"><span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">' + escapeHtml(item.category) + '</span><span class="ml-2"><i class="fa fa-calendar mr-1"></i>' + item.date + '</span></div>' +
-                        '<h3 class="text-base font-semibold text-gray-800 leading-snug group-hover:text-primary transition-colors">' + escapeHtml(item.title) + '</h3>' +
+                        '<h3 class="text-base font-semibold text-gray-800 leading-snug line-clamp-2 group-hover:text-primary transition-colors">' + escapeHtml(item.title) + '</h3>' +
                     '</div>';
                 grid.appendChild(card);
             });
