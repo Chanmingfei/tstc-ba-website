@@ -688,7 +688,7 @@ if (hitokotoEl) {
         buildRelated(meta);
     })();
 
-    // 灯箱：点击文章内图片查看大图，点击空白 / 关闭按钮 / Esc 退出
+    // 灯箱：点击文章内图片查看大图，入场带淡入 + 弹入动画（与首页弹窗一致）
     function initLightbox(scope) {
         if (!scope) return;
         var imgs = Array.prototype.slice.call(scope.querySelectorAll('img'));
@@ -697,12 +697,16 @@ if (hitokotoEl) {
         if (!box) {
             box = document.createElement('div');
             box.id = 'lightbox';
-            box.className = 'fixed inset-0 z-[70] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out';
+            box.className = 'fixed inset-0 z-[70] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
             box.innerHTML =
                 '<button class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="关闭"><i class="fa fa-times text-xl"></i></button>' +
                 '<img class="max-h-[90vh] max-w-[94vw] rounded-lg shadow-2xl cursor-auto" alt="">';
             document.body.appendChild(box);
-            var close = function () { box.classList.add('hidden'); box.classList.remove('flex'); };
+            var close = function () {
+                box.classList.add('opacity-0');
+                box.classList.remove('flex');
+                setTimeout(function () { box.classList.add('hidden'); }, 200);
+            };
             box.addEventListener('click', function (e) {
                 if (e.target === box || e.target.closest('button')) close();
             });
@@ -717,6 +721,12 @@ if (hitokotoEl) {
                 boxImg.alt = img.alt || '';
                 box.classList.remove('hidden');
                 box.classList.add('flex');
+                void box.offsetWidth; // 重排，确保从 opacity:0 起始淡入
+                box.classList.remove('opacity-0');
+                // 图片弹入（与首页弹窗同一套动画）
+                boxImg.classList.remove('animate-search-pop');
+                void boxImg.offsetWidth;
+                boxImg.classList.add('animate-search-pop');
             });
         });
     }
