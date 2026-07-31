@@ -741,15 +741,17 @@ if (hitokotoEl) {
     function buildRelated(meta) {
         var article = document.querySelector('main article');
         if (!article) return;
-        var current = meta.slug ||
-            window.location.pathname.split('/').pop().replace(/\.html$/, '').replace(/-en$/, '');
+        // 归一化 slug：中英文章统一去掉 -en 后缀再比较，确保英文版也能正确排除当前文章
+        function normSlug(s) { return (s || '').replace(/-en$/, ''); }
+        var current = normSlug(meta.slug) ||
+            normSlug(window.location.pathname.split('/').pop().replace(/\.html$/, ''));
         function render(items) {
             if (!items || !items.length) return;
             var sorted = items.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-            var same = sorted.filter(function (x) { return x.category === meta.category && x.slug !== current; });
+            var same = sorted.filter(function (x) { return x.category === meta.category && normSlug(x.slug) !== current; });
             var pool = same;
             if (pool.length < 3) {
-                var others = sorted.filter(function (x) { return x.category !== meta.category && x.slug !== current; });
+                var others = sorted.filter(function (x) { return x.category !== meta.category && normSlug(x.slug) !== current; });
                 pool = same.concat(others);
             }
             var related = pool.slice(0, 3);
