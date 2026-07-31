@@ -623,6 +623,138 @@ if (hitokotoEl) {
         link.addEventListener('click', function (e) { e.preventDefault(); openChangelogModal(); });
     }
 
+    // 社交分享浮动按钮（全站通用）+ 复制链接
+    function initShareWidget() {
+        // 自包含样式，避免被 Tailwind 清除；所有按钮统一圆角、同尺寸、同风格
+        if (!document.getElementById('shareWidgetStyle')) {
+            const css = document.createElement('style');
+            css.id = 'shareWidgetStyle';
+            css.textContent =
+                '#shareFab{position:fixed;left:16px;bottom:16px;z-index:40;display:flex;flex-direction:column;align-items:center;gap:10px}' +
+                '#shareFab .share-toggle{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#0465bc,#2575fc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease}' +
+                '#shareFab .share-toggle:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(0,0,0,.24)}' +
+                '#shareFab .share-panel{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:2px;transform-origin:bottom center}' +
+                '#shareFab .share-panel.hidden{display:none}' +
+                '#shareFab .share-panel:not(.hidden){animation:sharePop .18s ease}' +
+                '@keyframes sharePop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}' +
+                '#shareFab .share-btn{width:44px;height:44px;border-radius:50%;background:#fff;color:#555;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.14);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease;text-decoration:none}' +
+                '#shareFab .share-btn:hover{transform:scale(1.1);box-shadow:0 6px 16px rgba(0,0,0,.2)}' +
+                '#shareToast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;font-size:14px;padding:9px 16px;border-radius:999px;z-index:60;opacity:0;transition:opacity .2s ease;pointer-events:none}' +
+                '#shareToast.show{opacity:1}';
+            document.head.appendChild(css);
+        }
+
+        // 已开放 Web 分享接口的入口；微信无网页分享接口，移动端走系统分享、桌面端退化为复制链接
+        const SHARE_CFG = [
+            { key: 'weibo', label: isEn ? 'Share to Weibo' : '分享到微博', icon: 'fa-weibo', color: '#e6162d',
+              url: function (u, t) { return 'https://service.weibo.com/share/share.php?url=' + enc(u) + '&title=' + enc(t); } },
+            { key: 'qq', label: isEn ? 'Share to QQ' : '分享到 QQ', icon: 'fa-qq', color: '#12b7f5',
+              url: function (u, t, p, d) { return 'https://connect.qq.com/widget/shareqq/index.html?url=' + enc(u) + '&title=' + enc(t) + '&pics=' + enc(p) + '&summary=' + enc(d); } },
+            { key: 'twitter', label: isEn ? 'Share on X' : '分享到 X', icon: 'fa-x-twitter', color: '#000000',
+              url: function (u, t) { return 'https://twitter.com/intent/tweet?url=' + enc(u) + '&text=' + enc(t); } },
+            { key: 'facebook', label: isEn ? 'Share on Facebook' : '分享到 Facebook', icon: 'fa-facebook', color: '#1877f2',
+              url: function (u) { return 'https://www.facebook.com/sharer/sharer.php?u=' + enc(u); } },
+            { key: 'telegram', label: isEn ? 'Share on Telegram' : '分享到 Telegram', icon: 'fa-telegram', color: '#229ed9',
+              url: function (u, t) { return 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t); } },
+            { key: 'wechat', label: isEn ? 'Share via WeChat' : '微信分享', icon: 'fa-weixin', color: '#07c160', native: true }
+        ];
+
+        function enc(s) { return encodeURIComponent(s || ''); }
+        function pageUrl() { return location.href; }
+        function pageTitle() { return document.title || ''; }
+        function pageDesc() { const m = document.querySelector('meta[name="description"]'); return m ? m.getAttribute('content') : ''; }
+        function pagePic() { const m = document.querySelector('meta[property="og:image"]'); return m ? m.getAttribute('content') : ''; }
+
+        const fab = document.createElement('div');
+        fab.id = 'shareFab';
+        const panel = document.createElement('div');
+        panel.id = 'sharePanel';
+        panel.className = 'share-panel hidden';
+
+        function makeBtn(cfg) {
+            const b = document.createElement('button');
+            b.className = 'share-btn';
+            b.setAttribute('aria-label', cfg.label);
+            b.title = cfg.label;
+            b.style.color = cfg.color;
+            b.innerHTML = '<i class="fa ' + cfg.icon + '"></i>';
+            b.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const u = pageUrl(), t = pageTitle(), p = pagePic(), d = pageDesc();
+                if (cfg.native && navigator.share) {
+                    navigator.share({ title: t, text: t, url: u }).catch(function () {});
+                    return;
+                }
+                if (cfg.key === 'wechat') {
+                    copyLink();
+                    showToast(isEn ? 'Link copied — paste it into WeChat' : '链接已复制，可粘贴到微信分享');
+                    return;
+                }
+                window.open(cfg.url(u, t, p, d), '_blank', 'noopener,noreferrer');
+            });
+            return b;
+        }
+        SHARE_CFG.forEach(function (c) { panel.appendChild(makeBtn(c)); });
+
+        // 复制链接按钮（与分享按钮同尺寸、同风格）
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'share-btn';
+        copyBtn.setAttribute('aria-label', isEn ? 'Copy link' : '复制链接');
+        copyBtn.title = isEn ? 'Copy link' : '复制链接';
+        copyBtn.style.color = '#6b7280';
+        copyBtn.innerHTML = '<i class="fa fa-link"></i>';
+        copyBtn.addEventListener('click', function (e) { e.stopPropagation(); copyLink(); });
+        panel.appendChild(copyBtn);
+
+        const toggle = document.createElement('button');
+        toggle.className = 'share-toggle';
+        toggle.id = 'shareToggle';
+        toggle.setAttribute('aria-label', isEn ? 'Share' : '分享');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.innerHTML = '<i class="fa fa-share-alt"></i>';
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const hidden = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden');
+            toggle.setAttribute('aria-expanded', String(!hidden));
+        });
+
+        fab.appendChild(panel);
+        fab.appendChild(toggle);
+        document.body.appendChild(fab);
+
+        // 点击空白处关闭分享面板
+        document.addEventListener('click', function (e) {
+            if (!fab.contains(e.target)) {
+                panel.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        function copyLink() {
+            const u = pageUrl();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(u).then(function () { showToast(isEn ? 'Link copied' : '链接已复制'); }, function () { fallbackCopy(u); });
+            } else { fallbackCopy(u); }
+        }
+        function fallbackCopy(u) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = u; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                showToast(isEn ? 'Link copied' : '链接已复制');
+            } catch (err) { showToast(isEn ? 'Copy failed' : '复制失败'); }
+        }
+        let toastTimer = null;
+        function showToast(msg) {
+            let toast = document.getElementById('shareToast');
+            if (!toast) { toast = document.createElement('div'); toast.id = 'shareToast'; document.body.appendChild(toast); }
+            toast.textContent = msg; toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+        }
+    }
+
     // 三种占位：空状态 / 加载中 / 使用提示
     function searchEmpty() {
         return '<div class="flex flex-col items-center justify-center py-12 text-center">' +
@@ -1055,4 +1187,6 @@ if (hitokotoEl) {
 
     // 更新日志：页脚入口 + 弹窗
     initChangelog();
+    // 全站社交分享浮动按钮 + 复制链接
+    initShareWidget();
 });
