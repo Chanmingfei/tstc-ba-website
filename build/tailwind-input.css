@@ -244,15 +244,26 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    border: none;
+    background: linear-gradient(135deg, #0465bc, #2575fc);
+    color: #fff;
+    font-size: 19px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.3s ease, visibility 0.3s ease;
     z-index: 40;
+    cursor: pointer;
 }
 
 #backToTop.show {
     opacity: 1;
     visibility: visible;
+}
+
+#backToTop:hover {
+    transform: scale(1.06);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
 
 /* ---------- 移动端菜单与滚动渐入动画 ---------- */
