@@ -646,17 +646,17 @@ if (hitokotoEl) {
 
         // 已开放 Web 分享接口的入口；微信无网页分享接口，移动端走系统分享、桌面端退化为复制链接
         const SHARE_CFG = [
-            { key: 'weibo', label: isEn ? 'Share to Weibo' : '分享到微博', icon: 'fa-weibo', color: '#e6162d',
+            { key: 'weibo', label: isEn ? 'Share to Weibo' : '分享到微博', icon: 'fa-brands fa-weibo', color: '#e6162d',
               url: function (u, t) { return 'https://service.weibo.com/share/share.php?url=' + enc(u) + '&title=' + enc(t); } },
-            { key: 'qq', label: isEn ? 'Share to QQ' : '分享到 QQ', icon: 'fa-qq', color: '#12b7f5',
+            { key: 'qq', label: isEn ? 'Share to QQ' : '分享到 QQ', icon: 'fa-brands fa-qq', color: '#12b7f5',
               url: function (u, t, p, d) { return 'https://connect.qq.com/widget/shareqq/index.html?url=' + enc(u) + '&title=' + enc(t) + '&pics=' + enc(p) + '&summary=' + enc(d); } },
-            { key: 'twitter', label: isEn ? 'Share on X' : '分享到 X', icon: 'fa-x-twitter', color: '#000000',
+            { key: 'twitter', label: isEn ? 'Share on X' : '分享到 X', icon: 'fa-brands fa-x-twitter', color: '#000000',
               url: function (u, t) { return 'https://twitter.com/intent/tweet?url=' + enc(u) + '&text=' + enc(t); } },
-            { key: 'facebook', label: isEn ? 'Share on Facebook' : '分享到 Facebook', icon: 'fa-facebook', color: '#1877f2',
+            { key: 'facebook', label: isEn ? 'Share on Facebook' : '分享到 Facebook', icon: 'fa-brands fa-facebook', color: '#1877f2',
               url: function (u) { return 'https://www.facebook.com/sharer/sharer.php?u=' + enc(u); } },
-            { key: 'telegram', label: isEn ? 'Share on Telegram' : '分享到 Telegram', icon: 'fa-telegram', color: '#229ed9',
+            { key: 'telegram', label: isEn ? 'Share on Telegram' : '分享到 Telegram', icon: 'fa-brands fa-telegram', color: '#229ed9',
               url: function (u, t) { return 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t); } },
-            { key: 'wechat', label: isEn ? 'Share via WeChat' : '微信分享', icon: 'fa-weixin', color: '#07c160', native: true }
+            { key: 'wechat', label: isEn ? 'Share via WeChat' : '微信分享', icon: 'fa-brands fa-weixin', color: '#07c160', native: true }
         ];
 
         function enc(s) { return encodeURIComponent(s || ''); }
@@ -711,7 +711,7 @@ if (hitokotoEl) {
         toggle.id = 'shareToggle';
         toggle.setAttribute('aria-label', isEn ? 'Share' : '分享');
         toggle.setAttribute('aria-expanded', 'false');
-        toggle.innerHTML = '<i class="fa fa-share-alt"></i>';
+        toggle.innerHTML = '<i class="fa fa-share"></i>';
         toggle.addEventListener('click', function (e) {
             e.stopPropagation();
             const hidden = panel.classList.contains('hidden');
