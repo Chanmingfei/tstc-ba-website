@@ -169,6 +169,19 @@ function fileHash(p) {
 const styleHash = fileHash(path.join(root, 'assets', 'style.css'));
 const faHash = fileHash(path.join(root, 'assets', 'fontawesome', 'fa.min.css'));
 
+// ---- 社交分享卡片（Open Graph / Twitter Card）与站点地图所需基础配置 ----
+// SITE_BASE：站点绝对地址前缀；部署到自定义域名时可用环境变量传入，例如
+//   SITE_BASE=https://your-domain.com npm run build
+// 留空时 og:url / og:image / sitemap 使用站点根相对路径（同源下可被绝大多数解析器接受）。
+const SITE_BASE = (process.env.SITE_BASE || '').replace(/\/+$/, '');
+const DEFAULT_OG_IMAGE = '/assets/images/bar-logo.jpg';
+function escAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+// slug -> 封面图（来自文章元信息，供 og:image 使用）
+const coverMap = {};
+for (const it of items) { if (it.cover) coverMap[it.slug] = it.cover; }
+
 function walkHtml(dir) {
     const out = [];
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -268,6 +281,40 @@ for (const file of htmlFiles) {
     const FAVICON_LINK = '<link rel="icon" type="image/jpeg" href="/assets/images/bar-logo.jpg">';
     html = html.replace(/<link[^>]*rel=["']icon["'][^>]*>/g, '');  // 幂等：先清旧
     html = html.replace(/(<\/head>)/, '    ' + FAVICON_LINK + '\n$1');  // 再注入
+
+    // 2d) 注入社交分享卡片（Open Graph / Twitter Card），错误页不注入
+    {
+        const fb2 = path.basename(file).replace(/\.html$/, '');
+        if (fb2 !== '404' && fb2 !== '404-en' && fb2 !== 'dzl' && fb2 !== 'dzl-en') {
+            const rel2 = path.relative(root, file).split(path.sep);
+            const titleM = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+            const title = titleM ? titleM[1].replace(/\s+/g, ' ').trim() : '';
+            const descM = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i);
+            const desc = descM ? descM[1] : '';
+            let relUrl = '/' + rel2.join('/');
+            if (relUrl === '/index.html') relUrl = '/';
+            const url = SITE_BASE + relUrl;
+            let img = DEFAULT_OG_IMAGE;
+            if (coverMap[fb2]) img = '/' + String(coverMap[fb2]).replace(/^\/+/, '');
+            img = SITE_BASE + img;
+            const ogType = /^post-\d+(-en)?$/.test(fb2) ? 'article' : 'website';
+            const og =
+                '<!-- AUTO_OG_START -->\n' +
+                '<meta property="og:site_name" content="TSNU Bar">\n' +
+                '<meta property="og:type" content="' + ogType + '">\n' +
+                '<meta property="og:title" content="' + escAttr(title) + '">\n' +
+                '<meta property="og:description" content="' + escAttr(desc) + '">\n' +
+                '<meta property="og:url" content="' + escAttr(url) + '">\n' +
+                '<meta property="og:image" content="' + escAttr(img) + '">\n' +
+                '<meta name="twitter:card" content="summary_large_image">\n' +
+                '<meta name="twitter:title" content="' + escAttr(title) + '">\n' +
+                '<meta name="twitter:description" content="' + escAttr(desc) + '">\n' +
+                '<meta name="twitter:image" content="' + escAttr(img) + '">\n' +
+                '<!-- AUTO_OG_END -->';
+            html = html.replace(/<!--\s*AUTO_OG_START\s*-->[\s\S]*?<!--\s*AUTO_OG_END\s*-->/g, '');
+            html = html.replace(/(<\/head>)/, '    ' + og + '\n$1');
+        }
+    }
     // 3) 仅在真正渲染新闻列表的页面内联数据（放在 main.js 之前，确保渲染前已就绪）
     //    按页面语言注入对应清单：英文页用 window.__NEWS_EN__，中文页用 window.__NEWS__
         if (/id="newsGrid"|id="newsPreview"/.test(html)) {
@@ -314,3 +361,28 @@ for (const file of htmlFiles) {
     }
 }
 console.log('已更新 ' + updated + ' 个 HTML（main.js 版本=' + mainJsHash + '，含新闻列表的页面已内联数据）');
+
+// ---- 生成 sitemap.xml 与 robots.txt（供搜索引擎收录） ----
+{
+    const today = new Date().toISOString().slice(0, 10);
+    const urls = [];
+    for (const file of htmlFiles) {
+        const r = path.relative(root, file).split(path.sep);
+        const inRoot = r.length === 1;
+        const inNews = r.length === 2 && r[0] === 'news';
+        if (!inRoot && !inNews) continue;
+        const fb3 = path.basename(file).replace(/\.html$/, '');
+        if (fb3 === '404' || fb3 === '404-en' || fb3 === 'dzl' || fb3 === 'dzl-en') continue;
+        let u = '/' + r.join('/');
+        if (u === '/index.html') u = '/';
+        urls.push(SITE_BASE + u);
+    }
+    const sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+        urls.map(function (u) { return '  <url><loc>' + escAttr(u) + '</loc><lastmod>' + today + '</lastmod></url>'; }).join('\n') +
+        '\n</urlset>\n';
+    fs.writeFileSync(path.join(root, 'sitemap.xml'), sitemap, 'utf8');
+    const robots = 'User-agent: *\nAllow: /\nSitemap: ' + (SITE_BASE ? SITE_BASE + '/sitemap.xml' : '/sitemap.xml') + '\n';
+    fs.writeFileSync(path.join(root, 'robots.txt'), robots, 'utf8');
+    console.log('已生成 sitemap.xml（' + urls.length + ' 条）/ robots.txt');
+}

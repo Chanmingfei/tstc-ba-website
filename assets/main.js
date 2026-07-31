@@ -599,6 +599,8 @@ if (hitokotoEl) {
         function openChangelogModal() {
             const modal = ensureModal();
             modal.classList.remove('hidden');
+            const closeBtn = document.getElementById('changelogClose');
+            if (closeBtn) closeBtn.focus();
             const box = modal.querySelector('div');
             box.classList.remove('opacity-0', 'scale-95');
             box.classList.remove('animate-search-pop');
@@ -1022,44 +1024,35 @@ if (hitokotoEl) {
         });
     }
 
-    /* ---------- 唐山大地震五十周年悼念标语 ---------- */
-    // 7月28日 00:00 至 7月29日 00:00（北京时间）在顶栏与标题之间显示，届时自动消失。
-    (function insertMemorialBanner() {
-        try {
-            const start = new Date('2026-07-28T00:00:00+08:00').getTime();
-            const end = new Date('2026-07-29T00:00:00+08:00').getTime();
-            if (Date.now() < start || Date.now() >= end) return;
-            const header = document.querySelector('body > header');
-            const container = header && header.querySelector('.container');
-            if (!header || !container) return;
-            const text = isEn ? 'We will never forget the victims of the Tangshan Earthquake.' : '唐山大地震罹难同胞永垂不朽！';
-            const banner = document.createElement('div');
-            banner.className = 'relative z-10 text-center text-[clamp(1rem,2vw,1.2rem)] font-bold text-white animate-fade-in pt-4 pb-2';
-            banner.textContent = text;
-            header.insertBefore(banner, container);
-        } catch (e) { /* 忽略，不影响正常浏览 */ }
+    // 弹窗键盘焦点陷阱：任一弹窗打开时，Tab / Shift+Tab 被限制在弹窗内，避免焦点落到背后页面
+    (function installFocusTrap() {
+        const MODAL_IDS = ['searchModal', 'changelogModal', 'qrModal', 'lightbox'];
+        const SEL = 'a[href],button:not([disabled]),textarea,input:not([disabled]),select,[tabindex]:not([tabindex="-1"])';
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            let open = null;
+            for (const id of MODAL_IDS) {
+                const m = document.getElementById(id);
+                if (m && !m.classList.contains('hidden')) { open = m; break; }
+            }
+            if (!open) return;
+            const nodes = Array.prototype.filter.call(open.querySelectorAll(SEL), function (el) {
+                return el.offsetParent !== null;
+            });
+            if (!nodes.length) return;
+            const first = nodes[0], last = nodes[nodes.length - 1];
+            if (e.shiftKey) {
+                if (document.activeElement === first || !open.contains(document.activeElement)) {
+                    e.preventDefault(); last.focus();
+                }
+            } else {
+                if (document.activeElement === last || !open.contains(document.activeElement)) {
+                    e.preventDefault(); first.focus();
+                }
+            }
+        });
     })();
 
     // 更新日志：页脚入口 + 弹窗
     initChangelog();
 });
-
-/* ---------- 唐山大地震五十周年悼念置灰 ---------- */
-// 7月28日 00:00 至 7月29日 00:00（北京时间）全站置灰以志哀，届时自动恢复，无需重新部署。
-// 采用 backdrop-filter 遮罩：只对背景内容去色，不影响固定导航 / 弹窗的定位与点击。
-(function applyMourningGray() {
-    try {
-        const start = new Date('2026-07-28T00:00:00+08:00').getTime();
-        const end = new Date('2026-07-29T00:00:00+08:00').getTime();
-        const now = Date.now();
-        if (now < start || now >= end) return;
-        const overlay = document.createElement('div');
-        overlay.id = 'mourningGray';
-        overlay.setAttribute('aria-hidden', 'true');
-        overlay.style.cssText =
-            'position:fixed;inset:0;z-index:9999;pointer-events:none;' +
-            'background:rgba(110,110,110,0.06);' +
-            'backdrop-filter:grayscale(1);-webkit-backdrop-filter:grayscale(1);';
-        document.body.appendChild(overlay);
-    } catch (e) { /* 出错也不阻断正常浏览 */ }
-})();
