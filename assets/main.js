@@ -403,85 +403,146 @@ if (hitokotoEl) {
 
     /* ---------- 更新日志弹窗 ---------- */
     // 完整更新日志 HTML（与 CHANGELOG.md 保持一致，按日期归档）
-    const CHANGELOG_HTML = [
-        { d: '2026-07-31', items: [
+    // 完整更新日志（中英文各一份，按日期归档，与 CHANGELOG.md 保持一致）
+    const CHANGELOG_DATA = [
+        { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
             '【新增】文章阅读时长；新闻列表分类筛选标签',
             '【新增】图片灯箱（打开上浮淡入、关闭反向弹出）；文章面包屑(首页›新闻›标题) + 相关阅读',
             '【修复】英文版相关阅读误列当前文章；移动端排版与封面路径；英文面包屑跳转；指南九地图改 PNG 显示'
+        ], en: [
+            '[New] Freshman Guide (9) – Reporting Day (bilingual, 5 illustrations)',
+            '[New] Article reading time; category filter tabs on the news list',
+            '[New] Image lightbox (fade-in on open, reverse pop on close); article breadcrumb (Home › News › Title) + Related Reading',
+            '[Fix] English Related Reading listed the current article; mobile layout & cover paths; English breadcrumb links; Guide 9 maps switched to PNG'
         ]},
-        { d: '2026-07-30', items: [
+        { d: '2026-07-30', zh: [
             '【修复】文章详情页关闭滚动渐入，避免慢网环境长时间空白',
             '【修复】移动端菜单改为自顶栏下沿展开并去除模糊，解决遮挡顶栏与卡顿'
+        ], en: [
+            '[Fix] Disabled scroll reveal on article pages to avoid long blank screens on slow networks',
+            '[Fix] Mobile menu now drops down from the top bar without blur, fixing top-bar overlap and lag'
         ]},
-        { d: '2026-07-29', items: [
+        { d: '2026-07-29', zh: [
             '【新增/优化】滚动渐入、移动端菜单下滑淡入动画',
             '【优化】二维码/反馈/搜索弹窗风格统一；搜索弹窗重设计与动画；标题命中高亮',
             '【优化】新闻卡片封面自动取正文首图（排除二维码/品牌图）'
+        ], en: [
+            '[New/Opt] Scroll reveal animation; mobile menu slide-down fade-in animation',
+            '[Opt] Unified QR / feedback / search modal styling; redesigned search modal with animation; highlighted matched keywords in titles',
+            '[Opt] News card covers now auto-pick the first in-article image (excluding QR / brand images)'
         ]},
-        { d: '2026-07-28', items: [
+        { d: '2026-07-28', zh: [
             '【新增】唐山大地震五十周年悼念置灰（7/28 00:00–7/29 00:00 自动恢复）',
             '【新增】顶栏与标题间增加悼念标语（7/29 00:00 自动消失）',
             '【优化】合规审查：图片懒加载、英文分类图标、新增文章指引'
+        ], en: [
+            '[New] Tangshan Earthquake 50th memorial grayscale (auto-restored 7/28 00:00–7/29 00:00)',
+            '[New] Memorial banner between the top bar and title (auto-hidden 7/29 00:00)',
+            '[Opt] Compliance review: lazy-loaded images, English category icons, new-article guidance'
         ]},
-        { d: '2026-07-27', items: [
+        { d: '2026-07-27', zh: [
             '【新增】新生指南（八）-公共浴室和校园一卡通（中英双语，8 张流程截图）',
             '【重大】新增站内搜索引擎：构建期生成索引，标题+全文检索，结果弹层可跳转；顶栏加入搜索入口',
             '【优化】全站英文专有名词统一、地址笔误修正、校园电话卡与校园一卡通区分；统一「特别提醒」为浅蓝模块'
+        ], en: [
+            '[New] Freshman Guide (8) – Public Bathrooms & Campus Card (bilingual, 8 walkthrough screenshots)',
+            '[Major] On-site search engine: build-time index, title + full-text search, clickable result panel; search entry added to top bar',
+            '[Opt] Unified English proper nouns, fixed address typos, distinguished campus phone card from campus card; standardized "Special Notice" as a light-blue module'
         ]},
-        { d: '2026-07-24', items: [
+        { d: '2026-07-24', zh: [
             '【新增】新生指南（七）-大学道校区如何找教室（中英文）',
             '【优化】统一英文版标题层级、品牌名、导航翻译（News / Mod Team）；修复配图裁剪与桌面端限宽'
+        ], en: [
+            '[New] Freshman Guide (7) – Finding Classrooms on Daxuedao Campus (bilingual)',
+            '[Opt] Unified English heading hierarchy, brand name, navigation translations (News / Mod Team); fixed image cropping and desktop max-width'
         ]},
-        { d: '2026-07-23', items: [
+        { d: '2026-07-23', zh: [
             '【重大】全站英文版上线（English 切换 + 翻译全部页面）',
             '【新增】新生指南（六）-大学道校区如何取快递',
             '【优化】图标本地化；统一并列图片高度；构建脚本整理至 build/ 目录'
+        ], en: [
+            '[Major] Full English site launched (English toggle + all pages translated)',
+            '[New] Freshman Guide (6) – Picking Up Packages on Daxuedao Campus',
+            '[Opt] Localized icons; unified side-by-side image heights; moved build scripts into build/ directory'
         ]},
-        { d: '2026-07-22', items: [
+        { d: '2026-07-22', zh: [
             '【新增】新生指南（五）-交通出行相关（post-10）',
             '【优化】吧徽与背景图本地化，全站图床图片改为本地资源',
             '【修复】404 页资源改根绝对路径，修复二级子路径下素材失效'
+        ], en: [
+            '[New] Freshman Guide (5) – Transportation & Travel (post-10)',
+            '[Opt] Localized mod crest and background images; replaced all external image-host images with local assets',
+            '[Fix] 404 page assets switched to root-absolute paths; fixed broken assets under second-level subpaths'
         ]},
-        { d: '2026-07-21', items: [
+        { d: '2026-07-21', zh: [
             '【优化】新生指南(3/6/7/8/9) 文末统一添加 QQ 迎新群二维码；电脑端图片限宽',
             '【优化】首页联系我们二维码全部本地化（QQ/微信/小红书）'
+        ], en: [
+            '[Opt] Added QQ new-student-group QR codes to the end of Guides (3/6/7/8/9); capped image width on desktop',
+            '[Opt] Localized all "Contact Us" QR codes on the homepage (QQ / WeChat / Xiaohongshu)'
         ]},
-        { d: '2026-07-20', items: [
+        { d: '2026-07-20', zh: [
             '【新增】新生指南（四）-宿舍生活相关（post-9）',
             '【优化】全站注入 favicon（吧徽图标，浏览器标签页显示）'
+        ], en: [
+            '[New] Freshman Guide (4) – Dorm Life (post-9)',
+            '[Opt] Injected favicon site-wide (mod crest icon shown in browser tabs)'
         ]},
-        { d: '2026-07-19', items: [
+        { d: '2026-07-19', zh: [
             '【优化】重新编号文章(post-1~post-12)；上/下一篇导航扩展到全部文章按日期倒序串联',
             '【新增】新生指南（三）-体育课选课；post-7/8 增加食堂/商场、体育课评分卡片'
+        ], en: [
+            '[Opt] Renumbered articles (post-1~post-12); expanded Prev/Next navigation to chain all articles by date descending',
+            '[New] Freshman Guide (3) – PE Course Selection; added cafeteria/mall and PE scoring cards to post-7/8'
         ]},
-        { d: '2026-07-18', items: [
+        { d: '2026-07-18', zh: [
             '【性能】内联文章数据到页面 HTML，去掉额外清单请求，列表刷新秒开',
             '【性能】移除阻塞渲染的外部 CDN，改本地预编译 CSS + 自托管 Font Awesome；内联首屏关键 CSS',
             '【修复】预编译 CSS 缺失工具类(safelist)；style.css/fa.min.css 加内容哈希版本号；main.js 加 defer 消除卡顿',
             '【新增】新生指南（二）-食堂购物攻略(post-7)；构建按日期倒序自动生成上/下一篇导航'
+        ], en: [
+            '[Perf] Inlined article data into page HTML, removing the extra manifest request for instant list refresh',
+            '[Perf] Removed render-blocking external CDNs; switched to locally precompiled CSS + self-hosted Font Awesome; inlined critical above-the-fold CSS',
+            '[Fix] Missing utility classes in precompiled CSS (safelist); added content-hash versioning to style.css/fa.min.css; added defer to main.js to eliminate jank',
+            '[New] Freshman Guide (2) – Canteen & Shopping Guide (post-7); build auto-generates Prev/Next navigation by date descending'
         ]},
-        { d: '2026-07-17', items: [
+        { d: '2026-07-17', zh: [
             '【彩蛋】新增 /cmf 生日快乐子页面（吧主专属，后下线）'
+        ], en: [
+            '[Egg] Added /cmf birthday subpage (mod-owner exclusive, later taken down)'
         ]},
-        { d: '2026-07-16', items: [
+        { d: '2026-07-16', zh: [
             '【新增】测试文章《校园卡是否值得办》(post-6，分类：指南)'
+        ], en: [
+            '[New] Test article "Is the Campus Card Worth Getting?" (post-6, category: Guide)'
         ]},
-        { d: '2026-07-15', items: [
+        { d: '2026-07-15', zh: [
             '【新增】全网反诈防骗公告(post-5)；「关于我们」页面；自定义 404 页面（Cloudflare 内置兜底）',
             '【优化】自动扫描 news/ 生成清单，首页/列表零配置自动同步'
+        ], en: [
+            '[New] Site-wide anti-fraud alert (post-5); "About Us" page; custom 404 page (Cloudflare built-in fallback)',
+            '[Opt] Auto-scan news/ to generate the manifest; zero-config sync for homepage/list'
         ]},
-        { d: '2026-07-14', items: [
+        { d: '2026-07-14', zh: [
             '【站点】唐山师范学院吧官网正式上线，含新闻动态模块，可部署至 Cloudflare Pages',
             '【优化】首页新闻预览按日期倒序取最新 3 条；首页/列表直接读取 #articleMeta 单一数据源'
+        ], en: [
+            '[Site] TSNU Bar official website launched with a News module, deployable to Cloudflare Pages',
+            '[Opt] Homepage news preview shows the latest 3 by date descending; homepage/list read directly from the single #articleMeta source'
         ]}
-    ].map(function (g) {
-        return '<div class="mb-6">' +
-            '<h3 class="mb-2 text-base font-bold text-primary">' + g.d + '</h3>' +
-            '<ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-gray-600">' +
-            g.items.map(function (it) { return '<li>' + it + '</li>'; }).join('') +
-            '</ul></div>';
-    }).join('');
+    ];
+    function buildChangelog() {
+        return CHANGELOG_DATA.map(function (g) {
+            const items = isEn ? g.en : g.zh;
+            return '<div class="mb-6">' +
+                '<h3 class="mb-2 text-base font-bold text-primary">' + g.d + '</h3>' +
+                '<ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-gray-600">' +
+                items.map(function (it) { return '<li>' + it + '</li>'; }).join('') +
+                '</ul></div>';
+        }).join('');
+    }
+    const CHANGELOG_HTML = buildChangelog();
 
     function initChangelog() {
         // 1) 在页脚版权声明一句后注入入口（中英文页通用：匹配 © / 版权所有 / All Rights Reserved）
