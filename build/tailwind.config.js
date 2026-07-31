@@ -431,7 +431,16 @@ module.exports = {
     "xiaohongshu",
     "xiaohongshuBtn",
     "z-10",
-    "z-50"
+    "z-50",
+    "z-[70]",
+    "bg-black/85",
+    "backdrop-blur-sm",
+    "max-h-[90vh]",
+    "max-w-[94vw]",
+    "cursor-zoom-out",
+    "cursor-auto",
+    "sm:grid-cols-3",
+    "h-32"
   ],
   "theme": {
     "extend": {

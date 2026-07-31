@@ -571,33 +571,201 @@ if (hitokotoEl) {
     // 读取构建时自动生成的 news-manifest.json / news-manifest-en.json
     // （由 generate-manifest.js 扫描 news/ 生成，英文页使用 __NEWS_EN__）
     // 因此只需新建/修改文章 HTML（含 #articleMeta），部署即自动同步，无需手动维护列表
-    function renderNewsFromManifest(containerId, limit) {
+    function renderNewsFromManifest(containerId, limit, filterCat) {
         var box = document.getElementById(containerId);
         if (!box) return;
-        var data = isEn ? (window.__NEWS_EN__ || []) : (window.__NEWS__ || []);
-        if (data && data.length) {
-            var valid = data.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+        function paint(items) {
+            var valid = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+            if (filterCat) valid = valid.filter(function (x) { return x.category === filterCat; });
             var shown = (limit && limit > 0) ? valid.slice(0, limit) : valid;
+            if (!shown.length) {
+                box.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">' +
+                    (isEn ? 'No articles in this category yet.' : '该分类下暂无文章') + '</p>';
+                return;
+            }
             box.innerHTML = shown.map(buildNewsCard).join('');
-            return;
         }
+        var data = isEn ? (window.__NEWS_EN__ || []) : (window.__NEWS__ || []);
+        if (data && data.length) { paint(data); return; }
         // 兜底：本地未生成内联数据时，回退到对应语言清单地址
         var url = isEn ? 'news-manifest-en.json' : (window.NEWS_MANIFEST_URL || 'news-manifest.json');
-        fetch(url)
-            .then(function (r) { return r.json(); })
-            .then(function (items) {
-                var valid2 = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-                var shown = (limit && limit > 0) ? valid2.slice(0, limit) : valid2;
-                box.innerHTML = shown.map(buildNewsCard).join('');
-            })
+        fetch(url).then(function (r) { return r.json(); }).then(paint)
             .catch(function () {
                 box.innerHTML = '<p class="text-gray-500 col-span-full">本地预览请先运行：node generate-manifest.js</p>';
             });
     }
 
+    // 新闻列表页：根据清单中的分类，自动生成筛选标签（中/英自适应）
+    function addNewsFilters() {
+        var grid = document.getElementById('newsGrid');
+        if (!grid) return;
+        var data = isEn ? (window.__NEWS_EN__ || []) : (window.__NEWS__ || []);
+        var order = isEn
+            ? ['Announcement', 'Notice', 'Guide', 'Summary', 'Activity']
+            : ['公告', '通知', '指南', '总结', '活动'];
+        var cats = [];
+        data.forEach(function (x) { if (cats.indexOf(x.category) === -1) cats.push(x.category); });
+        cats.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); });
+        var allLabel = isEn ? 'All' : '全部';
+        var baseCls = 'px-4 py-2 rounded-full text-sm font-medium border transition-colors';
+        var offCls = baseCls + ' bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary';
+        var onCls = baseCls + ' bg-primary text-white border-primary';
+        var wrap = document.createElement('div');
+        wrap.className = 'flex flex-wrap gap-2 mb-8';
+        function makeChip(label, cat, active) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = label;
+            b.className = active ? onCls : offCls;
+            b.addEventListener('click', function () {
+                wrap.querySelectorAll('button').forEach(function (x) { x.className = offCls; });
+                b.className = onCls;
+                renderNewsFromManifest('newsGrid', 0, cat);
+            });
+            return b;
+        }
+        wrap.appendChild(makeChip(allLabel, '', true));
+        cats.forEach(function (c) { wrap.appendChild(makeChip(c, c, false)); });
+        grid.parentNode.insertBefore(wrap, grid);
+    }
+
     // 列表页：全部文章；首页预览：最新 3 条（按日期自动取最新）
     renderNewsFromManifest('newsGrid', 0);
     renderNewsFromManifest('newsPreview', 3);
+    addNewsFilters();
+
+    /* ---------- 文章详情页增强：面包屑标题 / 阅读时长 / 图片灯箱 / 相关阅读 ---------- */
+    (function enhanceArticle() {
+        var metaEl = document.getElementById('articleMeta');
+        if (!metaEl) return;
+        var meta = {};
+        try { meta = JSON.parse(metaEl.textContent); } catch (e) { /* 忽略解析错误 */ }
+
+        // 1) 面包屑：首页 › 新闻动态 › 标题
+        var crumb = document.querySelector('header nav[aria-label="breadcrumb"]');
+        if (crumb && meta.title) {
+            var home = isEn ? 'Home' : '首页';
+            var news = isEn ? 'News' : '新闻动态';
+            crumb.innerHTML =
+                '<a href="' + basePath + 'index.html" class="hover:underline">' + home + '</a>' +
+                '<span class="mx-2">/</span>' +
+                '<a href="' + basePath + 'news.html" class="hover:underline">' + news + '</a>' +
+                '<span class="mx-2">/</span>' +
+                '<span>' + escapeHtml(meta.title) + '</span>';
+        }
+
+        // 2) 预计阅读时长
+        var content = document.querySelector('.article-content');
+        if (content) {
+            var raw = content.innerText || content.textContent || '';
+            var mins = 1;
+            if (isEn) {
+                var words = (raw.trim().match(/\S+/g) || []).length;
+                mins = Math.max(1, Math.round(words / 200));
+            } else {
+                mins = Math.max(1, Math.ceil(raw.replace(/\s/g, '').length / 400));
+            }
+            var userIcon = document.querySelector('header .fa-user');
+            if (userIcon) {
+                var metaDiv = userIcon.closest('.flex.items-center');
+                if (metaDiv) {
+                    var rt = document.createElement('span');
+                    rt.className = 'ml-3';
+                    rt.innerHTML = '<i class="fa fa-clock mr-1"></i>' +
+                        (isEn ? (mins + ' min read') : ('约 ' + mins + ' 分钟阅读'));
+                    metaDiv.appendChild(rt);
+                }
+            }
+        }
+
+        // 3) 图片点击放大（灯箱）
+        initLightbox(content);
+
+        // 4) 相关阅读
+        buildRelated(meta);
+    })();
+
+    // 灯箱：点击文章内图片查看大图，点击空白 / 关闭按钮 / Esc 退出
+    function initLightbox(scope) {
+        if (!scope) return;
+        var imgs = Array.prototype.slice.call(scope.querySelectorAll('img'));
+        if (!imgs.length) return;
+        var box = document.getElementById('lightbox');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 'lightbox';
+            box.className = 'fixed inset-0 z-[70] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out';
+            box.innerHTML =
+                '<button class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="关闭"><i class="fa fa-times text-xl"></i></button>' +
+                '<img class="max-h-[90vh] max-w-[94vw] rounded-lg shadow-2xl cursor-auto" alt="">';
+            document.body.appendChild(box);
+            var close = function () { box.classList.add('hidden'); box.classList.remove('flex'); };
+            box.addEventListener('click', function (e) {
+                if (e.target === box || e.target.closest('button')) close();
+            });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+        }
+        var boxImg = box.querySelector('img');
+        imgs.forEach(function (img) {
+            img.style.cursor = 'zoom-in';
+            img.addEventListener('click', function (e) {
+                e.preventDefault();
+                boxImg.src = img.currentSrc || img.src;
+                boxImg.alt = img.alt || '';
+                box.classList.remove('hidden');
+                box.classList.add('flex');
+            });
+        });
+    }
+
+    // 相关阅读：同分类优先，不足 3 篇则用最新文章补齐
+    function buildRelated(meta) {
+        var article = document.querySelector('main article');
+        if (!article) return;
+        var current = meta.slug ||
+            window.location.pathname.split('/').pop().replace(/\.html$/, '').replace(/-en$/, '');
+        function render(items) {
+            if (!items || !items.length) return;
+            var sorted = items.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+            var same = sorted.filter(function (x) { return x.category === meta.category && x.slug !== current; });
+            var pool = same;
+            if (pool.length < 3) {
+                var others = sorted.filter(function (x) { return x.category !== meta.category && x.slug !== current; });
+                pool = same.concat(others);
+            }
+            var related = pool.slice(0, 3);
+            if (!related.length) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'mt-12 pt-8 border-t border-gray-200';
+            var h = document.createElement('h2');
+            h.className = 'text-xl font-bold text-primary mb-6';
+            h.textContent = isEn ? 'Related Reading' : '相关阅读';
+            wrap.appendChild(h);
+            var grid = document.createElement('div');
+            grid.className = 'grid grid-cols-1 sm:grid-cols-3 gap-4';
+            related.forEach(function (item) {
+                var icon = CATEGORY_ICON[item.category] || 'fa-newspaper';
+                var cover = item.cover
+                    ? '<img src="' + item.cover + '" alt="" loading="lazy" class="w-full h-32 object-cover">'
+                    : '<div class="w-full h-32 bg-gradient-primary flex items-center justify-center"><i class="fa ' + icon + ' text-white/80 text-3xl"></i></div>';
+                var card = document.createElement('a');
+                card.href = item.slug + '.html';
+                card.className = 'group block bg-white rounded-xl shadow-md overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all duration-200';
+                card.innerHTML = cover +
+                    '<div class="p-4">' +
+                        '<div class="flex items-center text-xs text-gray-500 mb-2"><span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">' + escapeHtml(item.category) + '</span><span class="ml-2"><i class="fa fa-calendar mr-1"></i>' + item.date + '</span></div>' +
+                        '<h3 class="text-base font-semibold text-gray-800 leading-snug group-hover:text-primary transition-colors">' + escapeHtml(item.title) + '</h3>' +
+                    '</div>';
+                grid.appendChild(card);
+            });
+            wrap.appendChild(grid);
+            article.appendChild(wrap);
+        }
+        var data = isEn ? (window.__NEWS_EN__ || []) : (window.__NEWS__ || []);
+        if (data && data.length) { render(data); return; }
+        var url = basePath + (isEn ? 'news-manifest-en.json' : 'news-manifest.json');
+        fetch(url).then(function (r) { return r.json(); }).then(render).catch(function () {});
+    }
 
     /* ---------- 返回顶部 ---------- */
     const backToTop = document.getElementById('backToTop');
