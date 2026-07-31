@@ -1,1 +1,1 @@
-window.NEWS_MANIFEST_URL = "news-manifest.json?v=d0de88d3";
+window.NEWS_MANIFEST_URL = "news-manifest.json?v=0785231b";
