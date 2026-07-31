@@ -535,6 +535,7 @@ if (hitokotoEl) {
             const modal = ensureModal();
             modal.classList.remove('hidden');
             const box = modal.querySelector('div');
+            box.classList.remove('opacity-0', 'scale-95');
             box.classList.remove('animate-search-pop');
             void box.offsetWidth;
             setTimeout(function () {
