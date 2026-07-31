@@ -703,9 +703,15 @@ if (hitokotoEl) {
                 '<img class="max-h-[90vh] max-w-[94vw] rounded-lg shadow-2xl cursor-auto" alt="">';
             document.body.appendChild(box);
             var close = function () {
+                if (box.classList.contains('hidden')) return;
+                boxImg.classList.remove('animate-search-pop');
+                boxImg.classList.add('animate-search-pop-out');
                 box.classList.add('opacity-0');
-                box.classList.remove('flex');
-                setTimeout(function () { box.classList.add('hidden'); }, 200);
+                setTimeout(function () {
+                    box.classList.add('hidden');
+                    box.classList.remove('flex');
+                    boxImg.classList.remove('animate-search-pop-out');
+                }, 240);
             };
             box.addEventListener('click', function (e) {
                 if (e.target === box || e.target.closest('button')) close();
@@ -724,7 +730,7 @@ if (hitokotoEl) {
                 void box.offsetWidth; // 重排，确保从 opacity:0 起始淡入
                 box.classList.remove('opacity-0');
                 // 图片弹入（与首页弹窗同一套动画）
-                boxImg.classList.remove('animate-search-pop');
+                boxImg.classList.remove('animate-search-pop', 'animate-search-pop-out');
                 void boxImg.offsetWidth;
                 boxImg.classList.add('animate-search-pop');
             });

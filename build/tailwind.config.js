@@ -440,7 +440,8 @@ module.exports = {
     "cursor-zoom-out",
     "cursor-auto",
     "sm:grid-cols-3",
-    "h-32"
+    "h-32",
+    "animate-search-pop-out"
   ],
   "theme": {
     "extend": {
