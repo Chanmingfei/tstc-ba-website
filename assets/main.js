@@ -425,7 +425,7 @@ if (hitokotoEl) {
             '【新增】贴吧分享改用百度 dwz.cn 短链：构建期自动为每个页面申请 dwz 短链并注入，点击「分享到百度贴吧」时改用该短链，以绕过 tstc.pp.ua 被百度贴吧屏蔽的「分享URL不合法」；未配置 DWZ_TOKEN 或短链生成失败时自动回退原长链接。短链映射缓存复用，重复构建不重复申请',
             '【调整】贴吧分享放弃 dwz 短链、改为去图分享：dwz.cn 接口要求企业实名认证（个人账号返回 -114，无法使用），故短链方案暂不可用；现改为贴吧分享只带标题+链接、去掉封面图参数，先实测能否绕过 tstc.pp.ua 域名屏蔽（dwz 短链逻辑保留，企业实名认证通过后可自动启用）',
             '【修复】贴吧分享链接规范化：自动去掉路径中的 index.html，避免贴吧抓取时遇到 308 跳转被间歇判为"URL 非法"。经实测线上服务器稳定（一致 200、无质询页），抖动来自贴吧对免费 .pp.ua 域名的实时抓取限速，根治需换可信域名（.com/.cn）',
-            '【调整】社交分享面板精简：移除 X（Twitter）/ Facebook / Telegram 三个国外平台入口（国内用户使用率低），新增「分享到QQ空间」按钮（腾讯黄四角星图标，Font Awesome 无 QZone 图标故用品牌色内联 SVG，调用 QQ空间一键分享接口，自动带入链接、标题、封面与摘要）'
+            '【调整】社交分享面板精简：移除 X（Twitter）/ Facebook / Telegram 三个国外平台入口（国内用户使用率低），新增「分享到QQ空间」按钮（腾讯官方黄底白星图标：黄圆角方块 + 白色四角星；Font Awesome 无 QZone 图标，故按官方设计内联 SVG 还原，调用 QQ空间一键分享接口，自动带入链接、标题、封面与摘要）'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -445,7 +445,7 @@ if (hitokotoEl) {
             '[New] Tieba sharing now routes through a Baidu dwz.cn short link: at build time each page gets a dwz short link injected; the "Share to Baidu Tieba" button uses it to bypass Tieba\'s block of the tstc.pp.ua domain ("分享URL不合法"). Falls back to the long URL when DWZ_TOKEN is unset or generation fails. The short-link mapping is cached and reused across builds.',
             '[Adj] Tieba sharing drops dwz short link, now sends title+link only: dwz.cn API requires enterprise real-name verification (personal accounts get -114, unusable), so the short-link path is paused; Tieba share now omits the cover-image param to test whether removing the pic domain bypasses the tstc.pp.ua block. The dwz short-link logic is retained and will auto-enable after enterprise verification.',
             '[Fix] Tieba share URL normalized: index.html is stripped from the path to avoid a 308 redirect that Tieba intermittently rejects as "URL 非法". Live server is stable (consistent 200, no challenge), so the flakiness comes from Tieba throttling real-time fetches of the free .pp.ua domain; a trusted domain (.com/.cn) is the real fix.',
-            '[Adj] Social share panel trimmed: removed the three overseas entries X (Twitter) / Facebook / Telegram (low usage among domestic users) and added a "Share to QZone" button (Tencent-yellow four-point star glyph — Font Awesome has no QZone icon, so an inline SVG in the brand color is used — calling QZone\'s one-click share API with link, title, cover and summary prefilled).'
+            '[Adj] Social share panel trimmed: removed the three overseas entries X (Twitter) / Facebook / Telegram (low usage among domestic users) and added a "Share to QZone" button (the official Tencent glyph — yellow rounded square with a white four-point star; Font Awesome has no QZone icon, so it is recreated as an inline SVG matching the official design — calling QZone\'s one-click share API with link, title, cover and summary prefilled).'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -692,7 +692,7 @@ if (hitokotoEl) {
               url: function (u, t) { return 'https://service.weibo.com/share/share.php?url=' + enc(u) + '&title=' + enc(t); } },
             { key: 'qq', label: isEn ? 'Share to QQ' : '分享到 QQ', icon: 'fa-brands fa-qq', color: '#12b7f5',
               url: function (u, t, p, d) { return 'https://connect.qq.com/widget/shareqq/index.html?url=' + enc(u) + '&title=' + enc(t) + '&pics=' + enc(p) + '&summary=' + enc(d); } },
-            { key: 'qzone', label: isEn ? 'Share to QZone' : '分享到QQ空间', color: '#ffc107', svg: '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="currentColor" d="M12 1.5l2.7 8.3 8.3 2.7-8.3 2.7L12 23.5l-2.7-8.3L1 12.5l8.3-2.7z"/></svg>',
+            { key: 'qzone', label: isEn ? 'Share to QZone' : '分享到QQ空间', color: '#ffce00', svg: '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#FFCE00"/><path fill="#FFFFFF" d="M12 3.2 L14.3 10.4 L21.8 12 L14.3 13.6 L12 20.8 L9.7 13.6 L2.2 12 L9.7 10.4 Z"/></svg>',
               url: function (u, t, p, d) { return 'https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + enc(u) + '&title=' + enc(t) + '&pics=' + enc(p) + '&summary=' + enc(d); } },
             { key: 'wechat', label: isEn ? 'Share via WeChat' : '微信分享', icon: 'fa-brands fa-weixin', color: '#07c160', native: true },
             { key: 'tieba', label: isEn ? 'Share to Baidu Tieba' : '分享到百度贴吧', text: '吧', color: '#2932e1',
