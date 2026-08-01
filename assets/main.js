@@ -418,7 +418,7 @@ if (hitokotoEl) {
             '【新增】灯箱支持左右切换文章内图片：左右箭头按钮、键盘 ←/→、移动端左右滑动三种方式，并带平滑滑入/滑出动画衔接；底部显示「当前 / 总数」计数',
             '【修复】灯箱切换图片时残留的入场弹入动画导致图片跳动（切换时移除弹入残留类，仅保留左右滑动）；左右箭头按钮改为与分享按钮一致的「放大缩小」悬停动画（幅度 1.06，0.15s），不再上下位移',
             '【修复】灯箱底部「当前 / 总数」计数器在切换图片瞬间被图片遮住（为遮罩控件提升层级，始终位于图片之上）',
-            '【新增】社交分享面板新增「分享到百度贴吧」按钮（Font Awesome 无贴吧图标，以品牌蓝「吧」字呈现；点击打开唐山师范学院吧并复制链接，便于粘贴发布）'
+            '【新增】社交分享面板新增「分享到百度贴吧」按钮（Font Awesome 无贴吧图标，以品牌蓝「吧」字呈现；调用贴吧官方转贴接口 openShareApi，自动带入链接、标题与封面）'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -431,7 +431,7 @@ if (hitokotoEl) {
             '[New] Lightbox now supports left/right navigation between article images via arrow buttons, keyboard ←/→, and touch swipe on mobile, with smooth slide-in/out transitions; a "current / total" counter is shown at the bottom',
             '[Fix] Lightbox image no longer re-triggers the entrance pop animation when switching (which caused a jump); the prev/next arrow buttons now use the same scale hover animation as the share button (1.06, 0.15s) instead of moving up/down',
             '[Fix] Lightbox "current / total" counter was briefly covered by the image while switching (overlay controls now sit above the image via z-index)',
-            '[New] Social share panel now includes a "Share to Baidu Tieba" button (rendered as the brand-blue "吧" glyph); clicking opens the Tangshan Normal University Tieba and copies the link for pasting'
+            '[New] Social share panel now includes a "Share to Baidu Tieba" button (brand-blue "吧" glyph); it calls Tieba\'s official repost API (openShareApi) with the link, title and cover prefilled'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -685,8 +685,8 @@ if (hitokotoEl) {
             { key: 'telegram', label: isEn ? 'Share on Telegram' : '分享到 Telegram', icon: 'fa-brands fa-telegram', color: '#229ed9',
               url: function (u, t) { return 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t); } },
             { key: 'wechat', label: isEn ? 'Share via WeChat' : '微信分享', icon: 'fa-brands fa-weixin', color: '#07c160', native: true },
-            { key: 'tieba', label: isEn ? 'Share to Baidu Tieba' : '分享到百度贴吧', text: '吧', color: '#2932e1', copyToast: true,
-              url: function () { return 'https://tieba.baidu.com/f?kw=' + enc('唐山师范学院'); } }
+            { key: 'tieba', label: isEn ? 'Share to Baidu Tieba' : '分享到百度贴吧', text: '吧', color: '#2932e1',
+              url: function (u, t, p) { return 'https://tieba.baidu.com/f/commit/share/openShareApi?url=' + enc(u) + '&text=' + enc(t) + '&pic=' + enc(p); } }
         ];
 
         function enc(s) { return encodeURIComponent(s || ''); }
@@ -717,11 +717,6 @@ if (hitokotoEl) {
                 }
                 if (cfg.key === 'wechat') {
                     copyLink(isEn ? 'Link copied — paste it into WeChat' : '链接已复制，可粘贴到微信分享');
-                    return;
-                }
-                if (cfg.copyToast) {
-                    window.open(cfg.url(u, t, p, d), '_blank', 'noopener,noreferrer');
-                    copyLink(isEn ? 'Link copied — paste it into Baidu Tieba' : '链接已复制，可粘贴到百度贴吧发布');
                     return;
                 }
                 window.open(cfg.url(u, t, p, d), '_blank', 'noopener,noreferrer');
