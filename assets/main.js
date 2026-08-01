@@ -716,14 +716,12 @@ if (hitokotoEl) {
                     return;
                 }
                 if (cfg.key === 'wechat') {
-                    copyLink();
-                    showToast(isEn ? 'Link copied — paste it into WeChat' : '链接已复制，可粘贴到微信分享');
+                    copyLink(isEn ? 'Link copied — paste it into WeChat' : '链接已复制，可粘贴到微信分享');
                     return;
                 }
                 if (cfg.copyToast) {
                     window.open(cfg.url(u, t, p, d), '_blank', 'noopener,noreferrer');
-                    copyLink();
-                    showToast(isEn ? 'Link copied — paste it into Baidu Tieba' : '链接已复制，可粘贴到百度贴吧发布');
+                    copyLink(isEn ? 'Link copied — paste it into Baidu Tieba' : '链接已复制，可粘贴到百度贴吧发布');
                     return;
                 }
                 window.open(cfg.url(u, t, p, d), '_blank', 'noopener,noreferrer');
@@ -767,18 +765,20 @@ if (hitokotoEl) {
             }
         });
 
-        function copyLink() {
+        function copyLink(msg) {
             const u = pageUrl();
+            const done = function () { showToast(msg || (isEn ? 'Link copied' : '链接已复制')); };
+            const fail = function () { fallbackCopy(u, msg); };
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(u).then(function () { showToast(isEn ? 'Link copied' : '链接已复制'); }, function () { fallbackCopy(u); });
-            } else { fallbackCopy(u); }
+                navigator.clipboard.writeText(u).then(done, fail);
+            } else { fail(); }
         }
-        function fallbackCopy(u) {
+        function fallbackCopy(u, msg) {
             try {
                 const ta = document.createElement('textarea');
                 ta.value = u; ta.style.position = 'fixed'; ta.style.opacity = '0';
                 document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-                showToast(isEn ? 'Link copied' : '链接已复制');
+                showToast(msg || (isEn ? 'Link copied' : '链接已复制'));
             } catch (err) { showToast(isEn ? 'Copy failed' : '复制失败'); }
         }
         let toastTimer = null;
