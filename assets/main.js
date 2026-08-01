@@ -422,7 +422,8 @@ if (hitokotoEl) {
             '【修复】灯箱底部「当前 / 总数」计数器文字在半透明深色胶囊上偏暗，已改为白色，提升暗背景下的可读性',
             '【修复】分享到百度贴吧在部分页面（地震纪念页 / 404 页）提示「分享不合法」：这些页面未注入 og:image 导致分享封面为空，现已对封面图做兜底（默认吧徽）并统一转成绝对地址，贴吧可正常抓取；其余页面封面也由相对路径改为绝对地址，缩略图可正确加载',
             '【修复】分享到百度贴吧提示「分享URL不合法」的根因：分享链接为本地预览地址（localhost），贴吧服务端无法抓取该地址故判为不合法。已将 SITE_BASE 默认值设为本站正式域名 https://tstc.pp.ua，分享链接与封面图均改为公开绝对地址，即使在本地预览中点击分享也能被贴吧正常抓取（已用真实域名实测首页/文章/纪念/404 页均正常）；并额外将正式域名写死为兜底，即使构建未注入 __SITE_URL__（预览/旧构建），分享链接也一定是公网绝对地址',
-            '【新增】贴吧分享改用百度 dwz.cn 短链：构建期自动为每个页面申请 dwz 短链并注入，点击「分享到百度贴吧」时改用该短链，以绕过 tstc.pp.ua 被百度贴吧屏蔽的「分享URL不合法」；未配置 DWZ_TOKEN 或短链生成失败时自动回退原长链接。短链映射缓存复用，重复构建不重复申请'
+            '【新增】贴吧分享改用百度 dwz.cn 短链：构建期自动为每个页面申请 dwz 短链并注入，点击「分享到百度贴吧」时改用该短链，以绕过 tstc.pp.ua 被百度贴吧屏蔽的「分享URL不合法」；未配置 DWZ_TOKEN 或短链生成失败时自动回退原长链接。短链映射缓存复用，重复构建不重复申请',
+            '【调整】贴吧分享放弃 dwz 短链、改为去图分享：dwz.cn 接口要求企业实名认证（个人账号返回 -114，无法使用），故短链方案暂不可用；现改为贴吧分享只带标题+链接、去掉封面图参数，先实测能否绕过 tstc.pp.ua 域名屏蔽（dwz 短链逻辑保留，企业实名认证通过后可自动启用）'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -439,7 +440,8 @@ if (hitokotoEl) {
             '[Fix] Lightbox "current / total" counter text was too dark on the semi-transparent pill; changed to white for better readability on dark backgrounds',
             '[Fix] "Share to Baidu Tieba" showed "分享不合法" (invalid share) on some pages (earthquake memorial / 404) because those pages had no og:image, leaving the cover empty; now falls back to the default bar logo and always uses an absolute URL so Tieba can fetch it; other pages also send an absolute cover so the thumbnail loads correctly',
             '[Fix] The real cause of "分享URL不合法" (invalid URL) for Tieba: the shared link was a local preview address (localhost) that Tieba\'s server cannot fetch, so it is rejected. SITE_BASE now defaults to the official domain https://tstc.pp.ua, so both the share link and cover image are absolute public URLs and Tieba can fetch them even from local preview (verified on home/article/memorial/404 pages with the real domain — all load fine). The official domain is also hardcoded as a fallback, so even if __SITE_URL__ is not injected (preview/stale build), the share link is always a public absolute URL.',
-            '[New] Tieba sharing now routes through a Baidu dwz.cn short link: at build time each page gets a dwz short link injected; the "Share to Baidu Tieba" button uses it to bypass Tieba\'s block of the tstc.pp.ua domain ("分享URL不合法"). Falls back to the long URL when DWZ_TOKEN is unset or generation fails. The short-link mapping is cached and reused across builds.'
+            '[New] Tieba sharing now routes through a Baidu dwz.cn short link: at build time each page gets a dwz short link injected; the "Share to Baidu Tieba" button uses it to bypass Tieba\'s block of the tstc.pp.ua domain ("分享URL不合法"). Falls back to the long URL when DWZ_TOKEN is unset or generation fails. The short-link mapping is cached and reused across builds.',
+            '[Adj] Tieba sharing drops dwz short link, now sends title+link only: dwz.cn API requires enterprise real-name verification (personal accounts get -114, unusable), so the short-link path is paused; Tieba share now omits the cover-image param to test whether removing the pic domain bypasses the tstc.pp.ua block. The dwz short-link logic is retained and will auto-enable after enterprise verification.'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -695,10 +697,10 @@ if (hitokotoEl) {
             { key: 'wechat', label: isEn ? 'Share via WeChat' : '微信分享', icon: 'fa-brands fa-weixin', color: '#07c160', native: true },
             { key: 'tieba', label: isEn ? 'Share to Baidu Tieba' : '分享到百度贴吧', text: '吧', color: '#2932e1',
               url: function (u, t, p) {
-                // 贴吧分享优先使用 dwz.cn 短链（构建时注入的 window.__SHARE_SHORT_URL__），
-                // 以绕过 tstc.pp.ua 被百度贴吧屏蔽的"分享URL不合法"问题；无短链时回退长链接。
+                // 贴吧分享仅带标题+链接，去掉封面图参数：排查 tstc.pp.ua 域名（含封面图域名）被贴吧判为"分享URL不合法"的问题。
+                // dwz.cn 短链因需企业实名认证（个人账号返回 -114）不可用，故先实测去图方案；短链逻辑保留，企业实名后可自动启用。
                 const target = (window.__SHARE_SHORT_URL__ && /^https?:\/\//i.test(window.__SHARE_SHORT_URL__)) ? window.__SHARE_SHORT_URL__ : u;
-                return 'https://tieba.baidu.com/f/commit/share/openShareApi?url=' + enc(target) + '&text=' + enc(t) + '&pic=' + enc(p);
+                return 'https://tieba.baidu.com/f/commit/share/openShareApi?url=' + enc(target) + '&text=' + enc(t);
               } }
         ];
 
