@@ -81,6 +81,9 @@ def minify_rule(selector, body):
 
 def rule_should_keep(selector, first_screen):
     """判断该规则是否应保留为关键 CSS。"""
+    # 文章正文样式（含链接折行）必须同步首屏生效，避免移动端长链接溢出
+    if ".article-content" in selector:
+        return True
     # 全局/基础规则
     sels = [s.strip() for s in re.split(r",", selector)]
     kept_for_global = False
