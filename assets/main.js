@@ -424,7 +424,8 @@ if (hitokotoEl) {
             '【修复】分享到百度贴吧提示「分享URL不合法」的根因：分享链接为本地预览地址（localhost），贴吧服务端无法抓取该地址故判为不合法。已将 SITE_BASE 默认值设为本站正式域名 https://tstc.pp.ua，分享链接与封面图均改为公开绝对地址，即使在本地预览中点击分享也能被贴吧正常抓取（已用真实域名实测首页/文章/纪念/404 页均正常）；并额外将正式域名写死为兜底，即使构建未注入 __SITE_URL__（预览/旧构建），分享链接也一定是公网绝对地址',
             '【新增】贴吧分享改用百度 dwz.cn 短链：构建期自动为每个页面申请 dwz 短链并注入，点击「分享到百度贴吧」时改用该短链，以绕过 tstc.pp.ua 被百度贴吧屏蔽的「分享URL不合法」；未配置 DWZ_TOKEN 或短链生成失败时自动回退原长链接。短链映射缓存复用，重复构建不重复申请',
             '【调整】贴吧分享放弃 dwz 短链、改为去图分享：dwz.cn 接口要求企业实名认证（个人账号返回 -114，无法使用），故短链方案暂不可用；现改为贴吧分享只带标题+链接、去掉封面图参数，先实测能否绕过 tstc.pp.ua 域名屏蔽（dwz 短链逻辑保留，企业实名认证通过后可自动启用）',
-            '【修复】贴吧分享链接规范化：自动去掉路径中的 index.html，避免贴吧抓取时遇到 308 跳转被间歇判为"URL 非法"。经实测线上服务器稳定（一致 200、无质询页），抖动来自贴吧对免费 .pp.ua 域名的实时抓取限速，根治需换可信域名（.com/.cn）'
+            '【修复】贴吧分享链接规范化：自动去掉路径中的 index.html，避免贴吧抓取时遇到 308 跳转被间歇判为"URL 非法"。经实测线上服务器稳定（一致 200、无质询页），抖动来自贴吧对免费 .pp.ua 域名的实时抓取限速，根治需换可信域名（.com/.cn）',
+            '【调整】社交分享面板精简：移除 X（Twitter）/ Facebook / Telegram 三个国外平台入口（国内用户使用率低），新增「分享到QQ空间」按钮（腾讯黄「空间」标识，调用 QQ空间一键分享接口，自动带入链接、标题、封面与摘要）'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -443,7 +444,8 @@ if (hitokotoEl) {
             '[Fix] The real cause of "分享URL不合法" (invalid URL) for Tieba: the shared link was a local preview address (localhost) that Tieba\'s server cannot fetch, so it is rejected. SITE_BASE now defaults to the official domain https://tstc.pp.ua, so both the share link and cover image are absolute public URLs and Tieba can fetch them even from local preview (verified on home/article/memorial/404 pages with the real domain — all load fine). The official domain is also hardcoded as a fallback, so even if __SITE_URL__ is not injected (preview/stale build), the share link is always a public absolute URL.',
             '[New] Tieba sharing now routes through a Baidu dwz.cn short link: at build time each page gets a dwz short link injected; the "Share to Baidu Tieba" button uses it to bypass Tieba\'s block of the tstc.pp.ua domain ("分享URL不合法"). Falls back to the long URL when DWZ_TOKEN is unset or generation fails. The short-link mapping is cached and reused across builds.',
             '[Adj] Tieba sharing drops dwz short link, now sends title+link only: dwz.cn API requires enterprise real-name verification (personal accounts get -114, unusable), so the short-link path is paused; Tieba share now omits the cover-image param to test whether removing the pic domain bypasses the tstc.pp.ua block. The dwz short-link logic is retained and will auto-enable after enterprise verification.',
-            '[Fix] Tieba share URL normalized: index.html is stripped from the path to avoid a 308 redirect that Tieba intermittently rejects as "URL 非法". Live server is stable (consistent 200, no challenge), so the flakiness comes from Tieba throttling real-time fetches of the free .pp.ua domain; a trusted domain (.com/.cn) is the real fix.'
+            '[Fix] Tieba share URL normalized: index.html is stripped from the path to avoid a 308 redirect that Tieba intermittently rejects as "URL 非法". Live server is stable (consistent 200, no challenge), so the flakiness comes from Tieba throttling real-time fetches of the free .pp.ua domain; a trusted domain (.com/.cn) is the real fix.',
+            '[Adj] Social share panel trimmed: removed the three overseas entries X (Twitter) / Facebook / Telegram (low usage among domestic users) and added a "Share to QZone" button (Tencent-yellow "空间" glyph, calling QZone\'s one-click share API with link, title, cover and summary prefilled).'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -690,12 +692,8 @@ if (hitokotoEl) {
               url: function (u, t) { return 'https://service.weibo.com/share/share.php?url=' + enc(u) + '&title=' + enc(t); } },
             { key: 'qq', label: isEn ? 'Share to QQ' : '分享到 QQ', icon: 'fa-brands fa-qq', color: '#12b7f5',
               url: function (u, t, p, d) { return 'https://connect.qq.com/widget/shareqq/index.html?url=' + enc(u) + '&title=' + enc(t) + '&pics=' + enc(p) + '&summary=' + enc(d); } },
-            { key: 'twitter', label: isEn ? 'Share on X' : '分享到 X', icon: 'fa-brands fa-x-twitter', color: '#000000',
-              url: function (u, t) { return 'https://twitter.com/intent/tweet?url=' + enc(u) + '&text=' + enc(t); } },
-            { key: 'facebook', label: isEn ? 'Share on Facebook' : '分享到 Facebook', icon: 'fa-brands fa-facebook', color: '#1877f2',
-              url: function (u) { return 'https://www.facebook.com/sharer/sharer.php?u=' + enc(u); } },
-            { key: 'telegram', label: isEn ? 'Share on Telegram' : '分享到 Telegram', icon: 'fa-brands fa-telegram', color: '#229ed9',
-              url: function (u, t) { return 'https://t.me/share/url?url=' + enc(u) + '&text=' + enc(t); } },
+            { key: 'qzone', label: isEn ? 'Share to QZone' : '分享到QQ空间', text: '空间', color: '#ffc107',
+              url: function (u, t, p, d) { return 'https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url=' + enc(u) + '&title=' + enc(t) + '&pics=' + enc(p) + '&summary=' + enc(d); } },
             { key: 'wechat', label: isEn ? 'Share via WeChat' : '微信分享', icon: 'fa-brands fa-weixin', color: '#07c160', native: true },
             { key: 'tieba', label: isEn ? 'Share to Baidu Tieba' : '分享到百度贴吧', text: '吧', color: '#2932e1',
               url: function (u, t, p) {
