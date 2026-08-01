@@ -419,7 +419,8 @@ if (hitokotoEl) {
             '【修复】灯箱切换图片时残留的入场弹入动画导致图片跳动（切换时移除弹入残留类，仅保留左右滑动）；左右箭头按钮改为与分享按钮一致的「放大缩小」悬停动画（幅度 1.06，0.15s），不再上下位移',
             '【修复】灯箱底部「当前 / 总数」计数器在切换图片瞬间被图片遮住（为遮罩控件提升层级，始终位于图片之上）',
             '【新增】社交分享面板新增「分享到百度贴吧」按钮（Font Awesome 无贴吧图标，以品牌蓝「吧」字呈现；调用贴吧官方转贴接口 openShareApi，自动带入链接、标题与封面）',
-            '【修复】灯箱底部「当前 / 总数」计数器文字在半透明深色胶囊上偏暗，已改为白色，提升暗背景下的可读性'
+            '【修复】灯箱底部「当前 / 总数」计数器文字在半透明深色胶囊上偏暗，已改为白色，提升暗背景下的可读性',
+            '【修复】分享到百度贴吧在部分页面（地震纪念页 / 404 页）提示「分享不合法」：这些页面未注入 og:image 导致分享封面为空，现已对封面图做兜底（默认吧徽）并统一转成绝对地址，贴吧可正常抓取；其余页面封面也由相对路径改为绝对地址，缩略图可正确加载'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -433,7 +434,8 @@ if (hitokotoEl) {
             '[Fix] Lightbox image no longer re-triggers the entrance pop animation when switching (which caused a jump); the prev/next arrow buttons now use the same scale hover animation as the share button (1.06, 0.15s) instead of moving up/down',
             '[Fix] Lightbox "current / total" counter was briefly covered by the image while switching (overlay controls now sit above the image via z-index)',
             '[New] Social share panel now includes a "Share to Baidu Tieba" button (brand-blue "吧" glyph); it calls Tieba\'s official repost API (openShareApi) with the link, title and cover prefilled',
-            '[Fix] Lightbox "current / total" counter text was too dark on the semi-transparent pill; changed to white for better readability on dark backgrounds'
+            '[Fix] Lightbox "current / total" counter text was too dark on the semi-transparent pill; changed to white for better readability on dark backgrounds',
+            '[Fix] "Share to Baidu Tieba" showed "分享不合法" (invalid share) on some pages (earthquake memorial / 404) because those pages had no og:image, leaving the cover empty; now falls back to the default bar logo and always uses an absolute URL so Tieba can fetch it; other pages also send an absolute cover so the thumbnail loads correctly'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -695,7 +697,17 @@ if (hitokotoEl) {
         function pageUrl() { return location.href; }
         function pageTitle() { return document.title || ''; }
         function pageDesc() { const m = document.querySelector('meta[name="description"]'); return m ? m.getAttribute('content') : ''; }
-        function pagePic() { const m = document.querySelector('meta[property="og:image"]'); return m ? m.getAttribute('content') : ''; }
+        // 封面图：贴吧「转贴」接口要求 pic 非空且可被抓取，故缺失时回退到默认封面，
+        // 并统一转成绝对地址（相对路径在第三方域名下无法被正确抓取）。
+        function pagePic() {
+            const m = document.querySelector('meta[property="og:image"]');
+            let p = m ? (m.getAttribute('content') || '') : '';
+            if (!p) p = '/assets/images/bar-logo.jpg'; // 兜底默认封面（错误页 / 纪念页未注入 og:image）
+            if (p && !/^https?:\/\//i.test(p)) {
+                p = location.origin + (p.charAt(0) === '/' ? '' : '/') + p;
+            }
+            return p;
+        }
 
         const fab = document.createElement('div');
         fab.id = 'shareFab';
