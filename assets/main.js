@@ -406,6 +406,7 @@ if (hitokotoEl) {
     // 完整更新日志（中英文各一份，按日期归档，与 CHANGELOG.md 保持一致）
     const CHANGELOG_DATA = [
         { d: '2026-08-01', zh: [
+            '【新增】新生指南（十）- 图书馆与自习室入门（中英双语，7 张配图：楼层导览图、馆藏布局表、阅览区环境、NFC 与完美校园入馆示意、座位预约界面、自助借还机）',
             '【新增】全站社交分享浮动按钮（微博 / QQ / X / Facebook / Telegram / 微信），并附带同尺寸同风格的「复制链接」按钮（中英文标签自适应，剪贴板复制带降级回退）',
             '【新增】社交分享卡片（Open Graph / Twitter Card）与站点地图 sitemap.xml、robots.txt，利于搜索引擎收录与社交平台预览',
             '【新增】弹窗键盘焦点陷阱（Tab 限制在弹窗内，无障碍优化）',
@@ -427,6 +428,7 @@ if (hitokotoEl) {
             '【修复】贴吧分享链接规范化：自动去掉路径中的 index.html，避免贴吧抓取时遇到 308 跳转被间歇判为"URL 非法"。经实测线上服务器稳定（一致 200、无质询页），抖动来自贴吧对免费 .pp.ua 域名的实时抓取限速，根治需换可信域名（.com/.cn）',
             '【调整】社交分享面板精简：移除 X（Twitter）/ Facebook / Telegram 三个国外平台入口（国内用户使用率低），新增「分享到QQ空间」按钮（腾讯官方黄底白星图标：黄圆角方块 + 白色四角星；Font Awesome 无 QZone 图标，故按官方设计内联 SVG 还原，调用 QQ空间一键分享接口，自动带入链接、标题、封面与摘要）'
         ], en: [
+            '[New] Freshman Guide (10) – Library & Study Spaces (bilingual, 7 illustrations: floor plan, collection layout, reading area, NFC and Perfect Campus entry guides, seat booking interface, self-checkout machine)',
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
             '[New] Modal keyboard focus trap (Tab confined inside open modals) for accessibility',
