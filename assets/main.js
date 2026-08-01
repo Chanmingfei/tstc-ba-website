@@ -418,7 +418,8 @@ if (hitokotoEl) {
             '【新增】灯箱支持左右切换文章内图片：左右箭头按钮、键盘 ←/→、移动端左右滑动三种方式，并带平滑滑入/滑出动画衔接；底部显示「当前 / 总数」计数',
             '【修复】灯箱切换图片时残留的入场弹入动画导致图片跳动（切换时移除弹入残留类，仅保留左右滑动）；左右箭头按钮改为与分享按钮一致的「放大缩小」悬停动画（幅度 1.06，0.15s），不再上下位移',
             '【修复】灯箱底部「当前 / 总数」计数器在切换图片瞬间被图片遮住（为遮罩控件提升层级，始终位于图片之上）',
-            '【新增】社交分享面板新增「分享到百度贴吧」按钮（Font Awesome 无贴吧图标，以品牌蓝「吧」字呈现；调用贴吧官方转贴接口 openShareApi，自动带入链接、标题与封面）'
+            '【新增】社交分享面板新增「分享到百度贴吧」按钮（Font Awesome 无贴吧图标，以品牌蓝「吧」字呈现；调用贴吧官方转贴接口 openShareApi，自动带入链接、标题与封面）',
+            '【修复】灯箱底部「当前 / 总数」计数器文字在半透明深色胶囊上偏暗，已改为白色，提升暗背景下的可读性'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -431,7 +432,8 @@ if (hitokotoEl) {
             '[New] Lightbox now supports left/right navigation between article images via arrow buttons, keyboard ←/→, and touch swipe on mobile, with smooth slide-in/out transitions; a "current / total" counter is shown at the bottom',
             '[Fix] Lightbox image no longer re-triggers the entrance pop animation when switching (which caused a jump); the prev/next arrow buttons now use the same scale hover animation as the share button (1.06, 0.15s) instead of moving up/down',
             '[Fix] Lightbox "current / total" counter was briefly covered by the image while switching (overlay controls now sit above the image via z-index)',
-            '[New] Social share panel now includes a "Share to Baidu Tieba" button (brand-blue "吧" glyph); it calls Tieba\'s official repost API (openShareApi) with the link, title and cover prefilled'
+            '[New] Social share panel now includes a "Share to Baidu Tieba" button (brand-blue "吧" glyph); it calls Tieba\'s official repost API (openShareApi) with the link, title and cover prefilled',
+            '[Fix] Lightbox "current / total" counter text was too dark on the semi-transparent pill; changed to white for better readability on dark backgrounds'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -1092,7 +1094,7 @@ if (hitokotoEl) {
                 '#lightbox .lb-nav{position:absolute;top:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:rgba(255,255,255,.10);color:#fff;transform:translateY(-50%) scale(1);transition:transform .15s ease,background .15s ease;}' +
                 '#lightbox .lb-nav:hover{background:rgba(255,255,255,.22);transform:translateY(-50%) scale(1.06);}' +
                 '#lightbox .lb-nav.lb-hide{display:none!important;}' +
-                '#lightbox .lb-counter{background:rgba(0,0,0,.45);padding:4px 14px;border-radius:9999px;font-size:13px;letter-spacing:.04em;}' +
+                '#lightbox .lb-counter{background:rgba(0,0,0,.45);color:#fff;padding:4px 14px;border-radius:9999px;font-size:13px;letter-spacing:.04em;}' +
                 '#lightbox .lb-counter.lb-hide{display:none!important;}' +
                 '#lightbox [data-close],#lightbox [data-download],#lightbox .lb-nav,#lightbox .lb-counter{z-index:10;}' +
                 '#lightbox img{z-index:1;position:relative;}' +
