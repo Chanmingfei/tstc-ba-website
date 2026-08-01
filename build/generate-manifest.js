@@ -263,10 +263,92 @@ const searchHash = crypto.createHash('md5').update(searchDataStr).digest('hex').
 fs.writeFileSync(path.join(root, 'assets', 'search-index.json'), searchDataStr, 'utf8');
 console.log('已生成 search-index.json（中文 ' + searchZh.length + ' 页 / 英文 ' + searchEn.length + ' 页），版本 ' + searchHash);
 
+// ---- 贴吧分享短链（dwz.cn）----
+// 背景：tstc.pp.ua 这个免费域名被百度贴吧分享接口屏蔽（提示"分享URL不合法"）。
+// 用百度自家的 dwz.cn 短链包装后，贴吧对话框通常能接受（dwz.cn 为百度信任域名）。
+// 仅当构建环境提供 DWZ_TOKEN 时才生成；否则跳过，分享按钮自动回退到长链接。
+// 短链映射缓存到 build/.shortlinks.json，避免每次构建重复申请、浪费"长期有效"配额、产生重复短链。
+const SHORT_LINK_CACHE = path.join(__dirname, '.shortlinks.json');
+function loadShortCache() {
+    try { return JSON.parse(fs.readFileSync(SHORT_LINK_CACHE, 'utf8')); } catch (e) { return {}; }
+}
+function saveShortCache(map) {
+    try { fs.writeFileSync(SHORT_LINK_CACHE, JSON.stringify(map, null, 2), 'utf8'); } catch (e) {}
+}
+async function buildShortLinks(pages) {
+    const map = {};
+    const token = process.env.DWZ_TOKEN;
+    if (!token) {
+        console.log('ℹ 未设置 DWZ_TOKEN，跳过贴吧短链生成（分享将使用长链接）');
+        return map;
+    }
+    if (typeof fetch === 'undefined') {
+        console.warn('⚠ 当前 Node 环境无 fetch，跳过贴吧短链生成');
+        return map;
+    }
+    const cache = loadShortCache();
+    const pending = [];
+    for (const p of pages) {
+        if (cache[p.url]) map[p.url] = cache[p.url];
+        else pending.push(p);
+    }
+    if (pending.length === 0) {
+        console.log('✓ 贴吧短链全部命中缓存（' + Object.keys(map).length + ' 条）');
+        return map;
+    }
+    console.log('▶ 生成贴吧短链（dwz.cn），需申请 ' + pending.length + ' 条 ...');
+    let ok = 0, fail = 0;
+    for (const p of pending) {
+        try {
+            const res = await fetch('https://dwz.cn/api/v3/short-urls', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json; charset=UTF-8', 'Dwz-Token': token },
+                body: JSON.stringify([{ LongUrl: p.url, TermOfValidity: 'long-term' }])
+            });
+            const data = await res.json();
+            const item = (data && Array.isArray(data.ShortUrls) && data.ShortUrls[0]) ? data.ShortUrls[0] : null;
+            if (item && item.ShortUrl && (item.Code === 0 || item.Code === undefined)) {
+                map[p.url] = item.ShortUrl;
+                cache[p.url] = item.ShortUrl;
+                ok++;
+            } else {
+                const err = (item && item.ErrMsg) || (data && data.ErrMsg) || ('Code=' + (data && data.Code));
+                console.warn('⚠ 短链生成失败 [' + p.url + ']：' + err);
+                fail++;
+            }
+        } catch (e) {
+            console.warn('⚠ 短链请求异常 [' + p.url + ']：' + e.message);
+            fail++;
+        }
+        await new Promise(r => setTimeout(r, 150)); // 免费用户 10 QPS，留余量
+    }
+    saveShortCache(cache);
+    console.log('✓ 贴吧短链生成完成：成功 ' + ok + '，失败 ' + fail);
+    return map;
+}
+
+// 收集需要短链的页面（与 OG 注入同条件：排除 404 / dzl 错误页）
+const sharePages = [];
+for (const file of htmlFiles) {
+    const fb = path.basename(file).replace(/\.html$/, '');
+    if (fb === '404' || fb === '404-en' || fb === 'dzl' || fb === 'dzl-en') continue;
+    const rel = path.relative(root, file).split(path.sep);
+    let relUrl = '/' + rel.join('/');
+    if (relUrl === '/index.html') relUrl = '/';
+    sharePages.push({ file, url: SITE_BASE + relUrl });
+}
+
+(async () => {
+const shortUrlMap = await buildShortLinks(sharePages);
 let updated = 0;
 for (const file of htmlFiles) {
     let html = fs.readFileSync(file, 'utf8');
     const orig = html;
+    // 本页公开绝对地址，供短链映射查找
+    const relTop = path.relative(root, file).split(path.sep);
+    let relUrlTop = '/' + relTop.join('/');
+    if (relUrlTop === '/index.html') relUrlTop = '/';
+    const pageUrlFull = SITE_BASE + relUrlTop;
     // 1) 幂等清理：去掉上一次注入的内联数据脚本（中/英两套都要清），以及任何残留的 news-data.js 外链
     html = html.replace(/<script>\s*window\.__NEWS(_EN)?__\s*=\s*[\s\S]*?<\/script>\s*/g, '');
     html = html.replace(/\s*<script src="assets\/news-data\.js[^"]*"><\/script>/g, '');
@@ -338,6 +420,15 @@ for (const file of htmlFiles) {
         const siteUrlScript = '<script>window.__SITE_URL__ = ' + JSON.stringify(SITE_BASE) + ';</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + siteUrlScript + '\n    $1');
     }
+    // 4d) 注入贴吧分享短链（dwz.cn）。仅当该页已生成短链时注入；否则清除旧注入，按钮回退长链接。幂等。
+    {
+        html = html.replace(/<script>\s*window\.__SHARE_SHORT_URL__\s*=\s*[^;]*;\s*<\/script>\s*/g, '');
+        const short = shortUrlMap[pageUrlFull];
+        if (short) {
+            const s = '<script>window.__SHARE_SHORT_URL__ = ' + JSON.stringify(short) + ';</script>';
+            html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + s + '\n    $1');
+        }
+    }
     // 4) 自动注入「上一篇 / 下一篇」导航（所有 post-N.html 新闻，含 -en 英文版）
     //    不论文章里是旧版手写块、还是之前生成的带标记块，统一先清掉，
     //    再在「返回新闻列表」之前插入一份最新生成的导航，避免重复出现两组按钮。
@@ -394,3 +485,4 @@ console.log('已更新 ' + updated + ' 个 HTML（main.js 版本=' + mainJsHash 
     fs.writeFileSync(path.join(root, 'robots.txt'), robots, 'utf8');
     console.log('已生成 sitemap.xml（' + urls.length + ' 条）/ robots.txt');
 }
+})();
