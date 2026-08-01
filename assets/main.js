@@ -421,7 +421,7 @@ if (hitokotoEl) {
             '【新增】社交分享面板新增「分享到百度贴吧」按钮（Font Awesome 无贴吧图标，以品牌蓝「吧」字呈现；调用贴吧官方转贴接口 openShareApi，自动带入链接、标题与封面）',
             '【修复】灯箱底部「当前 / 总数」计数器文字在半透明深色胶囊上偏暗，已改为白色，提升暗背景下的可读性',
             '【修复】分享到百度贴吧在部分页面（地震纪念页 / 404 页）提示「分享不合法」：这些页面未注入 og:image 导致分享封面为空，现已对封面图做兜底（默认吧徽）并统一转成绝对地址，贴吧可正常抓取；其余页面封面也由相对路径改为绝对地址，缩略图可正确加载',
-            '【修复】分享到百度贴吧提示「分享URL不合法」的根因：分享链接为本地预览地址（localhost），贴吧服务端无法抓取该地址故判为不合法。已将 SITE_BASE 默认值设为本站正式域名 https://tstc.pp.ua，分享链接与封面图均改为公开绝对地址，即使在本地预览中点击分享也能被贴吧正常抓取（已用真实域名实测首页/文章/纪念/404 页均正常）'
+            '【修复】分享到百度贴吧提示「分享URL不合法」的根因：分享链接为本地预览地址（localhost），贴吧服务端无法抓取该地址故判为不合法。已将 SITE_BASE 默认值设为本站正式域名 https://tstc.pp.ua，分享链接与封面图均改为公开绝对地址，即使在本地预览中点击分享也能被贴吧正常抓取（已用真实域名实测首页/文章/纪念/404 页均正常）；并额外将正式域名写死为兜底，即使构建未注入 __SITE_URL__（预览/旧构建），分享链接也一定是公网绝对地址'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -437,7 +437,7 @@ if (hitokotoEl) {
             '[New] Social share panel now includes a "Share to Baidu Tieba" button (brand-blue "吧" glyph); it calls Tieba\'s official repost API (openShareApi) with the link, title and cover prefilled',
             '[Fix] Lightbox "current / total" counter text was too dark on the semi-transparent pill; changed to white for better readability on dark backgrounds',
             '[Fix] "Share to Baidu Tieba" showed "分享不合法" (invalid share) on some pages (earthquake memorial / 404) because those pages had no og:image, leaving the cover empty; now falls back to the default bar logo and always uses an absolute URL so Tieba can fetch it; other pages also send an absolute cover so the thumbnail loads correctly',
-            '[Fix] The real cause of "分享URL不合法" (invalid URL) for Tieba: the shared link was a local preview address (localhost) that Tieba\'s server cannot fetch, so it is rejected. SITE_BASE now defaults to the official domain https://tstc.pp.ua, so both the share link and cover image are absolute public URLs and Tieba can fetch them even from local preview (verified on home/article/memorial/404 pages with the real domain — all load fine).'
+            '[Fix] The real cause of "分享URL不合法" (invalid URL) for Tieba: the shared link was a local preview address (localhost) that Tieba\'s server cannot fetch, so it is rejected. SITE_BASE now defaults to the official domain https://tstc.pp.ua, so both the share link and cover image are absolute public URLs and Tieba can fetch them even from local preview (verified on home/article/memorial/404 pages with the real domain — all load fine). The official domain is also hardcoded as a fallback, so even if __SITE_URL__ is not injected (preview/stale build), the share link is always a public absolute URL.'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -699,8 +699,10 @@ if (hitokotoEl) {
         // 分享链接优先使用站点公开地址（构建时由 SITE_BASE 注入的 window.__SITE_URL__），
         // 这样即使在本机预览（location.href 为 localhost）也能分享出可被贴吧等平台抓取的公开地址。
         function pageUrl() {
-            const base = (window.__SITE_URL__ || '').replace(/\/+$/, '');
-            if (base && /^https?:\/\//i.test(base)) {
+            // 兜底写死正式公网域名：即使构建未注入 __SITE_URL__（如预览/旧构建），
+            // 分享链接也一定是公网绝对地址，避免 localhost 被贴吧判为不合法。
+            const base = (window.__SITE_URL__ || 'https://tstc.pp.ua').replace(/\/+$/, '');
+            if (/^https?:\/\//i.test(base)) {
                 return base + location.pathname + location.search;
             }
             return location.href;
@@ -713,9 +715,9 @@ if (hitokotoEl) {
             const m = document.querySelector('meta[property="og:image"]');
             let p = m ? (m.getAttribute('content') || '') : '';
             if (!p) p = '/assets/images/bar-logo.jpg'; // 兜底默认封面（错误页 / 纪念页未注入 og:image）
-            // 相对路径统一解析为绝对地址：优先用站点公开地址（window.__SITE_URL__），确保预览/第三方也能正确抓取
+            // 相对路径统一解析为绝对地址：优先用站点公开地址（window.__SITE_URL__，兜底正式域名），确保预览/第三方也能正确抓取
             if (p && !/^https?:\/\//i.test(p)) {
-                const base = (window.__SITE_URL__ || location.origin).replace(/\/+$/, '');
+                const base = (window.__SITE_URL__ || 'https://tstc.pp.ua').replace(/\/+$/, '');
                 p = base + (p.charAt(0) === '/' ? '' : '/') + p;
             }
             return p;
