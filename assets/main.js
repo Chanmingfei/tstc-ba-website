@@ -413,7 +413,8 @@ if (hitokotoEl) {
             '【修复】更新日志弹窗二次打开内容不显示（打开时重置遮罩状态）',
             '【修复】英文版页脚无「更新日志」入口（版权段落改为中英文通用匹配）；英文版更新日志内容未随语言切换（补全英文记录）',
             '【修复】分享按钮品牌图标不显示（补 fa-brands 类以使用 Brands 字体）；统一分享按钮与「回到顶部」按钮视觉风格',
-            '【优化】重写 README，补充近期重大更新与功能说明'
+            '【优化】重写 README，补充近期重大更新与功能说明',
+            '【新增】灯箱（图片放大）新增「下载图片」按钮，可一键保存当前查看的图片'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -1066,15 +1067,24 @@ if (hitokotoEl) {
         if (!scope) return;
         var imgs = Array.prototype.slice.call(scope.querySelectorAll('img'));
         if (!imgs.length) return;
+        function filenameFrom(src) {
+            try {
+                var name = String(src).split('/').pop().split('?')[0];
+                return decodeURIComponent(name) || 'image.jpg';
+            } catch (e) { return 'image.jpg'; }
+        }
         var box = document.getElementById('lightbox');
         if (!box) {
             box = document.createElement('div');
             box.id = 'lightbox';
             box.className = 'fixed inset-0 z-[70] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
             box.innerHTML =
-                '<button class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="关闭"><i class="fa fa-times text-xl"></i></button>' +
+                '<button class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Close' : '关闭') + '"><i class="fa fa-times text-xl"></i></button>' +
+                '<a data-download="1" class="absolute right-20 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Download image' : '下载图片') + '" title="' + (isEn ? 'Download image' : '下载图片') + '" download><i class="fa fa-download text-xl"></i></a>' +
                 '<img class="max-h-[90vh] max-w-[94vw] rounded-lg shadow-2xl cursor-auto" alt="">';
             document.body.appendChild(box);
+            // 下载按钮点击不触发灯箱关闭（用 <a> 而非 <button>，并阻止冒泡）
+            box.querySelector('[data-download]').addEventListener('click', function (e) { e.stopPropagation(); });
             var close = function () {
                 if (box.classList.contains('hidden')) return;
                 boxImg.classList.remove('animate-search-pop');
@@ -1098,6 +1108,11 @@ if (hitokotoEl) {
                 e.preventDefault();
                 boxImg.src = img.currentSrc || img.src;
                 boxImg.alt = img.alt || '';
+                var dl = box.querySelector('[data-download]');
+                if (dl) {
+                    dl.href = boxImg.src;
+                    dl.setAttribute('download', filenameFrom(boxImg.src));
+                }
                 box.classList.remove('hidden');
                 box.classList.add('flex');
                 void box.offsetWidth; // 重排，确保从 opacity:0 起始淡入
