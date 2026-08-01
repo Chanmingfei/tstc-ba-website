@@ -330,6 +330,14 @@ for (const file of htmlFiles) {
         const searchUrlScript = '<script>window.__SEARCH_INDEX_URL__ = "/assets/search-index.json?v=' + searchHash + '";</script>';
         html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + searchUrlScript + '\n    $1');
     }
+    // 4c) 注入站点公开地址（SITE_BASE）。分享/OG 等需要可被第三方抓取「绝对公开地址」的场景使用；
+    //     留空时分享回退到 location.href（线上为公网地址，本地预览为 localhost，贴吧等无法抓取会报错）。
+    //     幂等：先清除旧的注入，避免多次构建叠加重复脚本。
+    {
+        html = html.replace(/<script>\s*window\.__SITE_URL__\s*=\s*[^;]*;\s*<\/script>\s*/g, '');
+        const siteUrlScript = '<script>window.__SITE_URL__ = ' + JSON.stringify(SITE_BASE) + ';</script>';
+        html = html.replace(/(<script[^>]*assets\/main\.js[^>]*><\/script>)/, '\n    ' + siteUrlScript + '\n    $1');
+    }
     // 4) 自动注入「上一篇 / 下一篇」导航（所有 post-N.html 新闻，含 -en 英文版）
     //    不论文章里是旧版手写块、还是之前生成的带标记块，统一先清掉，
     //    再在「返回新闻列表」之前插入一份最新生成的导航，避免重复出现两组按钮。
