@@ -170,10 +170,10 @@ const styleHash = fileHash(path.join(root, 'assets', 'style.css'));
 const faHash = fileHash(path.join(root, 'assets', 'fontawesome', 'fa.min.css'));
 
 // ---- 社交分享卡片（Open Graph / Twitter Card）与站点地图所需基础配置 ----
-// SITE_BASE：站点绝对地址前缀；部署到自定义域名时可用环境变量传入，例如
+// SITE_BASE：站点绝对地址前缀；默认使用本站正式公网域名，确保 OG / sitemap / 分享链接
+// 都是可被第三方（贴吧等）抓取的绝对地址。部署到其它域名时可环境变量覆盖，例如
 //   SITE_BASE=https://your-domain.com npm run build
-// 留空时 og:url / og:image / sitemap 使用站点根相对路径（同源下可被绝大多数解析器接受）。
-const SITE_BASE = (process.env.SITE_BASE || '').replace(/\/+$/, '');
+const SITE_BASE = (process.env.SITE_BASE || 'https://tstc.pp.ua').replace(/\/+$/, '');
 const DEFAULT_OG_IMAGE = '/assets/images/bar-logo.jpg';
 function escAttr(s) {
     return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
