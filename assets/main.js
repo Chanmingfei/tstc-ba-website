@@ -415,7 +415,8 @@ if (hitokotoEl) {
             '【修复】分享按钮品牌图标不显示（补 fa-brands 类以使用 Brands 字体）；统一分享按钮与「回到顶部」按钮视觉风格',
             '【优化】重写 README，补充近期重大更新与功能说明',
             '【新增】灯箱（图片放大）新增「下载图片」按钮，可一键保存当前查看的图片',
-            '【新增】灯箱支持左右切换文章内图片：左右箭头按钮、键盘 ←/→、移动端左右滑动三种方式，并带平滑滑入/滑出动画衔接；底部显示「当前 / 总数」计数'
+            '【新增】灯箱支持左右切换文章内图片：左右箭头按钮、键盘 ←/→、移动端左右滑动三种方式，并带平滑滑入/滑出动画衔接；底部显示「当前 / 总数」计数',
+            '【修复】灯箱切换图片时残留的入场弹入动画导致图片跳动（切换时移除弹入残留类，仅保留左右滑动）；左右箭头按钮改为与分享按钮一致的「放大缩小」悬停动画（幅度 1.06，0.15s），不再上下位移'
         ], en: [
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
             '[New] Social share cards (Open Graph / Twitter Card) and sitemap.xml / robots.txt for better SEO and link previews',
@@ -425,7 +426,8 @@ if (hitokotoEl) {
             '[Fix] Missing "Changelog" entry in the English footer (now matches the copyright line in both languages); English changelog body was not localized (added English entries)',
             '[Fix] Social brand icons were invisible (added fa-brands class for the Brands font); unified the share button and back-to-top button styling',
             '[Opt] Rewrote README with recent updates and feature docs',
-            '[New] Lightbox now supports left/right navigation between article images via arrow buttons, keyboard ←/→, and touch swipe on mobile, with smooth slide-in/out transitions; a "current / total" counter is shown at the bottom'
+            '[New] Lightbox now supports left/right navigation between article images via arrow buttons, keyboard ←/→, and touch swipe on mobile, with smooth slide-in/out transitions; a "current / total" counter is shown at the bottom',
+            '[Fix] Lightbox image no longer re-triggers the entrance pop animation when switching (which caused a jump); the prev/next arrow buttons now use the same scale hover animation as the share button (1.06, 0.15s) instead of moving up/down'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -1080,13 +1082,13 @@ if (hitokotoEl) {
             var st = document.createElement('style');
             st.id = 'lightboxNavStyle';
             st.textContent =
-                '#lightbox .lb-nav{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:rgba(255,255,255,.10);color:#fff;transition:background .2s,transform .2s;}' +
-                '#lightbox .lb-nav:hover{background:rgba(255,255,255,.22);transform:scale(1.08);}' +
+                '#lightbox .lb-nav{position:absolute;top:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:rgba(255,255,255,.10);color:#fff;transform:translateY(-50%) scale(1);transition:transform .15s ease,background .15s ease;}' +
+                '#lightbox .lb-nav:hover{background:rgba(255,255,255,.22);transform:translateY(-50%) scale(1.06);}' +
                 '#lightbox .lb-nav.lb-hide{display:none!important;}' +
                 '#lightbox .lb-counter{background:rgba(0,0,0,.45);padding:4px 14px;border-radius:9999px;font-size:13px;letter-spacing:.04em;}' +
                 '#lightbox .lb-counter.lb-hide{display:none!important;}' +
-                '@keyframes lbSlideInRight{from{opacity:0;transform:translateX(48px) scale(.98);}to{opacity:1;transform:translateX(0) scale(1);}}' +
-                '@keyframes lbSlideInLeft{from{opacity:0;transform:translateX(-48px) scale(.98);}to{opacity:1;transform:translateX(0) scale(1);}}' +
+                '@keyframes lbSlideInRight{from{opacity:0;transform:translateX(48px);}to{opacity:1;transform:translateX(0);}}' +
+                '@keyframes lbSlideInLeft{from{opacity:0;transform:translateX(-48px);}to{opacity:1;transform:translateX(0);}}' +
                 '@keyframes lbSlideOutRight{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(48px);}}' +
                 '@keyframes lbSlideOutLeft{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(-48px);}}' +
                 '.lb-slide-in-right{animation:lbSlideInRight .26s cubic-bezier(.22,.61,.36,1) both;}' +
@@ -1114,7 +1116,7 @@ if (hitokotoEl) {
                 animating = true;
                 var outCls = dir > 0 ? 'lb-slide-out-left' : 'lb-slide-out-right';
                 var inCls = dir > 0 ? 'lb-slide-in-right' : 'lb-slide-in-left';
-                boxImg.classList.remove('lb-slide-in-left', 'lb-slide-in-right', 'lb-slide-out-left', 'lb-slide-out-right');
+                boxImg.classList.remove('animate-search-pop', 'animate-search-pop-out', 'lb-slide-in-left', 'lb-slide-in-right', 'lb-slide-out-left', 'lb-slide-out-right');
                 boxImg.classList.add(outCls);
                 setTimeout(function () {
                     boxImg.src = next.src;
@@ -1156,8 +1158,8 @@ if (hitokotoEl) {
             box.innerHTML =
                 '<button data-close class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Close' : '关闭') + '"><i class="fa fa-times text-xl"></i></button>' +
                 '<a data-download="1" class="absolute right-20 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Download image' : '下载图片') + '" title="' + (isEn ? 'Download image' : '下载图片') + '" download><i class="fa fa-download text-xl"></i></a>' +
-                '<button data-nav="prev" class="lb-nav absolute left-4 top-1/2 -translate-y-1/2" aria-label="' + (isEn ? 'Previous image' : '上一张') + '"><i class="fa fa-chevron-left text-2xl"></i></button>' +
-                '<button data-nav="next" class="lb-nav absolute right-4 top-1/2 -translate-y-1/2" aria-label="' + (isEn ? 'Next image' : '下一张') + '"><i class="fa fa-chevron-right text-2xl"></i></button>' +
+                '<button data-nav="prev" class="lb-nav absolute left-4 top-1/2" aria-label="' + (isEn ? 'Previous image' : '上一张') + '"><i class="fa fa-chevron-left text-2xl"></i></button>' +
+                '<button data-nav="next" class="lb-nav absolute right-4 top-1/2" aria-label="' + (isEn ? 'Next image' : '下一张') + '"><i class="fa fa-chevron-right text-2xl"></i></button>' +
                 '<div data-counter class="lb-counter absolute bottom-4 left-1/2 -translate-x-1/2"></div>' +
                 '<img class="max-h-[90vh] max-w-[94vw] rounded-lg shadow-2xl cursor-auto" alt="">';
             document.body.appendChild(box);
