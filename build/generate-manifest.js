@@ -178,6 +178,14 @@ const DEFAULT_OG_IMAGE = '/assets/images/bar-logo.jpg';
 function escAttr(s) {
     return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
+// 解码常见 HTML 实体：从已渲染的 HTML 文本（如 <title>、<meta description>）提取内容时，
+// 源里可能已含 &amp; 等转义，先还原再交给 escAttr，避免二次转义（&amp;amp;）。
+function decodeEntities(s) {
+    return String(s)
+        .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&apos;/gi, "'");
+}
 // slug -> 封面图（来自文章元信息，供 og:image 使用）
 const coverMap = {};
 for (const it of items) { if (it.cover) coverMap[it.slug] = it.cover; }
@@ -370,9 +378,9 @@ for (const file of htmlFiles) {
         if (fb2 !== '404' && fb2 !== '404-en' && fb2 !== 'dzl' && fb2 !== 'dzl-en') {
             const rel2 = path.relative(root, file).split(path.sep);
             const titleM = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-            const title = titleM ? titleM[1].replace(/\s+/g, ' ').trim() : '';
+            const title = titleM ? decodeEntities(titleM[1]).replace(/\s+/g, ' ').trim() : '';
             const descM = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i);
-            const desc = descM ? descM[1] : '';
+            const desc = descM ? decodeEntities(descM[1]) : '';
             let relUrl = '/' + rel2.join('/');
             if (relUrl === '/index.html') relUrl = '/';
             const url = SITE_BASE + relUrl;
