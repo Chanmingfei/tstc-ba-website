@@ -12,18 +12,19 @@
 
 ## 1. 仓库与部署通道（务必照此操作）
 
-- **Gitee（主仓库，可直接 push）**：`mingfei123/tstc-ba-website`，分支 `main`。
+- **Gitee（主仓库，可直接 push，镜像兜底）**：`mingfei123/tstc-ba-website`，分支 `main`。
   - 永久 Token（推送用）：`d03655b0f6188c13ca4591504d5e6494`
   - 远程 URL 形如：`https://oauth2:d03655b0f6188c13ca4591504d5e6494@gitee.com/mingfei123/tstc-ba-website.git`
-- **GitHub（镜像，只读来源）**：`Chanmingfei/tstc-ba-website`。**所有改动推到 Gitee 后会自动镜像到 GitHub，再由 Cloudflare Pages 自动部署**——你只需 push 到 Gitee。
-- ⚠️ **沙箱网络：GitHub 的 TLS 被代理拦截，直接访问/clone GitHub 会失败。一律走 Gitee。** 也别用 `gh` CLI（未登录）。
+- **GitHub（Chanmingfei/tstc-ba-website）**：用户提供了永久 PAT，**已配置为本地 `git remote add github`**（token 写入远程 URL，存于本地 `.git/config`，**切勿提交到仓库**）。
+  - 直推 GitHub 可减少「Gitee→GitHub 镜像」的延迟；PAT 另存于本地 `/root/.codebuddy/github_token.txt`。
+- ⚠️ **沙箱网络：GitHub 的 TLS 常被代理拦截，直连可能失败**。因此推送策略为：**先试 `git push github main`；失败则回退 `git push origin main`（Gitee 镜像 → 自动同步 GitHub → Cloudflare 部署）**。两条路径最终都会上 GitHub 并触发 Cloudflare 部署。也别用 `gh` CLI。
 - 工作目录：`/workspace/tstc-ba-website`。
 
 ### Git 操作坑（踩过）
 - **cwd 不跨工具调用保持**：每条 git 命令都要前缀 `cd /workspace/tstc-ba-website &&`。
 - 首次提交若报 "unable to auto-detect email"：执行
   `git config user.name "mingfei123"` 和 `git config user.email "bazhu@tstc.pp.ua"`（仓库级配置）。
-- 推送：`git push origin main` → 自动镜像 + 部署。部署稍等片刻再在线上验证。
+- 推送：**先 `git push github main`；失败则 `git push origin main`**（Gitee → 镜像 → 部署）。部署稍等片刻再在线上验证。
 
 ---
 
