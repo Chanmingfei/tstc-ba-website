@@ -712,7 +712,9 @@ if (hitokotoEl) {
             // 分享链接也一定是公网绝对地址，避免 localhost 被贴吧判为不合法。
             const base = (window.__SITE_URL__ || 'https://tstc.pp.ua').replace(/\/+$/, '');
             if (/^https?:\/\//i.test(base)) {
-                return base + location.pathname + location.search;
+                // 规范化路径：去掉 index.html，避免贴吧抓取时遇到 308 跳转而被间歇判为"URL 非法"
+                const p = (location.pathname || '/').replace(/\/index\.html$/, '/');
+                return base + p + location.search;
             }
             return location.href;
         }
