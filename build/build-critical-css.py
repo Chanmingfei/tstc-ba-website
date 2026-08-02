@@ -84,6 +84,10 @@ def rule_should_keep(selector, first_screen):
     # 文章正文样式（含链接折行）必须同步首屏生效，避免移动端长链接溢出
     if ".article-content" in selector:
         return True
+    # 暗色模式令牌与工具类映射：首屏前必须生效，
+    # 否则 data-theme="dark" 用户在完整 style.css 异步加载完成前会先白屏再闪成暗色
+    if "data-theme" in selector:
+        return True
     # 全局/基础规则
     sels = [s.strip() for s in re.split(r",", selector)]
     kept_for_global = False

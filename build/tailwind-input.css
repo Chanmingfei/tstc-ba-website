@@ -13,6 +13,19 @@
     --accent: #4c94ff;
     --light: #f0f4f8;
     --dark: #333333;
+    color-scheme: light;
+    /* 主题表面令牌：暗色模式统一在 [data-theme="dark"] 中切换 */
+    --bg: #ffffff;
+    --bg-alt: #f0f4f8;
+    --surface: #ffffff;
+    --surface-2: #f3f4f6;
+    --text: #1f2937;
+    --text-strong: #111827;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --nav-bg: rgba(255, 255, 255, .72);
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
+    --selection: rgba(37, 117, 252, .15);
 }
 
 html {
@@ -33,7 +46,9 @@ body {
 }
 
 .card-hover {
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease,
+                background-color 0.4s cubic-bezier(.4, 0, .2, 1),
+                border-color 0.4s cubic-bezier(.4, 0, .2, 1);
 }
 
 .card-hover:hover {
@@ -176,14 +191,14 @@ body {
 .article-content h2 {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #0465bc;
+    color: var(--primary);
     margin: 2rem 0 0.75rem;
 }
 
 .article-content h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--text-strong);
     margin: 1.5rem 0 0.5rem;
 }
 
@@ -201,7 +216,7 @@ body {
 }
 
 .article-content a {
-    color: #2575fc;
+    color: var(--secondary);
     text-decoration: underline;
     /* 移动端长链接（如内网系统地址）必须可折行，否则会溢出正文边框导致排版错乱 */
     word-break: break-all;
@@ -209,17 +224,17 @@ body {
 }
 
 .article-content blockquote {
-    border-left: 4px solid #2575fc;
+    border-left: 4px solid var(--secondary);
     padding: 0.5rem 0 0.5rem 1rem;
     margin: 1.25rem 0;
-    color: #6b7280;
-    background: #f0f4f8;
+    color: var(--text-muted);
+    background: var(--bg-alt);
     border-radius: 0 0.5rem 0.5rem 0;
     font-style: italic;
 }
 
 .article-content strong {
-    color: #111827;
+    color: var(--text-strong);
     font-weight: 600;
 }
 
@@ -324,3 +339,140 @@ body.reveal-ready .reveal-item.in-view {
     body.reveal-ready .reveal-item { opacity: 1; transform: none; }
     .menu-pop, .menu-pop-out { animation: none; }
 }
+
+/* ===========================================================
+   夜间模式（Dark Mode）
+   机制：<html data-theme="dark"> + CSS 变量。组件不写死颜色，
+   只通过 [data-theme="dark"] 覆盖工具类映射到暗色令牌。
+   初始化由 build/inject-theme.js 注入的防闪烁脚本在首屏前完成。
+   =========================================================== */
+
+/* 选中文本配色随主题 */
+::selection {
+    background: var(--selection);
+}
+
+/* 丝滑过渡：仅作用于配色相关属性，配合 cubic-bezier 缓动，
+   不影响 transform 动画（hover 缩放 / 滚动渐入）。卡片由下方 .card-hover 统一处理。 */
+.bg-white, .bg-gray-50, .bg-light, .bg-blue-50,
+.text-gray-800, .text-gray-700, .text-gray-600, .text-gray-500, .text-dark,
+.text-blue-700, .text-primary, .text-secondary,
+.border, .border-gray-200, .border-blue-200, .border-primary,
+.placeholder-gray-400, .search-container, .search-input,
+.article-content, .article-content h2, .article-content h3, .article-content p,
+.article-content blockquote, .article-content strong, .article-content a,
+.article-content li, .article-content ul, .article-content ol {
+    transition: background-color 0.4s cubic-bezier(.4, 0, .2, 1),
+                color 0.4s cubic-bezier(.4, 0, .2, 1),
+                border-color 0.4s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* 卡片：保留 hover 位移/阴影（transform），并叠加丝滑配色过渡 */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease,
+                background-color 0.4s cubic-bezier(.4, 0, .2, 1),
+                border-color 0.4s cubic-bezier(.4, 0, .2, 1);
+}
+
+body {
+    transition: background-color 0.4s cubic-bezier(.4, 0, .2, 1),
+                color 0.4s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ---------- 暗色令牌 ---------- */
+[data-theme="dark"] {
+    color-scheme: dark;
+    /* 品牌色在暗色下提亮，保证对比度 */
+    --primary: #4d94e8;
+    --secondary: #5b9bff;
+    --accent: #7eb0ff;
+    /* 表面令牌 */
+    --bg: #0e1117;
+    --bg-alt: #151a23;
+    --surface: #181d27;
+    --surface-2: #212836;
+    --text: #e6e8ec;
+    --text-strong: #f5f7fa;
+    --text-muted: #97a0b0;
+    --border: #2a3140;
+    --nav-bg: rgba(14, 17, 23, .72);
+    --card-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+    --selection: rgba(91, 155, 255, .28);
+}
+
+/* ---------- 暗色下工具类映射 ---------- */
+[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+[data-theme="dark"] .bg-light { background-color: var(--bg); }
+[data-theme="dark"] .bg-white { background-color: var(--surface); }
+[data-theme="dark"] .bg-gray-50 { background-color: var(--bg-alt); }
+[data-theme="dark"] .bg-blue-50 { background-color: rgba(91, 155, 255, .12); }
+[data-theme="dark"] .glass-effect { background: var(--nav-bg); }
+[data-theme="dark"] .search-container { background-color: var(--surface); box-shadow: var(--card-shadow); }
+[data-theme="dark"] .search-input { background-color: var(--surface-2); color: var(--text); }
+
+[data-theme="dark"] .text-dark,
+[data-theme="dark"] .text-gray-800 { color: var(--text); }
+[data-theme="dark"] .text-gray-700 { color: var(--text); }
+[data-theme="dark"] .text-gray-600 { color: #c9d1dc; }
+[data-theme="dark"] .text-gray-500 { color: var(--text-muted); }
+[data-theme="dark"] .text-blue-700 { color: #8ab4ff; }
+[data-theme="dark"] .text-primary { color: var(--primary); }
+[data-theme="dark"] .text-secondary { color: var(--secondary); }
+
+[data-theme="dark"] .border { border-color: var(--border); }
+[data-theme="dark"] .border-gray-200 { border-color: var(--border); }
+[data-theme="dark"] .border-blue-200 { border-color: rgba(91, 155, 255, .35); }
+[data-theme="dark"] .border-primary { border-color: var(--primary); }
+
+[data-theme="dark"] .hover\:bg-gray-100:hover { background-color: var(--surface-2); }
+[data-theme="dark"] .hover\:bg-blue-100:hover { background-color: rgba(91, 155, 255, .2); }
+[data-theme="dark"] .placeholder-gray-400::placeholder { color: #8b93a3; }
+
+/* 品牌块（页脚 / 返回顶部 / 按钮）在暗色下略提亮 */
+[data-theme="dark"] .bg-primary { background-color: #1f6fd0; }
+[data-theme="dark"] .bg-secondary { background-color: #3b82f6; }
+[data-theme="dark"] .hover\:bg-primary:hover { background-color: #2a7bdc; }
+[data-theme="dark"] .hover\:bg-secondary:hover { background-color: #5b9bff; }
+
+/* 文章正文暗色 */
+[data-theme="dark"] .article-content { color: var(--text); }
+[data-theme="dark"] .article-content h2 { color: var(--primary); }
+[data-theme="dark"] .article-content h3 { color: var(--text-strong); }
+[data-theme="dark"] .article-content a { color: var(--secondary); }
+[data-theme="dark"] .article-content blockquote { border-left-color: var(--secondary); color: var(--text-muted); background: var(--bg-alt); }
+[data-theme="dark"] .article-content strong { color: var(--text-strong); }
+
+/* JS 内联控件：分享子按钮（自包含样式中的白色圆钮在暗色下改为暗面） */
+[data-theme="dark"] #shareFab .share-btn { background: #212836; color: #c9d1dc; box-shadow: 0 3px 10px rgba(0, 0, 0, .45); }
+[data-theme="dark"] #shareFab .share-btn:hover { background: #2b3242; box-shadow: 0 6px 16px rgba(0, 0, 0, .55); }
+
+/* ---------- 主题切换按钮（太阳 / 月亮交叉淡入 + 旋转，纯 CSS 随 data-theme 形变） ---------- */
+.theme-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    overflow: hidden;
+    transition: background-color .3s ease, color .3s ease, border-color .3s ease, transform .4s cubic-bezier(.34, 1.56, .64, 1);
+}
+.theme-toggle:hover { transform: scale(1.08); }
+.theme-toggle:active { transform: scale(.94); }
+.theme-toggle i {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .55s cubic-bezier(.34, 1.56, .64, 1), opacity .35s ease;
+}
+.theme-toggle .fa-sun { opacity: 0; transform: rotate(-90deg) scale(.4); }
+.theme-toggle .fa-moon { opacity: 1; transform: rotate(0) scale(1); }
+html[data-theme="dark"] .theme-toggle .fa-sun { opacity: 1; transform: rotate(0) scale(1); }
+html[data-theme="dark"] .theme-toggle .fa-moon { opacity: 0; transform: rotate(90deg) scale(.4); }
