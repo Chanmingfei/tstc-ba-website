@@ -421,6 +421,7 @@ body {
 [data-theme="dark"] #backToTop:hover { box-shadow: 0 8px 22px rgba(255, 255, 255, .16); }
 
 [data-theme="dark"] .search-input { background-color: var(--surface-2); color: var(--text); }
+[data-theme="dark"] #searchModalInput:focus { background-color: var(--surface-2); }
 
 [data-theme="dark"] .text-dark,
 [data-theme="dark"] .text-gray-800 { color: var(--text); }
