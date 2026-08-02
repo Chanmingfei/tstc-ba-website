@@ -457,33 +457,84 @@ body {
 [data-theme="dark"] #shareFab .share-btn { background: #212836; color: #c9d1dc; box-shadow: 0 3px 10px rgba(0, 0, 0, .45); }
 [data-theme="dark"] #shareFab .share-btn:hover { background: #2b3242; box-shadow: 0 6px 16px rgba(0, 0, 0, .55); }
 
-/* ---------- 主题切换按钮（太阳 / 月亮交叉淡入 + 旋转，纯 CSS 随 data-theme 形变） ---------- */
+/* ---------- 主题切换按钮（日/夜滑动开关，参考 SegmentFault「单标签日夜间切换」） ----------
+   药丸轨道左侧太阳、右侧月亮；点击时太阳滑向右侧变月亮，背景从蓝天切到星空夜空，0.5s 过渡。
+   轨道底色固定（不随站点明暗变），仅表示当前日/夜状态。状态由 html[data-theme="dark"] 驱动。 */
 .theme-toggle {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
+    flex: none;
+    width: 68px;
+    height: 32px;
+    padding: 0;
+    border: none;
     border-radius: 9999px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
     cursor: pointer;
     overflow: hidden;
-    transition: background-color .3s ease, color .3s ease, border-color .3s ease, transform .4s cubic-bezier(.34, 1.56, .64, 1);
+    background:
+        radial-gradient(circle at 10% 28%, #fff, #fff 2px, transparent 3px),
+        radial-gradient(circle at 18% 62%, #fff, #fff 1px, transparent 2px),
+        radial-gradient(circle at 26% 45%, #fff, #fff 1.5px, transparent 2.5px),
+        linear-gradient(90deg, #2b303e 0 50%, #5a81b4 50% 100%);
+    background-repeat: no-repeat;
+    background-size: 200% 100%;
+    background-position: 100% 0;   /* 默认（亮色）：显示右侧蓝天 */
+    box-shadow:
+        0 -2px 3px rgba(0, 0, 0, .25),
+        inset 0 2px 3px rgba(0, 0, 0, .25),
+        0 2px 3px rgba(255, 255, 255, .15),
+        inset 0 -2px 3px rgba(255, 255, 255, .15);
+    transition: background-position .5s ease;
 }
-.theme-toggle:hover { transform: scale(1.08); }
-.theme-toggle:active { transform: scale(.94); }
-.theme-toggle i {
+/* 太阳（日）：黄色圆盘 + 高光/暗部 + 柔光 */
+.theme-toggle::before {
+    content: "";
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform .55s cubic-bezier(.34, 1.56, .64, 1), opacity .35s ease;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #f3cf5b;
+    box-shadow:
+        inset 2px 2px 3px rgba(255, 255, 255, .7),
+        inset -2px -2px 3px rgba(150, 120, 20, .6),
+        0 0 5px rgba(0, 0, 0, .25);
+    z-index: 2;
+    transition: transform .5s cubic-bezier(.34, 1.56, .64, 1), background .5s ease, box-shadow .5s ease;
 }
-.theme-toggle .fa-sun { opacity: 0; transform: rotate(-90deg) scale(.4); }
-.theme-toggle .fa-moon { opacity: 1; transform: rotate(0) scale(1); }
-html[data-theme="dark"] .theme-toggle .fa-sun { opacity: 1; transform: rotate(0) scale(1); }
-html[data-theme="dark"] .theme-toggle .fa-moon { opacity: 0; transform: rotate(90deg) scale(.4); }
+/* 云朵（日）：几团圆白，藏到轨道底部；夜间隐藏 */
+.theme-toggle::after {
+    content: "";
+    position: absolute;
+    top: 14px;
+    left: 30px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow:
+        4px 4px 0 2px rgba(255, 255, 255, .9),
+        14px 2px 0 1px rgba(255, 255, 255, .8),
+        24px 6px 0 2px rgba(255, 255, 255, .9),
+        34px 0 0 1px rgba(255, 255, 255, .7);
+    z-index: 1;
+    transition: transform .5s cubic-bezier(.34, 1.56, .64, 1), opacity .4s ease;
+}
+.theme-toggle:hover::before { filter: brightness(1.08); }
+.theme-toggle:active { transform: scale(.97); }
+
+/* 暗色：轨道切到左侧夜空，太阳滑到右侧变月亮，云朵隐藏（星点已随背景显示） */
+html[data-theme="dark"] .theme-toggle { background-position: 0 0; }
+html[data-theme="dark"] .theme-toggle::before {
+    transform: translateX(36px);
+    background:
+        radial-gradient(circle at 62% 30%, #9aa0ad 0 3px, transparent 3.5px),
+        radial-gradient(circle at 38% 62%, #9aa0ad 0 2px, transparent 2.5px),
+        radial-gradient(circle at 70% 68%, #9aa0ad 0 1.5px, transparent 2px),
+        #cbcdda;
+    box-shadow:
+        inset 2px 2px 3px rgba(255, 255, 255, .7),
+        inset -2px -2px 3px rgba(70, 70, 85, .6),
+        0 0 5px rgba(0, 0, 0, .3);
+}
+html[data-theme="dark"] .theme-toggle::after { transform: translateX(36px); opacity: 0; }

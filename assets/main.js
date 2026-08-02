@@ -408,11 +408,13 @@ document.addEventListener('DOMContentLoaded', function () {
         { d: '2026-08-02', zh: [
             '【新增】全站夜间模式：顶栏新增太阳/月亮切换按钮，配色与卡片、搜索框等组件平滑过渡（0.4s cubic-bezier）；未手动选择时自动跟随系统 prefers-color-scheme；在 <head> 最前面注入防闪烁脚本，刷新瞬间即可应用主题，避免暗色用户白屏闪烁',
             '【优化】夜间模式视觉调整：头图与页脚蓝色大幅降饱和，避免刺眼；切换按钮从移动端顶栏移除，改为桌面端导航末尾图标 + 移动端菜单底部分行标签；修复移动菜单展开时的顶部分隔白线；加深页面背景、提亮卡片表面与边框，使卡片轮廓更清晰',
-            '【修复】夜间模式下文章内表格（表头使用 bg-gray-100 / 边框使用 border-gray-300）文字与背景对比不足：补全暗色映射，表头变为 surface-2、边框使用 --border，确保表头文字可读'
+            '【修复】夜间模式下文章内表格（表头使用 bg-gray-100 / 边框使用 border-gray-300）文字与背景对比不足：补全暗色映射，表头变为 surface-2、边框使用 --border，确保表头文字可读',
+            '【优化】切换按钮升级为 SegmentFault「单标签日夜间切换」风格的太阳/月亮滑动开关（纯 CSS 伪元素实现，无内联图标）：68×32 胶囊轨道，点击后太阳西沉变月亮、云朵淡出、昼夜渐变背景滑动（0.5s 缓动）；桌面端保留在导航末尾，移动端改为置顶栏搜索按钮之前，与搜索/汉堡并排'
         ], en: [
             '[New] Site-wide dark mode: new sun/moon toggle in the navbar with silky color transitions across surfaces, cards, search box, etc. (0.4s cubic-bezier); auto-follows system prefers-color-scheme until an explicit choice is made; an anti-flash script is injected as the first child of <head> so the theme applies before first paint, preventing a white flash on reload for dark users',
             '[Opt] Dark mode visual polish: desaturated the hero and footer blues to reduce glare; moved the toggle out of the mobile top bar — now an icon at the end of the desktop nav and a labeled row at the bottom of the mobile menu; fixed the light separator line above the mobile menu; darkened page background and brightened card surfaces/borders so card outlines are clearer',
-            '[Fix] Article tables in dark mode (headers using bg-gray-100 and borders using border-gray-300) had poor text/background contrast: added dark mappings so headers use surface-2 and borders use --border, making header text readable'
+            '[Fix] Article tables in dark mode (headers using bg-gray-100 and borders using border-gray-300) had poor text/background contrast: added dark mappings so headers use surface-2 and borders use --border, making header text readable',
+            '[Opt] Replaced the toggle with a SegmentFault "single-element day/night switch" sun/moon sliding pill (pure CSS pseudo-elements, no inline icons): a 68×32 capsule track where the sun sets into a moon, clouds fade out, and the day/night gradient slides (0.5s ease); the desktop toggle stays at the end of the nav while the mobile toggle now sits before the top-bar search button, alongside search and the hamburger'
         ]},
         { d: '2026-08-01', zh: [
             '【新增】新生指南（十）- 图书馆与自习室入门（中英双语，7 张配图：楼层导览图、馆藏布局表、阅览区环境、NFC 与完美校园入馆示意、座位预约界面、自助借还机）',
@@ -1402,7 +1404,6 @@ function toggleTheme() {
     const next = isDark ? 'light' : 'dark';
     if (next === 'dark') root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');   // 亮色用默认 :root，移除属性即可
-    updateThemeLabels(next === 'dark');
     try { localStorage.setItem('theme', next); } catch (_) {}
     // 一旦用户显式选择，就不再跟随系统主题（移除 matchMedia 监听）
     if (themeSysListener) {
@@ -1419,27 +1420,12 @@ function createThemeToggle(isEnPage) {
     btn.className = 'theme-toggle';
     btn.setAttribute('aria-label', isEnPage ? 'Toggle dark mode' : '切换夜间模式');
     btn.setAttribute('title', isEnPage ? 'Dark mode' : '夜间模式');
-    // 两个图标叠放，由 CSS 依据 html[data-theme] 交叉淡入 + 旋转，丝滑切换
-    btn.innerHTML = '<i class="fa fa-moon" aria-hidden="true"></i><i class="fa fa-sun" aria-hidden="true"></i>';
+    // 太阳/月亮由 CSS 伪元素（::before/::after）依据 html[data-theme] 渲染，无需内联图标
     btn.addEventListener('click', toggleTheme);
     return btn;
 }
 
 let themeSysListener = null;   // 仅在「用户未显式选择」时跟随系统，显式选择后清空
-let themeMobileLabels = [];    // 移动端菜单里的文字标签，切换时同步更新
-
-function themeLabelText(isDark, isEnPage) {
-    // 标签显示「当前模式名称」，与图标状态对应
-    if (isEnPage) return isDark ? 'Light mode' : 'Dark mode';
-    return isDark ? '浅色模式' : '深色模式';
-}
-
-function updateThemeLabels(isDark) {
-    themeMobileLabels.forEach(function (label) {
-        const isEnPage = label.getAttribute('data-lang') === 'en';
-        label.textContent = themeLabelText(isDark, isEnPage);
-    });
-}
 
 function initTheme(isEnPage) {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -1448,24 +1434,10 @@ function initTheme(isEnPage) {
     const desktopContainer = document.querySelector('#mainNav .hidden.md\\:flex');
     if (desktopContainer) desktopContainer.appendChild(createThemeToggle(isEnPage));
 
-    // 移动端：在菜单底部做成一行「文字标签 + 圆形开关」，不再挤在顶栏
-    const mobileMenuEl = document.getElementById('mobileMenu');
-    if (mobileMenuEl) {
-        const mobileContainer = mobileMenuEl.querySelector('.space-y-3') || mobileMenuEl;
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;';
-
-        const label = document.createElement('span');
-        label.className = 'theme-toggle-mobile-label';
-        label.setAttribute('data-lang', isEnPage ? 'en' : 'zh');
-        label.style.cssText = 'color:var(--text);font-size:1rem;transition:color .3s ease;';
-        label.textContent = themeLabelText(isDark, isEnPage);
-        themeMobileLabels.push(label);
-
-        const toggle = createThemeToggle(isEnPage);
-        row.appendChild(label);
-        row.appendChild(toggle);
-        mobileContainer.appendChild(row);
+    // 移动端：放到顶栏搜索按钮前面（#mobileTopSearchBtn 之前），与搜索/汉堡并排
+    const mobileSearchBtn = document.getElementById('mobileTopSearchBtn');
+    if (mobileSearchBtn && mobileSearchBtn.parentElement) {
+        mobileSearchBtn.parentElement.insertBefore(createThemeToggle(isEnPage), mobileSearchBtn);
     }
 
     // 跟随系统：仅当用户尚未显式选择（localStorage 无 light/dark）时挂载监听
