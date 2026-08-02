@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     addLangToggle();
-    try { initTheme(isEn); } catch (e) { console.error('initTheme failed:', e); }
 
     /* ---------- 导航栏滚动阴影 ---------- */
     const mainNav = document.getElementById('mainNav');
@@ -407,9 +406,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // 完整更新日志（中英文各一份，按日期归档，与 CHANGELOG.md 保持一致）
     const CHANGELOG_DATA = [
         { d: '2026-08-02', zh: [
-            '【新增】全站夜间模式：顶栏新增太阳/月亮切换按钮，配色与卡片、搜索框等组件平滑过渡（0.4s cubic-bezier）；未手动选择时自动跟随系统 prefers-color-scheme；在 <head> 最前面注入防闪烁脚本，刷新瞬间即可应用主题，避免暗色用户白屏闪烁'
+            '【新增】全站夜间模式：顶栏新增太阳/月亮切换按钮，配色与卡片、搜索框等组件平滑过渡（0.4s cubic-bezier）；未手动选择时自动跟随系统 prefers-color-scheme；在 <head> 最前面注入防闪烁脚本，刷新瞬间即可应用主题，避免暗色用户白屏闪烁',
+            '【优化】夜间模式视觉调整：头图与页脚蓝色大幅降饱和，避免刺眼；切换按钮从移动端顶栏移除，改为桌面端导航末尾图标 + 移动端菜单底部分行标签；修复移动菜单展开时的顶部分隔白线；加深页面背景、提亮卡片表面与边框，使卡片轮廓更清晰'
         ], en: [
-            '[New] Site-wide dark mode: new sun/moon toggle in the navbar with silky color transitions across surfaces, cards, search box, etc. (0.4s cubic-bezier); auto-follows system prefers-color-scheme until an explicit choice is made; an anti-flash script is injected as the first child of <head> so the theme applies before first paint, preventing a white flash on reload for dark users'
+            '[New] Site-wide dark mode: new sun/moon toggle in the navbar with silky color transitions across surfaces, cards, search box, etc. (0.4s cubic-bezier); auto-follows system prefers-color-scheme until an explicit choice is made; an anti-flash script is injected as the first child of <head> so the theme applies before first paint, preventing a white flash on reload for dark users',
+            '[Opt] Dark mode visual polish: desaturated the hero and footer blues to reduce glare; moved the toggle out of the mobile top bar — now an icon at the end of the desktop nav and a labeled row at the bottom of the mobile menu; fixed the light separator line above the mobile menu; darkened page background and brightened card surfaces/borders so card outlines are clearer'
         ]},
         { d: '2026-08-01', zh: [
             '【新增】新生指南（十）- 图书馆与自习室入门（中英双语，7 张配图：楼层导览图、馆藏布局表、阅览区环境、NFC 与完美校园入馆示意、座位预约界面、自助借还机）',
@@ -960,6 +961,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     addSearchButtons();
+    try { initTheme(isEn); } catch (e) { console.error('initTheme failed:', e); }
 
     // 首页头部搜索框：输入并回车/点击 → 打开弹层并检索
     if (searchButton) searchButton.addEventListener('click', () => openSearch(searchInput.value));
@@ -1398,6 +1400,7 @@ function toggleTheme() {
     const next = isDark ? 'light' : 'dark';
     if (next === 'dark') root.setAttribute('data-theme', 'dark');
     else root.removeAttribute('data-theme');   // 亮色用默认 :root，移除属性即可
+    updateThemeLabels(next === 'dark');
     try { localStorage.setItem('theme', next); } catch (_) {}
     // 一旦用户显式选择，就不再跟随系统主题（移除 matchMedia 监听）
     if (themeSysListener) {
@@ -1421,21 +1424,46 @@ function createThemeToggle(isEnPage) {
 }
 
 let themeSysListener = null;   // 仅在「用户未显式选择」时跟随系统，显式选择后清空
+let themeMobileLabels = [];    // 移动端菜单里的文字标签，切换时同步更新
+
+function themeLabelText(isDark, isEnPage) {
+    // 标签显示「当前模式名称」，与图标状态对应
+    if (isEnPage) return isDark ? 'Light mode' : 'Dark mode';
+    return isDark ? '浅色模式' : '深色模式';
+}
+
+function updateThemeLabels(isDark) {
+    themeMobileLabels.forEach(function (label) {
+        const isEnPage = label.getAttribute('data-lang') === 'en';
+        label.textContent = themeLabelText(isDark, isEnPage);
+    });
+}
 
 function initTheme(isEnPage) {
-    // 桌面端：放到语言切换按钮所在的链接容器末尾（与原链接共享 space-x-8 间距）
-    const langLink = document.querySelector('#mainNav a[href*="-en"], #mainNav a[href$=".html"]:not([href*="#"])');
-    const desktopContainer = langLink ? langLink.parentElement : document.querySelector('#mainNav .hidden.md\\:flex');
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+    // 桌面端：放到导航链接容器末尾（搜索按钮之后，成为最右侧工具图标）
+    const desktopContainer = document.querySelector('#mainNav .hidden.md\\:flex');
     if (desktopContainer) desktopContainer.appendChild(createThemeToggle(isEnPage));
 
-    // 移动端：在菜单底部右对齐放一个同款圆形按钮（复用全部丝滑动画）
+    // 移动端：在菜单底部做成一行「文字标签 + 圆形开关」，不再挤在顶栏
     const mobileMenuEl = document.getElementById('mobileMenu');
     if (mobileMenuEl) {
         const mobileContainer = mobileMenuEl.querySelector('.space-y-3') || mobileMenuEl;
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'display:flex;justify-content:flex-end;padding-top:.25rem;';
-        wrap.appendChild(createThemeToggle(isEnPage));
-        mobileContainer.appendChild(wrap);
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;';
+
+        const label = document.createElement('span');
+        label.className = 'theme-toggle-mobile-label';
+        label.setAttribute('data-lang', isEnPage ? 'en' : 'zh');
+        label.style.cssText = 'color:var(--text);font-size:1rem;transition:color .3s ease;';
+        label.textContent = themeLabelText(isDark, isEnPage);
+        themeMobileLabels.push(label);
+
+        const toggle = createThemeToggle(isEnPage);
+        row.appendChild(label);
+        row.appendChild(toggle);
+        mobileContainer.appendChild(row);
     }
 
     // 跟随系统：仅当用户尚未显式选择（localStorage 无 light/dark）时挂载监听
@@ -1446,6 +1474,7 @@ function initTheme(isEnPage) {
         const fn = (e) => {
             if (e.matches) document.documentElement.setAttribute('data-theme', 'dark');
             else document.documentElement.removeAttribute('data-theme');
+            updateThemeLabels(e.matches);
         };
         if (mq.addEventListener) mq.addEventListener('change', fn);
         else if (mq.addListener) mq.addListener(fn);

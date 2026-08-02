@@ -386,17 +386,17 @@ body {
     --primary: #4d94e8;
     --secondary: #5b9bff;
     --accent: #7eb0ff;
-    /* 表面令牌 */
-    --bg: #0e1117;
-    --bg-alt: #151a23;
+    /* 表面令牌：背景比表面更深，卡片轮廓更明显 */
+    --bg: #070a0f;
+    --bg-alt: #10141d;
     --surface: #181d27;
-    --surface-2: #212836;
+    --surface-2: #222a38;
     --text: #e6e8ec;
     --text-strong: #f5f7fa;
     --text-muted: #97a0b0;
-    --border: #2a3140;
-    --nav-bg: rgba(14, 17, 23, .72);
-    --card-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+    --border: #2f3747;
+    --nav-bg: rgba(7, 10, 15, .72);
+    --card-shadow: 0 6px 18px rgba(0, 0, 0, .55);
     --selection: rgba(91, 155, 255, .28);
 }
 
@@ -419,20 +419,29 @@ body {
 [data-theme="dark"] .text-primary { color: var(--primary); }
 [data-theme="dark"] .text-secondary { color: var(--secondary); }
 
-[data-theme="dark"] .border { border-color: var(--border); }
+[data-theme="dark"] .border,
+[data-theme="dark"] .border-t,
+[data-theme="dark"] .border-b { border-color: var(--border); }
 [data-theme="dark"] .border-gray-200 { border-color: var(--border); }
 [data-theme="dark"] .border-blue-200 { border-color: rgba(91, 155, 255, .35); }
 [data-theme="dark"] .border-primary { border-color: var(--primary); }
+
+/* 移动端菜单顶部白线：覆写 Tailwind .border-t 默认浅色 */
+[data-theme="dark"] #mobileMenu { border-color: var(--border); }
+
+/* 首页头图在暗色下进一步压暗，避免与深色主视觉冲突 */
+[data-theme="dark"] header > .absolute.inset-0 { opacity: .08; }
 
 [data-theme="dark"] .hover\:bg-gray-100:hover { background-color: var(--surface-2); }
 [data-theme="dark"] .hover\:bg-blue-100:hover { background-color: rgba(91, 155, 255, .2); }
 [data-theme="dark"] .placeholder-gray-400::placeholder { color: #8b93a3; }
 
-/* 品牌块（页脚 / 返回顶部 / 按钮）在暗色下略提亮 */
-[data-theme="dark"] .bg-primary { background-color: #1f6fd0; }
-[data-theme="dark"] .bg-secondary { background-color: #3b82f6; }
-[data-theme="dark"] .hover\:bg-primary:hover { background-color: #2a7bdc; }
-[data-theme="dark"] .hover\:bg-secondary:hover { background-color: #5b9bff; }
+/* 品牌块（页脚 / 返回顶部 / 按钮）在暗色下大幅降饱和，避免刺眼 */
+[data-theme="dark"] .bg-gradient-primary { background: linear-gradient(135deg, #0c253d 0%, #143352 100%); }
+[data-theme="dark"] .bg-primary { background-color: #0f2740; }
+[data-theme="dark"] .bg-secondary { background-color: #1a3a5c; }
+[data-theme="dark"] .hover\:bg-primary:hover { background-color: #163355; }
+[data-theme="dark"] .hover\:bg-secondary:hover { background-color: #234a70; }
 
 /* 文章正文暗色 */
 [data-theme="dark"] .article-content { color: var(--text); }
