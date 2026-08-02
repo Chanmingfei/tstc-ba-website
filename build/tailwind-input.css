@@ -58,7 +58,7 @@ body {
 }
 
 .bg-gradient-primary {
-    background: linear-gradient(135deg, #0465bc 0%, #2575fc 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 }
 
 .nav-shadow {
@@ -203,6 +203,9 @@ body {
 .article-content a {
     color: #2575fc;
     text-decoration: underline;
+    /* 移动端长链接（如内网系统地址）必须可折行，否则会溢出正文边框导致排版错乱 */
+    word-break: break-all;
+    overflow-wrap: anywhere;
 }
 
 .article-content blockquote {
@@ -245,7 +248,7 @@ body {
     align-items: center;
     justify-content: center;
     border: none;
-    background: linear-gradient(135deg, #0465bc, #2575fc);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: #fff;
     font-size: 19px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);

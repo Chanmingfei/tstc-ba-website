@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ---------- 一言功能 ---------- */
     const hitokotoEl = document.getElementById('hitokoto');
-if (hitokotoEl) {
+    if (hitokotoEl) {
     if (isEn) {
         // 英文版：一言接口返回的是中文语录，改为一句固定的英文名言
         hitokotoEl.textContent = 'Education is the kindling of a flame, not the filling of a vessel.';
@@ -426,7 +426,8 @@ if (hitokotoEl) {
             '【新增】贴吧分享改用百度 dwz.cn 短链：构建期自动为每个页面申请 dwz 短链并注入，点击「分享到百度贴吧」时改用该短链，以绕过 tstc.pp.ua 被百度贴吧屏蔽的「分享URL不合法」；未配置 DWZ_TOKEN 或短链生成失败时自动回退原长链接。短链映射缓存复用，重复构建不重复申请',
             '【调整】贴吧分享放弃 dwz 短链、改为去图分享：dwz.cn 接口要求企业实名认证（个人账号返回 -114，无法使用），故短链方案暂不可用；现改为贴吧分享只带标题+链接、去掉封面图参数，先实测能否绕过 tstc.pp.ua 域名屏蔽（dwz 短链逻辑保留，企业实名认证通过后可自动启用）',
             '【修复】贴吧分享链接规范化：自动去掉路径中的 index.html，避免贴吧抓取时遇到 308 跳转被间歇判为"URL 非法"。经实测线上服务器稳定（一致 200、无质询页），抖动来自贴吧对免费 .pp.ua 域名的实时抓取限速，根治需换可信域名（.com/.cn）',
-            '【调整】社交分享面板精简：移除 X（Twitter）/ Facebook / Telegram 三个国外平台入口（国内用户使用率低），新增「分享到QQ空间」按钮（腾讯官方黄底白星图标：黄圆角方块 + 白色四角星；Font Awesome 无 QZone 图标，故按官方设计内联 SVG 还原，调用 QQ空间一键分享接口，自动带入链接、标题、封面与摘要）'
+            '【调整】社交分享面板精简：移除 X（Twitter）/ Facebook / Telegram 三个国外平台入口（国内用户使用率低），新增「分享到QQ空间」按钮（腾讯官方黄底白星图标：黄圆角方块 + 白色四角星；Font Awesome 无 QZone 图标，故按官方设计内联 SVG 还原，调用 QQ空间一键分享接口，自动带入链接、标题、封面与摘要）',
+            '【优化】代码规范性审查与样式统一：将移动端长链接折行规则（word-break/overflow-wrap）回填到 Tailwind 源文件 tailwind-input.css（此前仅改在编译产物上，重建即丢失），修复单一源头原则；统一悬浮按钮（分享子按钮 / 回到顶部 / 灯箱箭头）悬停缩放为 1.06；主色渐变改用设计变量 var(--primary)/var(--secondary)；修复 build-critical-css.py 未将 :root 设计变量纳入首屏关键 CSS 的隐患（避免 var() 首屏解析失败）；修正一言代码块的缩进'
         ], en: [
             '[New] Freshman Guide (10) – Library & Study Spaces (bilingual, 7 illustrations: floor plan, collection layout, reading area, NFC and Perfect Campus entry guides, seat booking interface, self-checkout machine)',
             '[New] Site-wide social share floating button (Weibo / QQ / X / Facebook / Telegram / WeChat) plus a matching "Copy link" button (auto language labels, clipboard copy with fallback)',
@@ -447,7 +448,8 @@ if (hitokotoEl) {
             '[New] Tieba sharing now routes through a Baidu dwz.cn short link: at build time each page gets a dwz short link injected; the "Share to Baidu Tieba" button uses it to bypass Tieba\'s block of the tstc.pp.ua domain ("分享URL不合法"). Falls back to the long URL when DWZ_TOKEN is unset or generation fails. The short-link mapping is cached and reused across builds.',
             '[Adj] Tieba sharing drops dwz short link, now sends title+link only: dwz.cn API requires enterprise real-name verification (personal accounts get -114, unusable), so the short-link path is paused; Tieba share now omits the cover-image param to test whether removing the pic domain bypasses the tstc.pp.ua block. The dwz short-link logic is retained and will auto-enable after enterprise verification.',
             '[Fix] Tieba share URL normalized: index.html is stripped from the path to avoid a 308 redirect that Tieba intermittently rejects as "URL 非法". Live server is stable (consistent 200, no challenge), so the flakiness comes from Tieba throttling real-time fetches of the free .pp.ua domain; a trusted domain (.com/.cn) is the real fix.',
-            '[Adj] Social share panel trimmed: removed the three overseas entries X (Twitter) / Facebook / Telegram (low usage among domestic users) and added a "Share to QZone" button (the official Tencent glyph — yellow rounded square with a white four-point star; Font Awesome has no QZone icon, so it is recreated as an inline SVG matching the official design — calling QZone\'s one-click share API with link, title, cover and summary prefilled).'
+            '[Adj] Social share panel trimmed: removed the three overseas entries X (Twitter) / Facebook / Telegram (low usage among domestic users) and added a "Share to QZone" button (the official Tencent glyph — yellow rounded square with a white four-point star; Font Awesome has no QZone icon, so it is recreated as an inline SVG matching the official design — calling QZone\'s one-click share API with link, title, cover and summary prefilled).',
+            '[Opt] Code standardization & style unification: moved the mobile long-link line-break rule (word-break/overflow-wrap) back into the Tailwind source (tailwind-input.css) — it was previously patched only in the compiled output and lost on rebuild — restoring the single-source-of-truth; unified the hover scale of all floating buttons (share items / back-to-top / lightbox arrows) to 1.06; switched primary gradients to design tokens var(--primary)/var(--secondary); fixed build-critical-css.py so :root design tokens are included in the first-screen critical CSS (preventing unresolved var() on first paint); fixed a code-indentation glitch in the hitokoto block'
         ]},
         { d: '2026-07-31', zh: [
             '【新增】新生指南（九）-报到当天（中英双语，5 张配图）',
@@ -675,14 +677,14 @@ if (hitokotoEl) {
             css.id = 'shareWidgetStyle';
             css.textContent =
                 '#shareFab{position:fixed;left:16px;bottom:16px;z-index:40;display:flex;flex-direction:column;align-items:center;gap:10px}' +
-                '#shareFab .share-toggle{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#0465bc,#2575fc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease}' +
+                '#shareFab .share-toggle{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease}' +
                 '#shareFab .share-toggle:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(0,0,0,.24)}' +
                 '#shareFab .share-panel{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:2px;transform-origin:bottom center}' +
                 '#shareFab .share-panel.hidden{display:none}' +
                 '#shareFab .share-panel:not(.hidden){animation:sharePop .18s ease}' +
                 '@keyframes sharePop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}' +
                 '#shareFab .share-btn{width:44px;height:44px;border-radius:50%;background:#fff;color:#555;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.14);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease;text-decoration:none}' +
-                '#shareFab .share-btn:hover{transform:scale(1.1);box-shadow:0 6px 16px rgba(0,0,0,.2)}' +
+                '#shareFab .share-btn:hover{transform:scale(1.06);box-shadow:0 6px 16px rgba(0,0,0,.2)}' +
                 '#shareToast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;font-size:14px;padding:9px 16px;border-radius:999px;z-index:60;opacity:0;transition:opacity .2s ease;pointer-events:none}' +
                 '#shareToast.show{opacity:1}';
             document.head.appendChild(css);

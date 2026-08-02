@@ -88,9 +88,14 @@ def rule_should_keep(selector, first_screen):
     sels = [s.strip() for s in re.split(r",", selector)]
     kept_for_global = False
     for s in sels:
+        # 直接匹配全局选择器（含 :root、::before、::after 等以冒号开头的伪类）
+        if s in GLOBAL_SELECTORS:
+            kept_for_global = True
+            break
         bare = s.split(":")[0].split("[")[0].strip()
         if bare in GLOBAL_SELECTORS:
             kept_for_global = True
+            break
     if kept_for_global:
         return True
     # 选择器中包含首屏 class
