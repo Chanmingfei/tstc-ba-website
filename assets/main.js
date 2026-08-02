@@ -407,10 +407,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const CHANGELOG_DATA = [
         { d: '2026-08-02', zh: [
             '【新增】全站夜间模式：顶栏新增太阳/月亮切换按钮，配色与卡片、搜索框等组件平滑过渡（0.4s cubic-bezier）；未手动选择时自动跟随系统 prefers-color-scheme；在 <head> 最前面注入防闪烁脚本，刷新瞬间即可应用主题，避免暗色用户白屏闪烁',
-            '【优化】夜间模式视觉调整：头图与页脚蓝色大幅降饱和，避免刺眼；切换按钮从移动端顶栏移除，改为桌面端导航末尾图标 + 移动端菜单底部分行标签；修复移动菜单展开时的顶部分隔白线；加深页面背景、提亮卡片表面与边框，使卡片轮廓更清晰'
+            '【优化】夜间模式视觉调整：头图与页脚蓝色大幅降饱和，避免刺眼；切换按钮从移动端顶栏移除，改为桌面端导航末尾图标 + 移动端菜单底部分行标签；修复移动菜单展开时的顶部分隔白线；加深页面背景、提亮卡片表面与边框，使卡片轮廓更清晰',
+            '【修复】夜间模式下文章内表格（表头使用 bg-gray-100 / 边框使用 border-gray-300）文字与背景对比不足：补全暗色映射，表头变为 surface-2、边框使用 --border，确保表头文字可读'
         ], en: [
             '[New] Site-wide dark mode: new sun/moon toggle in the navbar with silky color transitions across surfaces, cards, search box, etc. (0.4s cubic-bezier); auto-follows system prefers-color-scheme until an explicit choice is made; an anti-flash script is injected as the first child of <head> so the theme applies before first paint, preventing a white flash on reload for dark users',
-            '[Opt] Dark mode visual polish: desaturated the hero and footer blues to reduce glare; moved the toggle out of the mobile top bar — now an icon at the end of the desktop nav and a labeled row at the bottom of the mobile menu; fixed the light separator line above the mobile menu; darkened page background and brightened card surfaces/borders so card outlines are clearer'
+            '[Opt] Dark mode visual polish: desaturated the hero and footer blues to reduce glare; moved the toggle out of the mobile top bar — now an icon at the end of the desktop nav and a labeled row at the bottom of the mobile menu; fixed the light separator line above the mobile menu; darkened page background and brightened card surfaces/borders so card outlines are clearer',
+            '[Fix] Article tables in dark mode (headers using bg-gray-100 and borders using border-gray-300) had poor text/background contrast: added dark mappings so headers use surface-2 and borders use --border, making header text readable'
         ]},
         { d: '2026-08-01', zh: [
             '【新增】新生指南（十）- 图书馆与自习室入门（中英双语，7 张配图：楼层导览图、馆藏布局表、阅览区环境、NFC 与完美校园入馆示意、座位预约界面、自助借还机）',
