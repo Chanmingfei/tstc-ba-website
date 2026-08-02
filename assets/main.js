@@ -410,13 +410,13 @@ document.addEventListener('DOMContentLoaded', function () {
             '【优化】夜间模式视觉调整：头图与页脚蓝色大幅降饱和，避免刺眼；切换按钮从移动端顶栏移除，改为桌面端导航末尾图标 + 移动端菜单底部分行标签；修复移动菜单展开时的顶部分隔白线；加深页面背景、提亮卡片表面与边框，使卡片轮廓更清晰',
             '【修复】夜间模式下文章内表格（表头使用 bg-gray-100 / 边框使用 border-gray-300）文字与背景对比不足：补全暗色映射，表头变为 surface-2、边框使用 --border，确保表头文字可读',
             '【优化】切换按钮升级为 SegmentFault「单标签日夜间切换」风格的太阳/月亮滑动开关（纯 CSS 伪元素实现，无内联图标）：68×32 胶囊轨道，点击后太阳西沉变月亮、云朵淡出、昼夜渐变背景滑动（0.5s 缓动）；桌面端保留在导航末尾，移动端改为置顶栏搜索按钮之前，与搜索/汉堡并排',
-            '【优化】切换开关动画升级为 SegmentFault 完整版：太阳滑动 morph 成带环形山的月亮并自带柔光晕，云朵（白点）白天可见、夜间淡出并与柔光晕随月亮平移；过渡统一为 0.5s、弱化回弹，整体更丝滑'
+            '【优化】切换开关严格照搬 SegmentFault「单标签日夜间切换」原文：将 220×90 的全部数值统一乘缩放系数 0.309（宽度 220→68px、高度 90→28px），视觉比例与该文预览完全一致；太阳盘大小、云朵位置、滑动距离、悬停 scale(1.05)、过渡 .5s all 均按原样保留'
         ], en: [
             '[New] Site-wide dark mode: new sun/moon toggle in the navbar with silky color transitions across surfaces, cards, search box, etc. (0.4s cubic-bezier); auto-follows system prefers-color-scheme until an explicit choice is made; an anti-flash script is injected as the first child of <head> so the theme applies before first paint, preventing a white flash on reload for dark users',
             '[Opt] Dark mode visual polish: desaturated the hero and footer blues to reduce glare; moved the toggle out of the mobile top bar — now an icon at the end of the desktop nav and a labeled row at the bottom of the mobile menu; fixed the light separator line above the mobile menu; darkened page background and brightened card surfaces/borders so card outlines are clearer',
             '[Fix] Article tables in dark mode (headers using bg-gray-100 and borders using border-gray-300) had poor text/background contrast: added dark mappings so headers use surface-2 and borders use --border, making header text readable',
             '[Opt] Replaced the toggle with a SegmentFault "single-element day/night switch" sun/moon sliding pill (pure CSS pseudo-elements, no inline icons): a 68×32 capsule track where the sun sets into a moon, clouds fade out, and the day/night gradient slides (0.5s ease); the desktop toggle stays at the end of the nav while the mobile toggle now sits before the top-bar search button, alongside search and the hamburger',
-            '[Opt] Upgraded the toggle animation to the full SegmentFault version: the sun slides and morphs into a cratered moon with a soft glow halo, while the white cloud puffs fade out and the glow halo travels with the moon; transitions unified to 0.5s with a softened bounce for a silkier feel'
+            '[Opt] Rebuilt the toggle as a faithful copy of the SegmentFault "single-element day/night switch": every value from the original 220×90 demo is uniformly scaled by 0.309 (width 220→68px, height 90→28px) so the proportions exactly match the article preview; sun-disc size, cloud positions, slide distance, hover scale(1.05) and the .5s all transition are all kept as written'
         ]},
         { d: '2026-08-01', zh: [
             '【新增】新生指南（十）- 图书馆与自习室入门（中英双语，7 张配图：楼层导览图、馆藏布局表、阅览区环境、NFC 与完美校园入馆示意、座位预约界面、自助借还机）',
