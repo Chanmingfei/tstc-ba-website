@@ -15,33 +15,29 @@
 - **Gitee（主仓库，可直接 push，镜像兜底）**：`mingfei123/tstc-ba-website`，分支 `main`。
   - 永久 Token（推送用）：`d03655b0f6188c13ca4591504d5e6494`
   - 远程 URL 形如：`https://oauth2:d03655b0f6188c13ca4591504d5e6494@gitee.com/mingfei123/tstc-ba-website.git`
-- **GitHub（Chanmingfei/tstc-ba-website）**：用户提供了永久 PAT，**已配置为本地 `git remote add github`**（token 写入远程 URL，存于本地 `.git/config`，**切勿提交到仓库**）。
-  - 直推 GitHub 可减少「Gitee→GitHub 镜像」的延迟；PAT 另存于本地 `/root/.codebuddy/github_token.txt`。
-- ⚠️ **沙箱网络：GitHub 的 TLS 常被代理拦截，直连可能失败**。因此推送策略为：**先试 `git push github main`；失败则回退 `git push origin main`（Gitee 镜像 → 自动同步 GitHub → Cloudflare 部署）**。两条路径最终都会上 GitHub 并触发 Cloudflare 部署。也别用 `gh` CLI。
+- **GitHub（Chanmingfei/tstc-ba-website）**：已配置为本地 `git remote add github`（token 写入远程 URL，存于本地 `.git/config`，**切勿提交到仓库**）。
+  - ⚠️ **当前沙箱无法直连 GitHub**：`git push github` 稳定失败（`gnutls_handshake() failed: The TLS connection was non-properly terminated`，代理拦截 TLS）。**用户已明确指示"不用管 GitHub push"**。因此实际推送只走 Gitee：`git push origin main`。Gitee 镜像 → 自动同步 GitHub → Cloudflare 部署，所以 GitHub 最终也会更新，只是延迟同步；需要即时上 GitHub 时由用户在本地网络恢复后手动 `git push github main`。
+  - 别用 `gh` CLI（同样连不上）。
 - 工作目录：`/workspace/tstc-ba-website`。
 
 ### Git 操作坑（踩过）
 - **cwd 不跨工具调用保持**：每条 git 命令都要前缀 `cd /workspace/tstc-ba-website &&`。
 - 首次提交若报 "unable to auto-detect email"：执行
   `git config user.name "mingfei123"` 和 `git config user.email "bazhu@tstc.pp.ua"`（仓库级配置）。
-- 推送：**先 `git push github main`；失败则 `git push origin main`**（Gitee → 镜像 → 部署）。部署稍等片刻再在线上验证。
+- 推送：**只 `git push origin main`（Gitee）**。沙箱连不上 GitHub，别试 `git push github`（必失败，浪费时间）；用户已明确"不用管 GitHub push"。Gitee 镜像会自动同步到 GitHub 并触发 Cloudflare 部署。部署稍等片刻再在线上验证。
 
 ---
 
 ## 2. 构建流程（最关键的执行细节）
 
-正常一条命令：`npm run build` = `build:css` + `build:critical` + `node build/generate-manifest.js`。
+正常一条命令：`npm run build` = `build:css` + `build:critical` + `node build/generate-manifest.js`。**当前环境 `node_modules` 已就绪，`npm run build` 可直接跑通**（含 Tailwind 编译）。
 
-⚠️ **沙箱里没有 node_modules，`tailwindcss` CLI 不存在，`npm run build:css` 必失败**，导致 `&&` 链中断。**正确做法（分开跑）：**
+> 历史注记（可能已过时）：早期沙箱缺 `node_modules` 时 `npm run build:css` 会失败，当时的兜底写法是分开跑 `npm run build:critical && node build/generate-manifest.js`。**现在不必**，若某次 `npm run build` 报 Tailwind 缺失再回到这条兜底即可。
 
-```bash
-cd /workspace/tstc-ba-website && npm run build:critical && node build/generate-manifest.js
-```
-
-- `build:critical`：Python 脚本，内联关键 CSS，沙箱内可跑。
-- `generate-manifest.js`：主脚本，自带 try/catch，Tailwind 失败时沿用已提交的 `assets/style.css`，**所有注入照常完成**。
+- `build:critical`：Python 脚本，内联关键 CSS。
+- `generate-manifest.js`：主脚本，抽取文章、生成清单/搜索索引、注入 OG/导航/防闪烁脚本、重写上下篇导航、生成 sitemap/robots。
 - main.js 内容一变，哈希就变，脚本会自动把所有 HTML 里的 `main.js?v=xxxx` 刷新。
-- 改完文章后**必须重跑上面两条命令**再提交，否则清单/搜索/OG/导航/首页预览都不会更新。
+- 改完文章或改了 `assets/main.js`（含 `CHANGELOG_DATA`）/ `build/tailwind-input.css` 后，**必须重跑 `npm run build`** 再提交，否则清单/搜索/OG/导航/首页预览/样式都不会更新。
 
 ### generate-manifest.js 做了什么（心里有数即可）
 扫描 `news/*.html` → 抽 `#articleMeta` → 生成 `news-manifest.json` / `news-manifest-en.json`、`assets/search-index.json`（中/英）、注入 OG/Twitter Card 与 sitemap、内联 `__NEWS__`/`__NEWS_EN__`/`__SEARCH_INDEX_URL__`/`__SITE_URL__`、重写 `AUTO_PREV_NEXT_*` 上下篇导航、生成 `sitemap.xml` / `robots.txt`。
@@ -204,3 +200,52 @@ cd /workspace/tstc-ba-website && npm run build:critical && node build/generate-m
 | `news-manifest.json` / `news-manifest-en.json` | 新闻清单（构建生成） |
 | `CHANGELOG.md` + `assets/main.js` 的 `CHANGELOG_DATA` | 更新日志，需保持同步 |
 | `assets/images/qq-group-qr.jpg` | 新生群二维码（指南文末固定用） |
+| `build/tailwind-input.css` | **所有 CSS 的唯一编辑入口**（含暗色模式、`[data-theme="dark"]` 覆盖、开关伪元素、白色阴影等）；改完必须 `npm run build` |
+| `build/inject-theme.js` | 防首屏闪烁脚本；把读 `localStorage`/`prefers-color-scheme` 设 `data-theme` 的 `<script>` 注入每个 HTML 的 `<head>` 首位（幂等，可重复跑） |
+| `assets/images/`（README 配图） | 手动维护的 8 张展示图（见下）；README 引用，勿删；重新截图后才提交替换 |
+
+---
+
+## 11. 近期功能迭代小结（截至 2026-08-03，接手即知状态）
+
+这些不是"发文章"主线，但已落地并会影响后续改动，新对话先读这节：
+
+1. **全站暗色模式 + 昼夜滑动开关**（导航栏内置，纯 CSS 太阳/月亮伪元素，参考 SegmentFault「单标签日夜间切换」，严格按原文 220×90 ×0.309 = 68×28 实现，**尺寸/坐标要等比重算**）。状态由 `html[data-theme="dark"]` 驱动（无 JS 切换 class）。
+2. **暗色适配三处打磨**：① 卡片/阴影在暗色背景不可见 → 改为白色光晕（`rgba(255,255,255,…)`），尺寸/动画不变；② 搜索弹窗输入框聚焦变白 → 加暗色覆盖；③ 夜间开关凹陷感加强（`inset` 阴影对比度调高）。
+3. **QZone 分享图标去白底**：内联 SVG 删掉 `<rect fill="#FFFFFF"/>`，亮色按钮白底仍能透出原观感，暗色不再有白块。
+4. **README 重写成「技术 + 配图」双线**：新增「设计与视觉展示」章节，`images/` 下 8 张图（preview-light/dark、toggle-light/dark、cards-light、search-light/dark、mobile-dark），用表格左右对照亮/暗。搜索配图是**按 Enter 触发出结果**后截的。
+
+> 本次会话还清理了 `/tmp` 下所有验证用截图/脚本（不进仓库，随手删即可）；仓库 `images/` 仅保留 README 引用的 8 张，无冗余。
+
+---
+
+## 12. 易出 bug 的地方（暗色模式 & 组件，重点看护）
+
+> 这条是**高优先级**：新增/修改任何组件，都要先在暗色模式下自查一遍下面这些点。
+
+1. **暗色下黑色阴影看不见**：Tailwind 默认 `shadow-*` 是黑色投影，落在深色背景上完全消失，卡片像"没边框"。凡新增带阴影的组件，必须补 `[data-theme="dark"] .xxx{box-shadow:0 … rgba(255,255,255,…)}`（白色光晕，尺寸与原阴影一致），已有模式：`.card-hover:hover`、`.nav-shadow`、`#backToTop`、`#shareFab .share-btn`、`--card-shadow`。
+2. **可聚焦控件 `focus:bg-white` 在暗色变白块**：搜索弹窗 `openSearchModal` 里的 `#searchModalInput` 曾因 `focus:bg-white` 在暗色下聚焦变白。凡用 `focus:bg-white`/`bg-white` 的可输入/可聚焦控件，暗色下都要显式覆盖（如 `[data-theme="dark"] #searchModalInput:focus{background:var(--surface-2)}`）。
+3. **内联 SVG 硬编码白底**：QZone 图标就是教训——`<rect fill="#FFFFFF"/>` 在暗色分享按钮上变成突兀白方块。凡是手绘/内联 SVG 图标（分享面板、旗帜、logo 等），暗色下要检查有无硬编码白底，能透明就透明。
+4. **昼夜开关的状态绑定方式**：开关外观全靠 `::before`（太阳/月亮）/`::after`（云朵/光晕）伪元素 + `html[data-theme="dark"]` 下覆盖 `box-shadow`/`background`。**不要**引入 JS 给开关加 class 切换。改暗色适配时注意：原 SegmentFault 代码里的 `#ffe`/`#ddd` 高光边在暗色会变成一圈白环；原 `#333`/`#665613` 太阳阴影会让月亮变黑洞——这些都要在暗色分支重算。改尺寸务必等比重算所有坐标（基准缩放系数 0.309）。
+5. **README 配图漏触发交互**：用 Playwright 截搜索弹窗时，只 `fill('关键词')` 不 `press('Enter')`，结果区是空的（用户曾指出）。搜索截图必须 Enter 出结果再截。
+6. **Playwright 视口选择器可见性**：桌面端 `#navSearchBtn` 与移动端专属 `#mobileTopSearchBtn` 在不同视口下一方 `display:none`，脚本点隐藏元素会 "element is not visible" 超时。桌面视口用 `#navSearchBtn`，移动布局用移动上下文捕获。验证暗色主题用 `addInitScript` 设 `localStorage.theme='dark'` 再 reload，别靠点开关。
+7. **构建产物一致性**：改 `assets/main.js`（含 `CHANGELOG_DATA`）或 `build/tailwind-input.css` 后**必须 `npm run build`**，否则 HTML 里 `main.js?v=` 哈希、内联 OG、关键 CSS、防闪烁脚本都不过新，线上看着像"没生效"。
+
+---
+
+## 13. 用户的协作习惯与反馈风格（务必顺毛）
+
+- **用截图提问题**：用户经常上传现象截图（白底突兀、阴影看不见、开关有 bug…）。先看清图再动手，必要时自己也用 Playwright 截同样场景核对。
+- **要"忠实照搬"，不要自由发挥**：当用户说"你不能直接照搬里面的代码吗？"——给完整参考实现（如 SegmentFault 开关）时，要**严格按原样**实现（统一缩放、不改 easing/配色），不要重排成"我觉得更好"的版本。
+- **视觉细节较真**：对阴影、焦点态、图标白底、开关凹陷感、动画丝滑度都很敏感，要求"和预览一样"。改完最好自己截图确认再交付。
+- **README 要少技术堆砌、多配图**：之前的 README 几乎全是技术方案，用户希望用截图展示组件/设计；新增功能时顺手在 README 配图说明。
+- **迭代式反馈**：通常先说现象 → 看改完的图 → 再挑下一处。一次改到位比来回多轮好，但别跳过"自己核对效果"这步。
+- **GitHub 直推别管**：沙箱连不上 GitHub，用户已明确"不用管 GitHub push"，只推 Gitee（`origin`）。**别在每次提交后重试 `git push github`**，那只会刷一堆 TLS 报错。
+- **语言**：全程中文沟通。
+
+---
+
+## 14. 当前快速上手（新对话第一句可贴）
+
+> 仓库已克隆到 `/workspace/tstc-ba-website`，请接手。背景：唐山师范学院吧官网静态双语站，Cloudflare Pages 部署。近期已做全站暗色模式 + 昼夜滑动开关、QZone 图标去白底、README 配图重写；发文章流程见上文第 4/5 节。注意：① 暗色模式改组件时看§12 的易错点；② 推送只走 `git push origin main`（Gitee），别试 GitHub；③ 改 `main.js`/`tailwind-input.css` 后必须 `npm run build`。
+
