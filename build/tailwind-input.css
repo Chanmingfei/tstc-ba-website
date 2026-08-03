@@ -940,6 +940,48 @@ h1 { line-height: 1.08; }
         inset 0 -1px 2px rgba(0, 0, 0, .40);
 }
 
+/* 文章内提示框（tip / callout）：原是实心底色，统一为液态玻璃，保留左侧品牌色强调边 */
+.article-content .bg-gray-50.border-l-4 {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 40%, transparent 70%),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid var(--tint);
+    box-shadow: var(--glass-shadow);
+    background-clip: padding-box;
+}
+[data-theme="dark"] .article-content .bg-gray-50.border-l-4 {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .07) 40%, transparent 70%),
+        rgba(30, 34, 44, .62);
+    border-color: var(--glass-border);
+    border-left: 4px solid var(--tint);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .4), inset 0 1px 1px rgba(255, 255, 255, .22);
+}
+
+/* 「关于我们」主内容卡：与文章阅读卡同族，原为实白卡，统一为液态玻璃 */
+.bg-white.rounded-xl.shadow-md.border-l-4 {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .92) 0%, rgba(255, 255, 255, .6) 45%, rgba(255, 255, 255, .4) 100%),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid var(--tint);
+    box-shadow: var(--glass-shadow);
+    background-clip: padding-box;
+}
+[data-theme="dark"] .bg-white.rounded-xl.shadow-md.border-l-4 {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .14) 0%, rgba(255, 255, 255, .06) 45%, transparent 100%),
+        rgba(30, 34, 44, .66);
+    border-color: var(--glass-border);
+    border-left: 4px solid var(--tint);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .25);
+}
+
 /* 胶囊按钮 / CTA：苹果式即时按压 */
 a[class*="rounded-full"],
 button[class*="rounded-full"],

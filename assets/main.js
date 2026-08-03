@@ -532,11 +532,13 @@ document.addEventListener('DOMContentLoaded', function () {
         { d: '2026-08-04', zh: [
             '【优化】液态玻璃质感全面加强：玻璃令牌整体提升（背景透明度、高光边框、内发光、阴影、模糊 / 饱和度），并为所有玻璃表面统一叠加左上镜面高光；已玻璃化的按钮 / 卡片 / 弹窗折射感更明显',
             '【优化】统一更多组件为液态玻璃风格：首页头部搜索框（.search-container）从纯白 pill 改为玻璃药丸，与顶栏 / 按钮风格一致；导航栏顶部增加玻璃高光边线，强化顶栏玻璃轮廓',
-            '【优化】平台色按钮（微信 / 小红书 / QQ）在保留品牌色的基础上进一步提亮高光边框与内发光，玻璃感与品牌辨识度兼顾'
+            '【优化】平台色按钮（微信 / 小红书 / QQ）在保留品牌色的基础上进一步提亮高光边框与内发光，玻璃感与品牌辨识度兼顾',
+            '【优化】文章内提示框（tip / callout）与「关于我们」主内容卡原为实心底色，现统一为液态玻璃（保留左侧品牌色强调边），与全站玻璃语言一致'
         ], en: [
             '[Opt] Liquid Glass effect strengthened across the board: glass tokens tuned up (opacity, highlight border, inner glow, shadow, blur / saturation), and a uniform top-left specular highlight added to every glass surface; already-glassed buttons, cards and modals now look noticeably more refractive',
             '[Opt] More surfaces adopt Liquid Glass: the homepage hero search box (.search-container) is no longer a solid-white pill but a glass capsule matching the navbar and buttons; the navbar gains a top glass highlight edge to reinforce its glass outline',
-            '[Opt] Colored platform buttons (WeChat / Xiaohongshu / QQ) keep their brand colors while further brightening highlight borders and inner glow, balancing glass feel with brand recognition'
+            '[Opt] Colored platform buttons (WeChat / Xiaohongshu / QQ) keep their brand colors while further brightening highlight borders and inner glow, balancing glass feel with brand recognition',
+            '[Opt] Article tip/callout boxes and the "About Us" main card were solid-colored; they now use Liquid Glass (keeping the left brand-color accent edge) to match the site-wide glass language'
         ]},
         { d: '2026-08-03', zh: [
             '【重大】全站液态玻璃（Liquid Glass）设计上线：半透明表面 + 折射模糊（backdrop-filter: blur() saturate()）+ 白色高光边框 + 内发光，覆盖顶栏工具、主按钮 / 胶囊 CTA、返回顶部、分享浮标、幽灵按钮；分享主按钮与返回顶部进一步强化镜面高光，玻璃质感明显',
