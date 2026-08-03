@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             '<span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-md"><i class="fa fa-search"></i></span>' +
                             '<h3 class="text-lg font-bold text-gray-800">' + (isEn ? 'Site Search' : '全站搜索') + '</h3>' +
                         '</div>' +
-                        '<button id="searchModalClose" aria-label="' + (isEn ? 'Close' : '关闭') + '" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"><i class="fa fa-times"></i></button>' +
+                        '<button id="searchModalClose" aria-label="' + (isEn ? 'Close' : '关闭') + '" class="flex h-9 w-9 items-center justify-center rounded-full"><i class="fa fa-times"></i></button>' +
                     '</div>' +
                     '<div class="relative mt-4">' +
                         '<i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>' +
@@ -539,7 +539,9 @@ document.addEventListener('DOMContentLoaded', function () {
             '【优化】灯箱图片切换按钮液态玻璃化：灯箱内的左右切换箭头、关闭按钮、下载按钮统一改为 frosted 玻璃质感（折射模糊 + 白色高光边框 + 内发光），悬浮时放大 1.06',
             '【优化】灯箱新增图片描述卡片：灯箱右下角新增液态玻璃卡片，自动读取并展示当前图片在文章中的 alt 描述；无描述时自动隐藏，不遮挡图片主体',
             '【优化】夜间模式按钮边缘与光影柔化：导航工具按钮、主按钮 / 胶囊 CTA、幽灵按钮、平台色按钮与分享浮标（返回顶部 / 分享）统一降低背景不透明度、收窄边框、改用更柔和的内外阴影，边缘不再生硬，光影过渡更自然',
-            '【优化】夜间模式顶栏圆型按钮质感统一为「选中态」：搜索按钮与汉堡按钮在夜间的默认背景从暗色渐变玻璃（rgba(30,34,44,.45)）改为平铺雾化白（rgba(255,255,255,.1)），与展开菜单时汉堡被选中后的干净 frosted 质感一致；悬停时稍亮（.16），整体更轻盈、边缘更柔和'
+            '【优化】夜间模式顶栏圆型按钮质感统一为「选中态」：搜索按钮与汉堡按钮在夜间的默认背景从暗色渐变玻璃（rgba(30,34,44,.45)）改为平铺雾化白（rgba(255,255,255,.1)），与展开菜单时汉堡被选中后的干净 frosted 质感一致；悬停时稍亮（.16），整体更轻盈、边缘更柔和',
+            '【优化】弹窗关闭按钮与顶栏圆型按钮统一为液态玻璃：搜索弹窗、更新日志弹窗、二维码弹窗、意见反馈弹窗的关闭按钮（圆型 ×）统一改为液态玻璃；日间为浅灰 frosted 玻璃，夜间为与顶栏一致的平铺雾化白 rgba(255,255,255,.1) + 折射模糊 + 高光边框 + 内发光',
+            '【优化】夜间弹窗质感柔化、消除白色光圈割裂感：夜间弹窗面板背景改为 rgba(30,34,44,.72) 半透暗玻璃，边框从 rgba(255,255,255,.55) 降到 .12，顶部内发光从 .6 降到 .12，搜索弹窗输入框夜间改为 var(--surface-2) 暗色，消除白色方块与白色光圈的割裂'
         ], en: [
             '[Opt] Liquid Glass effect strengthened across the board: glass tokens tuned up (opacity, highlight border, inner glow, shadow, blur / saturation), and a uniform top-left specular highlight added to every glass surface; already-glassed buttons, cards and modals now look noticeably more refractive',
             '[Opt] More surfaces adopt Liquid Glass: the homepage hero search box (.search-container) is no longer a solid-white pill but a glass capsule matching the navbar and buttons; the navbar gains a top glass highlight edge to reinforce its glass outline',
@@ -550,7 +552,9 @@ document.addEventListener('DOMContentLoaded', function () {
             '[Opt] Lightbox navigation controls adopt Liquid Glass: left/right arrows, close and download buttons all use a frosted glass look (refractive blur + white highlight border + inner glow) and scale 1.06 on hover',
             '[Opt] New lightbox image-description card: a Liquid Glass card in the bottom-right corner shows the current image\'s alt description from the article; it auto-hides when no description is present so it does not block the image',
             '[Opt] Softer night-mode button edges and lighting: navbar tools, primary/pill CTAs, ghost buttons, platform buttons and the share FAB (back-to-top / share) all lower their background opacity, thin their borders and use gentler inner/outer shadows, so edges are no longer harsh and the lighting transitions feel natural',
-            '[Opt] Night-mode round navbar buttons now share the "selected" texture: search and hamburger buttons default to a flat frosted-white fill (rgba(255,255,255,.1)) instead of the dark-tinted glass gradient, matching the clean look the hamburger has when the menu is open; hover brightens slightly to .16 for a lighter, softer edge'
+            '[Opt] Night-mode round navbar buttons now share the "selected" texture: search and hamburger buttons default to a flat frosted-white fill (rgba(255,255,255,.1)) instead of the dark-tinted glass gradient, matching the clean look the hamburger has when the menu is open; hover brightens slightly to .16 for a lighter, softer edge',
+            '[Opt] Modal close buttons share the Liquid Glass look of the round navbar buttons: close buttons in the search, changelog, QR and feedback modals are now glass; a subtle gray frost in day mode and frosted-white rgba(255,255,255,.1) with blur + highlight border + inner glow at night to match the navbar',
+            '[Opt] Night modal panels softened to remove the white halo split: panel background changed to rgba(30,34,44,.72) dark glass, border lowered from rgba(255,255,255,.55) to .12, top inset highlight lowered from .6 to .12, and the search modal input now uses var(--surface-2) dark background in night mode, eliminating the white box / white ring contrast'
         ]},
         { d: '2026-08-03', zh: [
             '【重大】全站液态玻璃（Liquid Glass）设计上线：半透明表面 + 折射模糊（backdrop-filter: blur() saturate()）+ 白色高光边框 + 内发光，覆盖顶栏工具、主按钮 / 胶囊 CTA、返回顶部、分享浮标、幽灵按钮；分享主按钮与返回顶部进一步强化镜面高光，玻璃质感明显',
@@ -801,7 +805,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             '<span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-white shadow-md"><i class="fa fa-list-alt"></i></span>' +
                             '<h3 class="text-lg font-bold text-gray-800">' + (isEn ? 'Changelog' : '更新日志') + '</h3>' +
                         '</div>' +
-                        '<button id="changelogClose" aria-label="' + (isEn ? 'Close' : '关闭') + '" class="flex h-9 w-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"><i class="fa fa-times"></i></button>' +
+                        '<button id="changelogClose" aria-label="' + (isEn ? 'Close' : '关闭') + '" class="flex h-9 w-9 items-center justify-center rounded-full"><i class="fa fa-times"></i></button>' +
                     '</div>' +
                     '<div id="changelogBody" class="px-6 py-5" style="overflow-y:auto">' + CHANGELOG_HTML + '</div>' +
                 '</div>';

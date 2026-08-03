@@ -396,6 +396,8 @@ body {
 [data-theme="dark"] #backToTop:hover { box-shadow: 0 8px 22px rgba(255, 255, 255, .16); }
 
 [data-theme="dark"] .search-input { background-color: transparent; color: var(--text); }
+[data-theme="dark"] #searchModalInput { background-color: var(--surface-2); border-color: var(--border); color: var(--text); }
+[data-theme="dark"] #searchModalInput::placeholder { color: var(--text-muted); }
 [data-theme="dark"] #searchModalInput:focus { background-color: var(--surface-2); }
 
 [data-theme="dark"] .text-dark,
@@ -1263,8 +1265,41 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 [data-theme="dark"] #changelogModal > div,
 [data-theme="dark"] #qrModal        > div,
 [data-theme="dark"] #feedbackModal  > div {
-    background: rgba(18, 22, 30, .88);
+    background: rgba(30, 34, 44, .72);
+    border-color: rgba(255, 255, 255, .12);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .12);
 }
+
+/* 弹窗关闭按钮：与顶栏圆型按钮统一为液态玻璃语言（自适应明 / 暗面板） */
+#searchModalClose, #changelogClose, #closeModal, #closeFeedbackModal {
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
+        rgba(0, 0, 0, .05);
+    border: 1px solid rgba(0, 0, 0, .1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .1), inset 0 1px 1px rgba(255, 255, 255, .6);
+    color: var(--text-strong);
+    background-clip: padding-box;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out),
+                transform var(--dur-press) var(--ease-out);
+}
+#searchModalClose:hover, #changelogClose:hover, #closeModal:hover, #closeFeedbackModal:hover { background: rgba(0, 0, 0, .09); transform: scale(.94); }
+[data-theme="dark"] #searchModalClose,
+[data-theme="dark"] #changelogClose,
+[data-theme="dark"] #closeModal,
+[data-theme="dark"] #closeFeedbackModal {
+    background: rgba(255, 255, 255, .1);
+    border-color: rgba(255, 255, 255, .14);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, .3), inset 0 1px 1px rgba(255, 255, 255, .18), inset 0 -1px 1px rgba(0, 0, 0, .15);
+    color: #fff;
+}
+[data-theme="dark"] #searchModalClose:hover,
+[data-theme="dark"] #changelogClose:hover,
+[data-theme="dark"] #closeModal:hover,
+[data-theme="dark"] #closeFeedbackModal:hover { background: rgba(255, 255, 255, .16); }
 
 /* 移动端：给带浏览器导航栏的设备留出呼吸空间，避免长弹窗顶到上下边缘 */
 @media (max-width: 767px) {
