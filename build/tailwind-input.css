@@ -1111,6 +1111,14 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
     background: rgba(18, 22, 30, .88);
 }
 
+/* 移动端：给带浏览器导航栏的设备留出呼吸空间，避免长弹窗顶到上下边缘 */
+@media (max-width: 767px) {
+    #searchModal    > div,
+    #changelogModal > div,
+    #qrModal        > div,
+    #feedbackModal  > div { max-height: 80vh !important; }
+}
+
 /* -----------------------------------------------------------
    §6 页脚：从「品牌蓝大色块」改为 iOS 分组背景 + 发丝线
    理由：全站只有一个主色块（首屏 Hero）时，品牌色才显得贵；
