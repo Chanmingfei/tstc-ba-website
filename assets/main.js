@@ -535,7 +535,9 @@ document.addEventListener('DOMContentLoaded', function () {
             '【优化】平台色按钮（微信 / 小红书 / QQ）在保留品牌色的基础上进一步提亮高光边框与内发光，玻璃感与品牌辨识度兼顾',
             '【优化】文章内提示框（tip / callout）与「关于我们」主内容卡原为实心底色，现统一为液态玻璃（保留左侧品牌色强调边），与全站玻璃语言一致',
             '【优化】顶栏通透度提升：导航栏背景透明度整体下调（日间 .72→.58、夜间 .72→.42），顶部高光边线同步减弱，顶栏更通透、更贴合液态玻璃的半透明质感（夜间模式尤其明显）',
-            '【优化】首页搜索框风格统一：搜索框内的搜索按钮从独立蓝色玻璃块改为完全透明（白字），整支搜索框读为同一块玻璃表面，消除蓝块与玻璃容器的割裂感；夜间同步透明化',
+            '【优化】首页搜索框升级为完整液态玻璃组合：玻璃容器保持折射模糊 + 高光边框，搜索按钮升级为带品牌色渐变、左上镜面高光与折射模糊的液态玻璃按钮；日夜结构统一，暗色下占位符颜色同步适配',
+            '【优化】灯箱图片切换按钮液态玻璃化：灯箱内的左右切换箭头、关闭按钮、下载按钮统一改为 frosted 玻璃质感（折射模糊 + 白色高光边框 + 内发光），悬浮时放大 1.06',
+            '【优化】灯箱新增图片描述卡片：灯箱右下角新增液态玻璃卡片，自动读取并展示当前图片在文章中的 alt 描述；无描述时自动隐藏，不遮挡图片主体',
             '【优化】夜间模式按钮边缘与光影柔化：导航工具按钮、主按钮 / 胶囊 CTA、幽灵按钮、平台色按钮与分享浮标（返回顶部 / 分享）统一降低背景不透明度、收窄边框、改用更柔和的内外阴影，边缘不再生硬，光影过渡更自然',
             '【优化】夜间模式顶栏圆型按钮质感统一为「选中态」：搜索按钮与汉堡按钮在夜间的默认背景从暗色渐变玻璃（rgba(30,34,44,.45)）改为平铺雾化白（rgba(255,255,255,.1)），与展开菜单时汉堡被选中后的干净 frosted 质感一致；悬停时稍亮（.16），整体更轻盈、边缘更柔和'
         ], en: [
@@ -544,7 +546,9 @@ document.addEventListener('DOMContentLoaded', function () {
             '[Opt] Colored platform buttons (WeChat / Xiaohongshu / QQ) keep their brand colors while further brightening highlight borders and inner glow, balancing glass feel with brand recognition',
             '[Opt] Article tip/callout boxes and the "About Us" main card were solid-colored; they now use Liquid Glass (keeping the left brand-color accent edge) to match the site-wide glass language',
             '[Opt] More transparent navbar: navbar background opacity lowered overall (day .72→.58, night .72→.42) and the top highlight edge softened in step, so the bar feels more see-through and closer to Liquid Glass — most visible in dark mode',
-            '[Opt] Unified homepage search box: the in-box search button is no longer a separate blue glass block but fully transparent (white text), so the whole search box reads as one glass surface with no blue/glass split; transparentized in dark mode too',
+            '[Opt] Homepage hero search box upgraded to a full Liquid Glass combo: the glass container keeps its blur + highlight border, and the search button is now a Liquid Glass button with brand-color gradient, top-left specular highlight and refractive blur; day/night unified, dark-mode placeholder color adjusted for readability',
+            '[Opt] Lightbox navigation controls adopt Liquid Glass: left/right arrows, close and download buttons all use a frosted glass look (refractive blur + white highlight border + inner glow) and scale 1.06 on hover',
+            '[Opt] New lightbox image-description card: a Liquid Glass card in the bottom-right corner shows the current image\'s alt description from the article; it auto-hides when no description is present so it does not block the image',
             '[Opt] Softer night-mode button edges and lighting: navbar tools, primary/pill CTAs, ghost buttons, platform buttons and the share FAB (back-to-top / share) all lower their background opacity, thin their borders and use gentler inner/outer shadows, so edges are no longer harsh and the lighting transitions feel natural',
             '[Opt] Night-mode round navbar buttons now share the "selected" texture: search and hamburger buttons default to a flat frosted-white fill (rgba(255,255,255,.1)) instead of the dark-tinted glass gradient, matching the clean look the hamburger has when the menu is open; hover brightens slightly to .16 for a lighter, softer edge'
         ]},
@@ -1309,12 +1313,18 @@ document.addEventListener('DOMContentLoaded', function () {
             var st = document.createElement('style');
             st.id = 'lightboxNavStyle';
             st.textContent =
-                '#lightbox .lb-nav{position:absolute;top:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:rgba(255,255,255,.10);color:#fff;transform:translateY(-50%) scale(1);transition:transform .15s ease,background .15s ease;}' +
-                '#lightbox .lb-nav:hover{background:rgba(255,255,255,.22);transform:translateY(-50%) scale(1.06);}' +
+                '#lightbox .lb-nav,#lightbox .lb-ctrl{background:linear-gradient(150deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.15) 38%,transparent 64%),rgba(255,255,255,.12);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);border:1px solid rgba(255,255,255,.35);box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 1px 1px rgba(255,255,255,.5);color:#fff;}' +
+                '#lightbox .lb-nav{position:absolute;top:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9999px;transform:translateY(-50%) scale(1);transition:transform .15s ease,background .15s ease;}' +
+                '#lightbox .lb-ctrl{display:flex;align-items:center;justify-content:center;border-radius:9999px;transition:background .15s ease,transform .15s ease;}' +
+                '#lightbox .lb-nav:hover,#lightbox .lb-ctrl:hover{background:linear-gradient(150deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.25) 38%,transparent 64%),rgba(255,255,255,.2);}' +
+                '#lightbox .lb-nav:hover{transform:translateY(-50%) scale(1.06);}' +
+                '#lightbox .lb-ctrl:hover{transform:scale(1.06);}' +
                 '#lightbox .lb-nav.lb-hide{display:none!important;}' +
                 '#lightbox .lb-counter{background:rgba(0,0,0,.45);color:#fff;padding:4px 14px;border-radius:9999px;font-size:13px;letter-spacing:.04em;}' +
                 '#lightbox .lb-counter.lb-hide{display:none!important;}' +
-                '#lightbox [data-close],#lightbox [data-download],#lightbox .lb-nav,#lightbox .lb-counter{z-index:10;}' +
+                '#lightbox .lb-caption{position:absolute;right:16px;bottom:16px;max-width:min(64vw,340px);padding:10px 14px;border-radius:14px;background:linear-gradient(150deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.15) 38%,transparent 64%),rgba(255,255,255,.12);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);border:1px solid rgba(255,255,255,.3);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.45);color:#fff;font-size:13px;line-height:1.5;letter-spacing:.02em;}' +
+                '#lightbox .lb-caption.lb-hide{display:none!important;}' +
+                '#lightbox [data-close],#lightbox [data-download],#lightbox .lb-nav,#lightbox .lb-counter,#lightbox .lb-caption{z-index:10;}' +
                 '#lightbox img{z-index:1;position:relative;}' +
                 '@keyframes lbSlideInRight{from{opacity:0;transform:translateX(48px);}to{opacity:1;transform:translateX(0);}}' +
                 '@keyframes lbSlideInLeft{from{opacity:0;transform:translateX(-48px);}to{opacity:1;transform:translateX(0);}}' +
@@ -1337,6 +1347,13 @@ document.addEventListener('DOMContentLoaded', function () {
             var c = box.querySelector('[data-counter]');
             if (c) c.textContent = (currentIndex + 1) + ' / ' + list.length;
         }
+        function updateCaption() {
+            var c = box.querySelector('[data-caption]');
+            if (!c) return;
+            var alt = (list[currentIndex] && list[currentIndex].alt) || '';
+            if (alt) { c.textContent = alt; c.classList.remove('lb-hide'); }
+            else { c.classList.add('lb-hide'); }
+        }
         function showImage(newIndex, dir) {
             if (newIndex === currentIndex || animating || list.length < 2) return;
             var next = list[newIndex];
@@ -1353,6 +1370,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateDownload(next.src);
                     currentIndex = newIndex;
                     updateCounter();
+                    updateCaption();
                     boxImg.classList.remove(outCls);
                     void boxImg.offsetWidth;
                     boxImg.classList.add(inCls);
@@ -1385,11 +1403,12 @@ document.addEventListener('DOMContentLoaded', function () {
             box.id = 'lightbox';
             box.className = 'fixed inset-0 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
             box.innerHTML =
-                '<button data-close class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Close' : '关闭') + '"><i class="fa fa-times text-xl"></i></button>' +
-                '<a data-download="1" class="absolute right-20 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Download image' : '下载图片') + '" title="' + (isEn ? 'Download image' : '下载图片') + '" download><i class="fa fa-download text-xl"></i></a>' +
+                '<button data-close class="lb-ctrl absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-white" aria-label="' + (isEn ? 'Close' : '关闭') + '"><i class="fa fa-times text-xl"></i></button>' +
+                '<a data-download="1" class="lb-ctrl absolute right-20 top-4 flex h-11 w-11 items-center justify-center rounded-full text-white" aria-label="' + (isEn ? 'Download image' : '下载图片') + '" title="' + (isEn ? 'Download image' : '下载图片') + '" download><i class="fa fa-download text-xl"></i></a>' +
                 '<button data-nav="prev" class="lb-nav absolute left-4 top-1/2" aria-label="' + (isEn ? 'Previous image' : '上一张') + '"><i class="fa fa-chevron-left text-2xl"></i></button>' +
                 '<button data-nav="next" class="lb-nav absolute right-4 top-1/2" aria-label="' + (isEn ? 'Next image' : '下一张') + '"><i class="fa fa-chevron-right text-2xl"></i></button>' +
-                '<div data-counter class="lb-counter absolute bottom-4 left-1/2 -translate-x-1/2"></div>' +
+                '<div data-counter class="lb-counter absolute bottom-4 left-4"></div>' +
+                '<div data-caption class="lb-caption absolute bottom-4 right-4 lb-hide"></div>' +
                 '<img class="max-h-[90vh] max-w-[94vw] rounded-lg shadow-2xl cursor-auto" alt="">';
             document.body.appendChild(box);
             box.querySelector('[data-close]').addEventListener('click', function (e) { e.stopPropagation(); close(); });
@@ -1433,6 +1452,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 boxImg.alt = list[currentIndex].alt;
                 updateDownload(list[currentIndex].src);
                 updateCounter();
+                updateCaption();
                 var single = list.length < 2;
                 box.querySelector('[data-nav="prev"]').classList.toggle('lb-hide', single);
                 box.querySelector('[data-nav="next"]').classList.toggle('lb-hide', single);

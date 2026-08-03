@@ -420,7 +420,8 @@ body {
 
 [data-theme="dark"] .hover\:bg-gray-100:hover { background-color: var(--surface-2); }
 [data-theme="dark"] .hover\:bg-blue-100:hover { background-color: rgba(91, 155, 255, .2); }
-[data-theme="dark"] .placeholder-gray-400::placeholder { color: #8b93a3; }
+[data-theme="dark"] .placeholder-gray-400::placeholder,
+[data-theme="dark"] .search-input::placeholder { color: #8b93a3; }
 
 /* 品牌块（页脚 / 返回顶部 / 按钮）在暗色下大幅降饱和，避免刺眼 */
 [data-theme="dark"] .bg-gradient-primary { background: linear-gradient(135deg, #0c253d 0%, #143352 100%); }
@@ -1018,17 +1019,32 @@ button[class*="rounded-full"]:active,
 .search-button { background-color: var(--tint); }
 .search-button:hover { background-color: var(--tint-press); }
 
-/* 首页 Hero 搜索框内的搜索按钮：与玻璃容器统一为整体，不做独立蓝块 */
+/* 首页 Hero 搜索按钮：液态玻璃版（折射模糊 + 左上镜面高光 + 内发光），与玻璃容器同为玻璃语言 */
 .search-container .search-button {
-    background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    border: none;
-    box-shadow: none;
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .2) 40%, transparent 66%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, .55);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .18), inset 0 1px 1px rgba(255, 255, 255, .6);
     color: #fff;
+    margin: 4px;
+    border-radius: var(--r-full);
 }
-.search-container .search-button:hover { background: rgba(255, 255, 255, .25); }
-[data-theme="dark"] .search-container .search-button:hover { background: rgba(255, 255, 255, .12); }
+.search-container .search-button:hover {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, .25) 40%, transparent 66%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 88%, transparent), color-mix(in srgb, var(--secondary) 88%, transparent)),
+        rgba(255, 255, 255, .15);
+}
+[data-theme="dark"] .search-container .search-button:hover {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 40%, transparent 66%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 88%, transparent), color-mix(in srgb, var(--secondary) 88%, transparent)),
+        rgba(255, 255, 255, .12);
+}
 
 /* -----------------------------------------------------------
    §5 弹窗：居中卡片（保持原有居中布局，只优化圆角/阴影/材质）
@@ -1219,13 +1235,17 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 [data-theme="dark"] #xiaohongshuBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #ef4444 96%, transparent), color-mix(in srgb, #dc2626 96%, transparent)); }
 [data-theme="dark"] #qqBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #60a5fa 96%, transparent), color-mix(in srgb, #3b82f6 96%, transparent)); }
 
-/* 首页 Hero 搜索按钮在暗色下仍需保持透明（不被上方 CTA 暗色覆盖） */
+/* 首页 Hero 搜索按钮（暗色）：液态玻璃版，与日间同为玻璃语言 */
 [data-theme="dark"] .search-container .search-button {
-    background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    border: none;
-    box-shadow: none;
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .25) 0%, rgba(255, 255, 255, .08) 40%, transparent 66%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
+        rgba(30, 34, 44, .5);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, .22);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .25);
+    color: #fff;
 }
 
 /* 弹窗面板：高不透明度玻璃，保证内容可读性（纯玻璃会导致文字看不清） */
