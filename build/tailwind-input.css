@@ -1100,19 +1100,23 @@ button[class*="rounded-full"]:active,
 #mobileTopSearchBtn:active,
 #navSearchBtn:active { transform: scale(.92); }
 
-/* 暗色下顶栏工具按钮：大幅柔化边框/高光/投影，避免边缘粗糙 */
+/* 暗色下顶栏工具按钮：使用「展开菜单时汉堡被选中」的平铺雾化白质感，边缘更干净 */
 [data-theme="dark"] #menuBtn,
 [data-theme="dark"] #mobileTopSearchBtn,
 [data-theme="dark"] #navSearchBtn {
-    background:
-        linear-gradient(150deg, rgba(255, 255, 255, .18) 0%, rgba(255, 255, 255, .05) 38%, transparent 64%),
-        rgba(30, 34, 44, .45);
-    border-color: rgba(255, 255, 255, .12);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .14);
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .14);
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, .30),
+        inset 0 1px 1px rgba(255, 255, 255, .18),
+        inset 0 -1px 1px rgba(0, 0, 0, .15);
 }
 [data-theme="dark"] #menuBtn:hover,
 [data-theme="dark"] #mobileTopSearchBtn:hover,
-[data-theme="dark"] #navSearchBtn:hover { background: rgba(255, 255, 255, .1); }
+[data-theme="dark"] #navSearchBtn:hover {
+    background: rgba(255, 255, 255, .16);
+    border-color: rgba(255, 255, 255, .18);
+}
 
 /* 主按钮 / 胶囊 CTA：在品牌色上叠液态玻璃 */
 .search-button,

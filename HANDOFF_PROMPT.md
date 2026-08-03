@@ -220,7 +220,7 @@
 8. **液态玻璃质感再强化 + 风格统一**（2026-08-04）：玻璃令牌整体提升（背景透明度、高光边框、内发光、阴影、模糊 / 饱和度），并为 `.liquid-glass`、顶栏工具、主按钮 / CTA、幽灵按钮、平台色按钮、卡片、弹窗统一叠加左上镜面高光；首页头部搜索框 `.search-container` 也改为玻璃药丸，导航栏 `.glass-effect` 顶部增加玻璃高光边线，暗色用更柔和的白光（`rgba(255,255,255,.22)`），保持玻璃轮廓但不刺眼。
 
 8. **液态玻璃继续统一（2026-08-04 续）**：文章内 tip / callout 提示框（`.article-content .bg-gray-50.border-l-4`）与「关于我们」主内容卡（`.bg-white.rounded-xl.shadow-md.border-l-4`）从实心底色改为液态玻璃，保留左侧品牌色强调边；均用 CSS 规则实现，不必逐个改文章 HTML。仍未玻璃化的大面：文章阅读卡（`.article-content` 外层 `bg-white`）有意保留实白以保证长文阅读对比，暂未玻璃化。
-9. **顶栏通透度 + 搜索框统一 + 夜间按钮柔化（2026-08-04 续二）**：① 导航栏 `--nav-bg` 背景透明度下调（亮色 `.72→.58`、暗色 `.72→.42`），顶部高光边线（`.glass-effect` / `.nav-shadow` 的 `inset 0 1px 0`）同步减弱，顶栏更通透、更贴合液态玻璃半透明质感，**夜间尤其明显**；② 首页搜索框内 `.search-container .search-button` 改为完全透明（白字、去掉玻璃/边框/阴影），整支搜索框读为同一块玻璃表面，消除原"蓝色玻璃块 + 玻璃容器"的割裂感，暗色同步透明化；③ 夜间模式按钮边缘与光影柔化——导航工具按钮（搜索/汉堡/主题）、`.bg-primary`/`.bg-secondary` CTA、幽灵按钮、平台色按钮（微信/小红书/QQ）、分享浮标（`#backToTop` / `#shareFab .share-toggle` / `.share-btn`）统一把背景降到 `rgba(30,34,44,.45)`、收窄边框（`rgba(255,255,255,.12~.22)`）、改用更柔和的内外阴影；FAB 暗色样式已在 `[data-theme="dark"] #backToTop, #shareFab .share-toggle, .share-btn` 块统一处理。改动都在 `build/tailwind-input.css`，改完记得 `npm run build` 并同步 CHANGELOG.md / README.md / main.js 的 `CHANGELOG_DATA`。
+9. **顶栏通透度 + 搜索框统一 + 夜间按钮柔化（2026-08-04 续二）**：① 导航栏 `--nav-bg` 背景透明度下调（亮色 `.72→.58`、暗色 `.72→.42`），顶部高光边线（`.glass-effect` / `.nav-shadow` 的 `inset 0 1px 0`）同步减弱，顶栏更通透、更贴合液态玻璃半透明质感，**夜间尤其明显**；② 首页搜索框内 `.search-container .search-button` 改为完全透明（白字、去掉玻璃/边框/阴影），整支搜索框读为同一块玻璃表面，消除原"蓝色玻璃块 + 玻璃容器"的割裂感，暗色同步透明化；③ 夜间模式按钮边缘与光影柔化——导航工具按钮（搜索/汉堡/主题）、`.bg-primary`/`.bg-secondary` CTA、幽灵按钮、平台色按钮（微信/小红书/QQ）、分享浮标（`#backToTop` / `#shareFab .share-toggle` / `.share-btn`）统一把背景降到 `rgba(30,34,44,.45)`、收窄边框（`rgba(255,255,255,.12~.22)`）、改用更柔和的内外阴影；④ 顶栏圆型按钮（搜索/汉堡）夜间默认质感再调整为「被选中」的平铺雾化白 `rgba(255,255,255,.1)`（无渐变），与展开菜单时汉堡的干净 frosted 质感一致，悬停 `.16`。改动都在 `build/tailwind-input.css`，改完记得 `npm run build` 并同步 CHANGELOG.md / README.md / main.js 的 `CHANGELOG_DATA`。
 
 > 本次会话还清理了 `/tmp` 下所有验证用截图/脚本（不进仓库，随手删即可）；仓库 `images/` 仅保留 README 引用的 8 张，无冗余。
 
@@ -256,5 +256,5 @@
 
 ## 14. 当前快速上手（新对话第一句可贴）
 
-> 仓库已克隆到 `/workspace/tstc-ba-website`，请接手。背景：唐山师范学院吧官网静态双语站，Cloudflare Pages 部署。近期已做全站暗色模式 + 昼夜滑动开关、QZone 图标去白底、全站液态玻璃（Liquid Glass）设计（含 2026-08-04 多轮强化：统一左上镜面高光、搜索框玻璃、导航栏玻璃顶边、顶栏通透度提升、搜索框内按钮透明化统一、夜间按钮边缘与光影柔化）、移动端顶栏单行修复、README 配图重写；发文章流程见上文第 4/5 节。注意：① 暗色模式与液态玻璃改组件时看§12 的易错点；② 推送只走 `git push origin main`（Gitee），别试 GitHub；③ 改 `main.js`/`tailwind-input.css` 后必须 `npm run build`。
+> 仓库已克隆到 `/workspace/tstc-ba-website`，请接手。背景：唐山师范学院吧官网静态双语站，Cloudflare Pages 部署。近期已做全站暗色模式 + 昼夜滑动开关、QZone 图标去白底、全站液态玻璃（Liquid Glass）设计（含 2026-08-04 多轮强化：统一左上镜面高光、搜索框玻璃、导航栏玻璃顶边、顶栏通透度提升、搜索框内按钮透明化统一、夜间按钮边缘与光影柔化、顶栏圆型按钮夜间默认改为被选中态的平铺雾化白）、移动端顶栏单行修复、README 配图重写；发文章流程见上文第 4/5 节。注意：① 暗色模式与液态玻璃改组件时看§12 的易错点；② 推送只走 `git push origin main`（Gitee），别试 GitHub；③ 改 `main.js`/`tailwind-input.css` 后必须 `npm run build`。
 
