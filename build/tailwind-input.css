@@ -633,6 +633,13 @@ html[data-theme="dark"] .theme-toggle::after {
 
     /* 分组背景（页脚等「设置页」质感的区块） */
     --grouped-bg: #f2f2f7;
+
+    /* 液态玻璃（Liquid Glass）令牌 */
+    --glass-bg:        rgba(255, 255, 255, .22);
+    --glass-border:    rgba(255, 255, 255, .38);
+    --glass-highlight: rgba(255, 255, 255, .55);
+    --glass-shadow:    0 8px 24px rgba(0, 0, 0, .14), inset 0 1px 1px rgba(255, 255, 255, .45);
+    --glass-blur:      blur(18px) saturate(170%);
 }
 
 /* -----------------------------------------------------------
@@ -690,6 +697,33 @@ h1 { line-height: 1.08; }
 }
 @media (hover: hover) and (pointer: fine) {
     #mainNav a:hover { color: var(--tint); }
+}
+
+/* 移动端顶栏布局修复：防止标题把按钮挤到下一行 */
+@media (max-width: 767px) {
+    #mainNav .container > div {
+        flex-wrap: nowrap !important;
+        gap: 0.5rem;
+    }
+    #mainNav .container > div > div:first-child {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+    #mainNav .container > div > div:first-child > a {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+    #mainNav .container > div > div.md\:hidden {
+        flex: none;
+        display: flex !important;
+        align-items: center;
+    }
+    /* 缩小按钮组尺寸，确保 390px 屏也能一行放下 */
+    #mainNav .theme-toggle { transform: scale(0.72); margin-right: 0.25rem !important; }
+    #mainNav #mobileTopSearchBtn { margin-right: 0.5rem !important; font-size: 16px; }
+    #mainNav #menuBtn { width: 36px; height: 36px; }
 }
 
 /* -----------------------------------------------------------
@@ -900,6 +934,106 @@ button[class*="rounded-full"]:active,
 }
 
 /* -----------------------------------------------------------
+   §5.5 液态玻璃（Liquid Glass）：半透明 + 折射模糊 + 高光边框 + 内发光
+   参考 iOS 26 设计：元素像一层漂浮的玻璃，能透过它看到背后被模糊、
+   饱和处理的背景；边缘有白色高光，内部有柔和内发光。
+   应用到全站按钮及部分弹窗面板。
+   ----------------------------------------------------------- */
+
+/* 基础液态玻璃层 */
+.liquid-glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    transition: transform var(--dur-press) var(--ease-out),
+                background-color var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* 顶栏工具按钮：搜索 / 汉堡（主题切换保持原有轨道样式，不覆盖其复杂渐变） */
+#menuBtn,
+#mobileTopSearchBtn,
+#navSearchBtn {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 50%;
+}
+#menuBtn:hover,
+#mobileTopSearchBtn:hover,
+#navSearchBtn:hover { background: rgba(255, 255, 255, .32); }
+#menuBtn:active,
+#mobileTopSearchBtn:active,
+#navSearchBtn:active { transform: scale(.92); }
+
+/* 主按钮 / 胶囊 CTA / 返回顶部 / 分享浮标：在品牌色上叠液态玻璃 */
+.search-button,
+#backToTop,
+#shareFab .share-toggle,
+#shareFab .share-btn,
+a[class*="rounded-full"].bg-primary,
+button[class*="rounded-full"].bg-primary,
+a[class*="rounded-full"].bg-secondary,
+button[class*="rounded-full"].bg-secondary {
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, .35);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, .16),
+        inset 0 1px 1px rgba(255, 255, 255, .45);
+    color: #fff;
+}
+.search-button:hover,
+#backToTop:hover,
+#shareFab .share-toggle:hover,
+#shareFab .share-btn:hover,
+a[class*="rounded-full"].bg-primary:hover,
+button[class*="rounded-full"].bg-primary:hover,
+a[class*="rounded-full"].bg-secondary:hover,
+button[class*="rounded-full"].bg-secondary:hover {
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 88%, transparent), color-mix(in srgb, var(--secondary) 88%, transparent)),
+        rgba(255, 255, 255, .15);
+}
+
+/* 次级 / 幽灵按钮（白底或透明底） */
+a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary),
+button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary) {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover,
+button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
+    background: rgba(255, 255, 255, .32);
+}
+
+/* 弹窗面板：高不透明度玻璃，保证内容可读性（纯玻璃会导致文字看不清） */
+#searchModal    > div,
+#changelogModal > div,
+#qrModal        > div {
+    background: rgba(255, 255, 255, .78);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+[data-theme="dark"] #searchModal    > div,
+[data-theme="dark"] #changelogModal > div,
+[data-theme="dark"] #qrModal        > div {
+    background: rgba(18, 22, 30, .88);
+}
+
+/* -----------------------------------------------------------
    §6 页脚：从「品牌蓝大色块」改为 iOS 分组背景 + 发丝线
    理由：全站只有一个主色块（首屏 Hero）时，品牌色才显得贵；
    页脚也用主色会把页面压成两头重的三明治。
@@ -975,6 +1109,10 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     --fill-quaternary: rgba(235, 235, 245, .07);
     --fill-tertiary:   rgba(235, 235, 245, .14);
     --grouped-bg: #0f131a;
+    --glass-bg:        rgba(30, 34, 44, .42);
+    --glass-border:    rgba(255, 255, 255, .18);
+    --glass-highlight: rgba(255, 255, 255, .25);
+    --glass-shadow:    0 8px 24px rgba(0, 0, 0, .45), inset 0 1px 1px rgba(255, 255, 255, .18);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5);
     --shadow-2: 0 6px 18px -8px rgba(0, 0, 0, .7), 0 2px 6px -4px rgba(0, 0, 0, .5);
     --shadow-3: 0 28px 64px -24px rgba(0, 0, 0, .85), 0 8px 24px -16px rgba(0, 0, 0, .6);

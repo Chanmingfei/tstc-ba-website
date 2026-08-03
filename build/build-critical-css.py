@@ -106,7 +106,16 @@ def selector_starts_with_any(selector, prefixes):
     return False
 
 
-def rule_should_keep(selector, first_screen, is_inner=False):
+def is_container_breakpoint_only(selector, body):
+    """是否只是 Tailwind 的 .container 断点 max-width 规则（首屏不必需）。"""
+    parts = [p.strip() for p in selector.split(",")]
+    if not all(p == ".container" for p in parts):
+        return False
+    decls = [d.strip() for d in body.split(";") if d.strip()]
+    return all(d.startswith("max-width:") for d in decls)
+
+
+def rule_should_keep(selector, first_screen, is_inner=False, body=""):
     """判断该规则是否应保留为关键 CSS。"""
     # 文章正文样式必须同步首屏生效
     if ".article-content" in selector:
@@ -117,6 +126,9 @@ def rule_should_keep(selector, first_screen, is_inner=False):
     # 固定 ID / 全局基础规则
     if selector_starts_with_any(selector, ALWAYS_KEEP_PREFIX):
         return True
+    # 跳过纯 .container 断点规则，通常可省 3-4KB 关键 CSS
+    if is_container_breakpoint_only(selector, body):
+        return False
     # 全局选择器
     sels = [s.strip() for s in re.split(r",", selector)]
     for s in sels:
@@ -171,7 +183,7 @@ def build_critical():
             inner_rules = split_inner_rules(body)
             kept_inner = []
             for inner_sel, inner_body in inner_rules:
-                if rule_should_keep(inner_sel, first_screen, is_inner=True):
+                if rule_should_keep(inner_sel, first_screen, is_inner=True, body=inner_body):
                     kept_inner.append((inner_sel, inner_body))
                     referenced_keyframes.update(collect_animation_names(inner_body))
             if kept_inner:
@@ -181,7 +193,7 @@ def build_critical():
             kept_rules.append((sel, body))
             referenced_keyframes.update(collect_animation_names(body))
         else:
-            if rule_should_keep(sel, first_screen):
+            if rule_should_keep(sel, first_screen, body=body):
                 kept_rules.append((sel, body))
                 referenced_keyframes.update(collect_animation_names(body))
 
