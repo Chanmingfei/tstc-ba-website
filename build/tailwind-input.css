@@ -384,7 +384,7 @@ body {
 [data-theme="dark"] .bg-gray-100 { background-color: var(--surface-2); }
 [data-theme="dark"] .bg-blue-50 { background-color: rgba(91, 155, 255, .12); }
 [data-theme="dark"] .glass-effect { background: var(--nav-bg); }
-[data-theme="dark"] .search-container { background-color: var(--surface); box-shadow: var(--card-shadow); }
+[data-theme="dark"] .search-container { background-color: rgba(30, 34, 44, .5); box-shadow: 0 10px 30px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .3); }
 
 /* 暗色下阴影改为白色微光：位移/模糊/动画尺寸与白天一致，仅由黑转白，
    让卡片、导航、搜索框等表面轮廓在深色背景上清晰可见（不改动主题切换按钮自身的 3D 高光） */
@@ -395,7 +395,7 @@ body {
 [data-theme="dark"] #backToTop { box-shadow: 0 6px 18px rgba(255, 255, 255, .12); }
 [data-theme="dark"] #backToTop:hover { box-shadow: 0 8px 22px rgba(255, 255, 255, .16); }
 
-[data-theme="dark"] .search-input { background-color: var(--surface-2); color: var(--text); }
+[data-theme="dark"] .search-input { background-color: transparent; color: var(--text); }
 [data-theme="dark"] #searchModalInput:focus { background-color: var(--surface-2); }
 
 [data-theme="dark"] .text-dark,
@@ -640,11 +640,11 @@ html[data-theme="dark"] .theme-toggle::after {
     --grouped-bg: #f2f2f7;
 
     /* 液态玻璃（Liquid Glass）令牌 */
-    --glass-bg:        rgba(255, 255, 255, .22);
-    --glass-border:    rgba(255, 255, 255, .38);
-    --glass-highlight: rgba(255, 255, 255, .55);
-    --glass-shadow:    0 8px 24px rgba(0, 0, 0, .14), inset 0 1px 1px rgba(255, 255, 255, .45);
-    --glass-blur:      blur(18px) saturate(170%);
+    --glass-bg:        rgba(255, 255, 255, .28);
+    --glass-border:    rgba(255, 255, 255, .55);
+    --glass-highlight: rgba(255, 255, 255, .85);
+    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .18), inset 0 1px 1px rgba(255, 255, 255, .7);
+    --glass-blur:      blur(22px) saturate(190%);
 }
 
 /* -----------------------------------------------------------
@@ -673,7 +673,7 @@ h1 { line-height: 1.08; }
     -webkit-backdrop-filter: var(--material-thick);
     backdrop-filter: var(--material-thick);
     border-bottom: 1px solid transparent;   /* 置顶时无线，滚动后才出现 */
-    box-shadow: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55);   /* 玻璃顶边高光 */
     overflow: hidden;                        /* 菜单只能在内部生长 */
     transition:
         border-radius var(--dur-base) var(--ease-out),
@@ -684,7 +684,7 @@ h1 { line-height: 1.08; }
 /* 滚动后：只加一条发丝线 + 极浅投影（apple.com 的做法） */
 #mainNav.nav-shadow {
     border-bottom-color: var(--hairline);
-    box-shadow: 0 4px 16px -14px rgba(0, 0, 0, .5);
+    box-shadow: 0 4px 16px -14px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .45);
 }
 /* 菜单展开：圆角与阴影长在顶栏上，菜单本身永远是透明的 */
 #mainNav.menu-open {
@@ -893,14 +893,14 @@ h1 { line-height: 1.08; }
 .card-hover {
     border-radius: var(--r-md);
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .82) 0%, rgba(255, 255, 255, .42) 40%, rgba(255, 255, 255, 0) 70%),
-        rgba(255, 255, 255, .32);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
-    backdrop-filter: blur(16px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, .65);
+        linear-gradient(150deg, rgba(255, 255, 255, .92) 0%, rgba(255, 255, 255, .5) 40%, rgba(255, 255, 255, 0) 70%),
+        rgba(255, 255, 255, .36);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, .8);
     box-shadow:
-        0 8px 24px rgba(0, 0, 0, .10),
-        inset 0 1px 1px rgba(255, 255, 255, .8),
+        0 10px 28px rgba(0, 0, 0, .14),
+        inset 0 1px 1px rgba(255, 255, 255, .9),
         inset 0 -1px 1px rgba(0, 0, 0, .05);
     background-clip: padding-box;
     transition: transform  var(--dur-base) var(--ease-out),
@@ -911,11 +911,11 @@ h1 { line-height: 1.08; }
 /* 悬浮只在真鼠标环境生效，触屏上不会「卡」在 hover 态 */
 @media (hover: hover) and (pointer: fine) {
     .card-hover:hover {
-        transform: translateY(-4px);
-        border-color: rgba(255, 255, 255, .85);
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, .95);
         box-shadow:
-            0 14px 34px rgba(0, 0, 0, .16),
-            inset 0 1px 1px rgba(255, 255, 255, .9),
+            0 18px 40px rgba(0, 0, 0, .2),
+            inset 0 1px 1px rgba(255, 255, 255, 1),
             inset 0 -1px 1px rgba(0, 0, 0, .05);
     }
 }
@@ -924,19 +924,19 @@ h1 { line-height: 1.08; }
 /* 暗色：玻璃面板用深半透明 + 白色高光内发光，保持玻璃质感 */
 [data-theme="dark"] .card-hover {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .20) 0%, rgba(255, 255, 255, .07) 40%, transparent 70%),
-        rgba(30, 34, 44, .55);
-    border-color: rgba(255, 255, 255, .14);
+        linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 40%, transparent 70%),
+        rgba(30, 34, 44, .62);
+    border-color: rgba(255, 255, 255, .22);
     box-shadow:
-        0 10px 28px rgba(0, 0, 0, .45),
-        inset 0 1px 1px rgba(255, 255, 255, .18),
+        0 12px 32px rgba(0, 0, 0, .5),
+        inset 0 1px 1px rgba(255, 255, 255, .32),
         inset 0 -1px 2px rgba(0, 0, 0, .40);
 }
 [data-theme="dark"] .card-hover:hover {
-    border-color: rgba(255, 255, 255, .24);
+    border-color: rgba(255, 255, 255, .34);
     box-shadow:
-        0 14px 34px rgba(0, 0, 0, .55),
-        inset 0 1px 1px rgba(255, 255, 255, .28),
+        0 18px 40px rgba(0, 0, 0, .6),
+        inset 0 1px 1px rgba(255, 255, 255, .42),
         inset 0 -1px 2px rgba(0, 0, 0, .40);
 }
 
@@ -956,11 +956,17 @@ button[class*="rounded-full"]:active,
 /* 首屏搜索框：iOS 搜索栏质感 + 聚焦光环 */
 .search-container {
     border-radius: var(--r-full);
-    border: 1px solid var(--hairline);
-    box-shadow: var(--shadow-1);
+    border: 1px solid var(--glass-border);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow: var(--glass-shadow);
     overflow: hidden;
     transition: box-shadow var(--dur-fast) var(--ease-out),
-                border-color var(--dur-fast) var(--ease-out);
+                border-color var(--dur-fast) var(--ease-out),
+                background-color var(--dur-fast) var(--ease-in-out);
 }
 .search-container:focus-within {
     border-color: var(--tint);
@@ -999,7 +1005,9 @@ button[class*="rounded-full"]:active,
 
 /* 基础液态玻璃层 */
 .liquid-glass {
-    background: var(--glass-bg);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
+        var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
@@ -1013,7 +1021,9 @@ button[class*="rounded-full"]:active,
 #menuBtn,
 #mobileTopSearchBtn,
 #navSearchBtn {
-    background: var(--glass-bg);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
+        var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
@@ -1030,7 +1040,7 @@ button[class*="rounded-full"]:active,
 }
 #menuBtn:hover,
 #mobileTopSearchBtn:hover,
-#navSearchBtn:hover { background: rgba(255, 255, 255, .32); }
+#navSearchBtn:hover { background: rgba(255, 255, 255, .42); }
 #menuBtn:active,
 #mobileTopSearchBtn:active,
 #navSearchBtn:active { transform: scale(.92); }
@@ -1042,14 +1052,15 @@ button[class*="rounded-full"].bg-primary,
 a[class*="rounded-full"].bg-secondary,
 button[class*="rounded-full"].bg-secondary {
     background:
+        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
         linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(255, 255, 255, .35);
+    border: 1px solid rgba(255, 255, 255, .5);
     box-shadow:
-        0 6px 20px rgba(0, 0, 0, .16),
-        inset 0 1px 1px rgba(255, 255, 255, .45);
+        0 6px 22px rgba(0, 0, 0, .2),
+        inset 0 1px 1px rgba(255, 255, 255, .6);
     color: #fff;
 }
 .search-button:hover,
@@ -1058,6 +1069,7 @@ button[class*="rounded-full"].bg-primary:hover,
 a[class*="rounded-full"].bg-secondary:hover,
 button[class*="rounded-full"].bg-secondary:hover {
     background:
+        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
         linear-gradient(135deg, color-mix(in srgb, var(--tint) 88%, transparent), color-mix(in srgb, var(--secondary) 88%, transparent)),
         rgba(255, 255, 255, .15);
 }
@@ -1065,7 +1077,9 @@ button[class*="rounded-full"].bg-secondary:hover {
 /* 次级 / 幽灵按钮（白底或透明底） */
 a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary),
 button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary) {
-    background: var(--glass-bg);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
+        var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
@@ -1073,7 +1087,7 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary) {
 }
 a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover,
 button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
-    background: rgba(255, 255, 255, .32);
+    background: rgba(255, 255, 255, .42);
 }
 
 /* 平台色按钮（微信/小红书/QQ）：保留品牌色 + 叠加液态玻璃 */
@@ -1082,27 +1096,27 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 #qqBtn {
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
-    border: 1px solid rgba(255, 255, 255, .35);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, .16), inset 0 1px 1px rgba(255, 255, 255, .45);
+    border: 1px solid rgba(255, 255, 255, .5);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, .2), inset 0 1px 1px rgba(255, 255, 255, .6);
     color: #fff;
 }
-#wechatBtn { background: linear-gradient(135deg, color-mix(in srgb, #22c55e 88%, transparent), color-mix(in srgb, #16a34a 88%, transparent)); }
-#xiaohongshuBtn { background: linear-gradient(135deg, color-mix(in srgb, #ef4444 88%, transparent), color-mix(in srgb, #dc2626 88%, transparent)); }
-#qqBtn { background: linear-gradient(135deg, color-mix(in srgb, #60a5fa 88%, transparent), color-mix(in srgb, #3b82f6 88%, transparent)); }
-#wechatBtn:hover { background: linear-gradient(135deg, color-mix(in srgb, #22c55e 96%, transparent), color-mix(in srgb, #16a34a 96%, transparent)); }
-#xiaohongshuBtn:hover { background: linear-gradient(135deg, color-mix(in srgb, #ef4444 96%, transparent), color-mix(in srgb, #dc2626 96%, transparent)); }
-#qqBtn:hover { background: linear-gradient(135deg, color-mix(in srgb, #60a5fa 96%, transparent), color-mix(in srgb, #3b82f6 96%, transparent)); }
+#wechatBtn { background: linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #22c55e 88%, transparent), color-mix(in srgb, #16a34a 88%, transparent)); }
+#xiaohongshuBtn { background: linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #ef4444 88%, transparent), color-mix(in srgb, #dc2626 88%, transparent)); }
+#qqBtn { background: linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #60a5fa 88%, transparent), color-mix(in srgb, #3b82f6 88%, transparent)); }
+#wechatBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #22c55e 96%, transparent), color-mix(in srgb, #16a34a 96%, transparent)); }
+#xiaohongshuBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #ef4444 96%, transparent), color-mix(in srgb, #dc2626 96%, transparent)); }
+#qqBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #60a5fa 96%, transparent), color-mix(in srgb, #3b82f6 96%, transparent)); }
 
 /* 弹窗面板：高不透明度玻璃，保证内容可读性（纯玻璃会导致文字看不清） */
 #searchModal    > div,
 #changelogModal > div,
 #qrModal        > div,
 #feedbackModal  > div {
-    background: rgba(255, 255, 255, .78);
+    background: rgba(255, 255, 255, .82);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, .6);
 }
 [data-theme="dark"] #searchModal    > div,
 [data-theme="dark"] #changelogModal > div,
@@ -1213,15 +1227,18 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     --fill-quaternary: rgba(235, 235, 245, .07);
     --fill-tertiary:   rgba(235, 235, 245, .14);
     --grouped-bg: #0f131a;
-    --glass-bg:        rgba(30, 34, 44, .42);
-    --glass-border:    rgba(255, 255, 255, .18);
-    --glass-highlight: rgba(255, 255, 255, .25);
-    --glass-shadow:    0 8px 24px rgba(0, 0, 0, .45), inset 0 1px 1px rgba(255, 255, 255, .18);
+    --glass-bg:        rgba(30, 34, 44, .5);
+    --glass-border:    rgba(255, 255, 255, .28);
+    --glass-highlight: rgba(255, 255, 255, .45);
+    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .35);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5);
     --shadow-2: 0 6px 18px -8px rgba(0, 0, 0, .7), 0 2px 6px -4px rgba(0, 0, 0, .5);
     --shadow-3: 0 28px 64px -24px rgba(0, 0, 0, .85), 0 8px 24px -16px rgba(0, 0, 0, .6);
 }
-[data-theme="dark"] #mainNav.nav-shadow { box-shadow: 0 4px 18px -12px rgba(0, 0, 0, .9); }
+[data-theme="dark"] #mainNav.glass-effect { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22); }
+[data-theme="dark"] #mainNav.nav-shadow {
+    box-shadow: 0 4px 18px -12px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
 [data-theme="dark"] #menuBackdrop { background: rgba(0, 0, 0, .5); }
 [data-theme="dark"] #backToTop { border-color: rgba(255, 255, 255, .1); }
 [data-theme="dark"] #shareFab .share-btn { background: var(--surface-2); color: var(--text); }

@@ -529,6 +529,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // 完整更新日志 HTML（与 CHANGELOG.md 保持一致，按日期归档）
     // 完整更新日志（中英文各一份，按日期归档，与 CHANGELOG.md 保持一致）
     const CHANGELOG_DATA = [
+        { d: '2026-08-04', zh: [
+            '【优化】液态玻璃质感全面加强：玻璃令牌整体提升（背景透明度、高光边框、内发光、阴影、模糊 / 饱和度），并为所有玻璃表面统一叠加左上镜面高光；已玻璃化的按钮 / 卡片 / 弹窗折射感更明显',
+            '【优化】统一更多组件为液态玻璃风格：首页头部搜索框（.search-container）从纯白 pill 改为玻璃药丸，与顶栏 / 按钮风格一致；导航栏顶部增加玻璃高光边线，强化顶栏玻璃轮廓',
+            '【优化】平台色按钮（微信 / 小红书 / QQ）在保留品牌色的基础上进一步提亮高光边框与内发光，玻璃感与品牌辨识度兼顾'
+        ], en: [
+            '[Opt] Liquid Glass effect strengthened across the board: glass tokens tuned up (opacity, highlight border, inner glow, shadow, blur / saturation), and a uniform top-left specular highlight added to every glass surface; already-glassed buttons, cards and modals now look noticeably more refractive',
+            '[Opt] More surfaces adopt Liquid Glass: the homepage hero search box (.search-container) is no longer a solid-white pill but a glass capsule matching the navbar and buttons; the navbar gains a top glass highlight edge to reinforce its glass outline',
+            '[Opt] Colored platform buttons (WeChat / Xiaohongshu / QQ) keep their brand colors while further brightening highlight borders and inner glow, balancing glass feel with brand recognition'
+        ]},
         { d: '2026-08-03', zh: [
             '【重大】全站液态玻璃（Liquid Glass）设计上线：半透明表面 + 折射模糊（backdrop-filter: blur() saturate()）+ 白色高光边框 + 内发光，覆盖顶栏工具、主按钮 / 胶囊 CTA、返回顶部、分享浮标、幽灵按钮；分享主按钮与返回顶部进一步强化镜面高光，玻璃质感明显',
             '【优化】移动端顶栏修复：搜索按钮改 38×38 正圆、主题切换放大至 scale(.85)、站点标题完整显示（去省略号）、搜索 / 主题切换 / 汉堡三按钮以正常尺寸单行排列',
