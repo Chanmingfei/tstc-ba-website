@@ -600,3 +600,143 @@ html[data-theme="dark"] .theme-toggle::after {
         margin-right: 0.75rem;
     }
 }
+
+/* ===========================================================
+   ★ APPLE 设计风格增强层（2026-08-03 追加，可整体移除以还原）
+   原则：磨砂材质(backdrop-filter)、spring 式 ease-out 动效、
+   柔和大圆角与景深、即时按压反馈、光学排版、reduced-motion。
+   仅改样式，复用现有素材，不影响结构与功能。
+   =========================================================== */
+
+:root {
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* 进入/退出默认 */
+    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);  /* 轻微回弹（ playful 元素） */
+    --ease-in-out-apple: cubic-bezier(0.77, 0, 0.175, 1);
+    --nav-border: rgba(255, 255, 255, 0.45);
+    --card-radius: 1rem;
+}
+
+/* 全局排版：光学尺寸 + 抗锯齿 + 大标题负字距 */
+body {
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+h1, h2, h3 { letter-spacing: -0.02em; }
+.article-content h2, .article-content h3 { letter-spacing: normal; }
+
+/* 导航：Apple 磨砂材质（强模糊 + 饱和 + 高光描边） */
+#mainNav.glass-effect {
+    background: var(--nav-bg);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-bottom: 1px solid var(--nav-border);
+    box-shadow: 0 8px 30px -16px rgba(0, 0, 0, .18);
+}
+/* 导航内链接 hover 轻微高亮（即时反馈，pointer fine 才生效） */
+@media (hover: hover) and (pointer: fine) {
+    #mainNav a:hover { color: var(--primary); }
+}
+
+/* 卡片：材质 + 景深 + spring 式悬浮 */
+.card-hover {
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    background-clip: padding-box;
+    transition:
+        transform .5s var(--ease-out),
+        box-shadow .5s var(--ease-out),
+        background-color .4s cubic-bezier(.4, 0, .2, 1),
+        border-color .4s cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+}
+.card-hover:hover {
+    transform: translateY(-6px) scale(1.012);
+    box-shadow: 0 22px 48px -16px rgba(0, 0, 0, .22);
+}
+
+/* 按钮/胶囊 CTA：即时按压反馈（苹果式 scale 0.97） */
+a[class*="rounded-full"],
+button[class*="rounded-full"] {
+    transition:
+        transform 160ms var(--ease-out),
+        background-color .3s cubic-bezier(.4, 0, .2, 1),
+        box-shadow .3s ease;
+}
+a[class*="rounded-full"]:active,
+button[class*="rounded-full"]:active {
+    transform: scale(0.97);
+}
+
+/* 搜索弹窗面板：更大圆角 + 柔光阴影（入场已由 searchPop 用苹果 ease 驱动） */
+#searchModal > div {
+    border-radius: 1.5rem;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .38);
+    border: 1px solid rgba(255, 255, 255, .5);
+}
+/* 弹窗遮罩更克制的磨砂 */
+#searchModal {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Hero 大标题：收一点字距、降一点阴影，更显精致 */
+.bg-gradient-primary h1 {
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+}
+.bg-gradient-primary .text-shadow {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .18);
+}
+
+/* 回到顶部 / 分享按钮：按压反馈 */
+#backToTop:active,
+#shareFab .share-btn:active {
+    transform: scale(0.94);
+    transition: transform 140ms var(--ease-out);
+}
+
+/* ---------- 暗色模式下的苹果材质适配 ---------- */
+[data-theme="dark"] {
+    --nav-border: rgba(255, 255, 255, .08);
+}
+[data-theme="dark"] .card-hover {
+    border-color: rgba(255, 255, 255, .07);
+}
+[data-theme="dark"] .card-hover:hover {
+    box-shadow: 0 22px 48px -16px rgba(255, 255, 255, .14);
+}
+[data-theme="dark"] #mainNav.glass-effect {
+    box-shadow: 0 8px 30px -18px rgba(0, 0, 0, .6);
+}
+[data-theme="dark"] #searchModal > div {
+    border-color: rgba(255, 255, 255, .1);
+}
+
+/* ---------- reduced-motion：保留颜色过渡，去掉位移/缩放手势 ---------- */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .card-hover,
+    a[class*="rounded-full"],
+    button[class*="rounded-full"],
+    #backToTop,
+    #shareFab .share-btn {
+        transition-property: background-color, color, border-color, box-shadow !important;
+    }
+    .card-hover:hover,
+    a[class*="rounded-full"]:active,
+    button[class*="rounded-full"]:active,
+    #backToTop:active,
+    #shareFab .share-btn:active {
+        transform: none !important;
+    }
+    .animate-slide-up,
+    .animate-fade-in,
+    .animate-search-pop,
+    .animate-search-pop-out,
+    .animate-result-in {
+        animation: none !important;
+    }
+    .animate-scale:hover { transform: none !important; }
+}
