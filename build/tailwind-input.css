@@ -162,12 +162,12 @@ body {
     position: relative;
     display: flex;
     align-items: center;
-    background-color: rgba(255, 255, 255, .1);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, .35);
+    background-color: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
     border-radius: 9999px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+    box-shadow: var(--glass-shadow);
 }
 
 .search-input {
@@ -1041,10 +1041,10 @@ button[class*="rounded-full"]:active,
 .search-container {
     border-radius: var(--r-full);
     border: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, .1);
+    background: var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+    box-shadow: var(--glass-shadow);
     overflow: hidden;
     transition: box-shadow var(--dur-fast) var(--ease-out),
                 border-color var(--dur-fast) var(--ease-out),
