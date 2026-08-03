@@ -533,12 +533,18 @@ document.addEventListener('DOMContentLoaded', function () {
             '【优化】液态玻璃质感全面加强：玻璃令牌整体提升（背景透明度、高光边框、内发光、阴影、模糊 / 饱和度），并为所有玻璃表面统一叠加左上镜面高光；已玻璃化的按钮 / 卡片 / 弹窗折射感更明显',
             '【优化】统一更多组件为液态玻璃风格：首页头部搜索框（.search-container）从纯白 pill 改为玻璃药丸，与顶栏 / 按钮风格一致；导航栏顶部增加玻璃高光边线，强化顶栏玻璃轮廓',
             '【优化】平台色按钮（微信 / 小红书 / QQ）在保留品牌色的基础上进一步提亮高光边框与内发光，玻璃感与品牌辨识度兼顾',
-            '【优化】文章内提示框（tip / callout）与「关于我们」主内容卡原为实心底色，现统一为液态玻璃（保留左侧品牌色强调边），与全站玻璃语言一致'
+            '【优化】文章内提示框（tip / callout）与「关于我们」主内容卡原为实心底色，现统一为液态玻璃（保留左侧品牌色强调边），与全站玻璃语言一致',
+            '【优化】顶栏通透度提升：导航栏背景透明度整体下调（日间 .72→.58、夜间 .72→.42），顶部高光边线同步减弱，顶栏更通透、更贴合液态玻璃的半透明质感（夜间模式尤其明显）',
+            '【优化】首页搜索框风格统一：搜索框内的搜索按钮从独立蓝色玻璃块改为完全透明（白字），整支搜索框读为同一块玻璃表面，消除蓝块与玻璃容器的割裂感；夜间同步透明化',
+            '【优化】夜间模式按钮边缘与光影柔化：导航工具按钮、主按钮 / 胶囊 CTA、幽灵按钮、平台色按钮与分享浮标（返回顶部 / 分享）统一降低背景不透明度、收窄边框、改用更柔和的内外阴影，边缘不再生硬，光影过渡更自然'
         ], en: [
             '[Opt] Liquid Glass effect strengthened across the board: glass tokens tuned up (opacity, highlight border, inner glow, shadow, blur / saturation), and a uniform top-left specular highlight added to every glass surface; already-glassed buttons, cards and modals now look noticeably more refractive',
             '[Opt] More surfaces adopt Liquid Glass: the homepage hero search box (.search-container) is no longer a solid-white pill but a glass capsule matching the navbar and buttons; the navbar gains a top glass highlight edge to reinforce its glass outline',
             '[Opt] Colored platform buttons (WeChat / Xiaohongshu / QQ) keep their brand colors while further brightening highlight borders and inner glow, balancing glass feel with brand recognition',
-            '[Opt] Article tip/callout boxes and the "About Us" main card were solid-colored; they now use Liquid Glass (keeping the left brand-color accent edge) to match the site-wide glass language'
+            '[Opt] Article tip/callout boxes and the "About Us" main card were solid-colored; they now use Liquid Glass (keeping the left brand-color accent edge) to match the site-wide glass language',
+            '[Opt] More transparent navbar: navbar background opacity lowered overall (day .72→.58, night .72→.42) and the top highlight edge softened in step, so the bar feels more see-through and closer to Liquid Glass — most visible in dark mode',
+            '[Opt] Unified homepage search box: the in-box search button is no longer a separate blue glass block but fully transparent (white text), so the whole search box reads as one glass surface with no blue/glass split; transparentized in dark mode too',
+            '[Opt] Softer night-mode button edges and lighting: navbar tools, primary/pill CTAs, ghost buttons, platform buttons and the share FAB (back-to-top / share) all lower their background opacity, thin their borders and use gentler inner/outer shadows, so edges are no longer harsh and the lighting transitions feel natural'
         ]},
         { d: '2026-08-03', zh: [
             '【重大】全站液态玻璃（Liquid Glass）设计上线：半透明表面 + 折射模糊（backdrop-filter: blur() saturate()）+ 白色高光边框 + 内发光，覆盖顶栏工具、主按钮 / 胶囊 CTA、返回顶部、分享浮标、幽灵按钮；分享主按钮与返回顶部进一步强化镜面高光，玻璃质感明显',

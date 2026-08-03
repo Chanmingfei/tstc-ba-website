@@ -23,7 +23,7 @@
     --text-strong: #111827;
     --text-muted: #6b7280;
     --border: #e5e7eb;
-    --nav-bg: rgba(255, 255, 255, .72);
+    --nav-bg: rgba(255, 255, 255, .58);
     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
     --selection: rgba(37, 117, 252, .15);
 
@@ -371,7 +371,7 @@ body {
     --text-strong: #f5f7fa;
     --text-muted: #97a0b0;
     --border: #2f3747;
-    --nav-bg: rgba(7, 10, 15, .72);
+    --nav-bg: rgba(7, 10, 15, .42);
     --card-shadow: 0 6px 18px rgba(255, 255, 255, .12);
     --selection: rgba(91, 155, 255, .28);
 }
@@ -673,7 +673,7 @@ h1 { line-height: 1.08; }
     -webkit-backdrop-filter: var(--material-thick);
     backdrop-filter: var(--material-thick);
     border-bottom: 1px solid transparent;   /* 置顶时无线，滚动后才出现 */
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55);   /* 玻璃顶边高光 */
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45);   /* 玻璃顶边高光 */
     overflow: hidden;                        /* 菜单只能在内部生长 */
     transition:
         border-radius var(--dur-base) var(--ease-out),
@@ -684,7 +684,7 @@ h1 { line-height: 1.08; }
 /* 滚动后：只加一条发丝线 + 极浅投影（apple.com 的做法） */
 #mainNav.nav-shadow {
     border-bottom-color: var(--hairline);
-    box-shadow: 0 4px 16px -14px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .45);
+    box-shadow: 0 4px 16px -14px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .38);
 }
 /* 菜单展开：圆角与阴影长在顶栏上，菜单本身永远是透明的 */
 #mainNav.menu-open {
@@ -1018,6 +1018,18 @@ button[class*="rounded-full"]:active,
 .search-button { background-color: var(--tint); }
 .search-button:hover { background-color: var(--tint-press); }
 
+/* 首页 Hero 搜索框内的搜索按钮：与玻璃容器统一为整体，不做独立蓝块 */
+.search-container .search-button {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    color: #fff;
+}
+.search-container .search-button:hover { background: rgba(255, 255, 255, .25); }
+[data-theme="dark"] .search-container .search-button:hover { background: rgba(255, 255, 255, .12); }
+
 /* -----------------------------------------------------------
    §5 弹窗：居中卡片（保持原有居中布局，只优化圆角/阴影/材质）
    说明：用户反馈移动端底部抽屉在搜索结果多时显示混乱，
@@ -1070,6 +1082,7 @@ button[class*="rounded-full"]:active,
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
+    background-clip: padding-box;
     border-radius: 50%;
     width: 38px;
     height: 38px;
@@ -1086,6 +1099,20 @@ button[class*="rounded-full"]:active,
 #menuBtn:active,
 #mobileTopSearchBtn:active,
 #navSearchBtn:active { transform: scale(.92); }
+
+/* 暗色下顶栏工具按钮：大幅柔化边框/高光/投影，避免边缘粗糙 */
+[data-theme="dark"] #menuBtn,
+[data-theme="dark"] #mobileTopSearchBtn,
+[data-theme="dark"] #navSearchBtn {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .18) 0%, rgba(255, 255, 255, .05) 38%, transparent 64%),
+        rgba(30, 34, 44, .45);
+    border-color: rgba(255, 255, 255, .12);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .14);
+}
+[data-theme="dark"] #menuBtn:hover,
+[data-theme="dark"] #mobileTopSearchBtn:hover,
+[data-theme="dark"] #navSearchBtn:hover { background: rgba(255, 255, 255, .1); }
 
 /* 主按钮 / 胶囊 CTA：在品牌色上叠液态玻璃 */
 .search-button,
@@ -1115,6 +1142,19 @@ button[class*="rounded-full"].bg-secondary:hover {
         linear-gradient(135deg, color-mix(in srgb, var(--tint) 88%, transparent), color-mix(in srgb, var(--secondary) 88%, transparent)),
         rgba(255, 255, 255, .15);
 }
+/* 暗色下 CTA 柔化：降低高光与边框硬度 */
+[data-theme="dark"] .search-button,
+[data-theme="dark"] a[class*="rounded-full"].bg-primary,
+[data-theme="dark"] button[class*="rounded-full"].bg-primary,
+[data-theme="dark"] a[class*="rounded-full"].bg-secondary,
+[data-theme="dark"] button[class*="rounded-full"].bg-secondary {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .25) 0%, rgba(255, 255, 255, .08) 38%, transparent 64%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
+        rgba(30, 34, 44, .45);
+    border-color: rgba(255, 255, 255, .22);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .25);
+}
 
 /* 次级 / 幽灵按钮（白底或透明底） */
 a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary),
@@ -1130,6 +1170,19 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary) {
 a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover,
 button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
     background: rgba(255, 255, 255, .42);
+}
+/* 暗色下幽灵按钮柔化 */
+[data-theme="dark"] a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary),
+[data-theme="dark"] button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary) {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, .07) 38%, transparent 64%),
+        rgba(30, 34, 44, .45);
+    border-color: rgba(255, 255, 255, .16);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .18);
+}
+[data-theme="dark"] a[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover,
+[data-theme="dark"] button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
+    background: rgba(255, 255, 255, .12);
 }
 
 /* 平台色按钮（微信/小红书/QQ）：保留品牌色 + 叠加液态玻璃 */
@@ -1148,6 +1201,28 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 #wechatBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #22c55e 96%, transparent), color-mix(in srgb, #16a34a 96%, transparent)); }
 #xiaohongshuBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #ef4444 96%, transparent), color-mix(in srgb, #dc2626 96%, transparent)); }
 #qqBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #60a5fa 96%, transparent), color-mix(in srgb, #3b82f6 96%, transparent)); }
+/* 暗色下平台色按钮柔化 */
+[data-theme="dark"] #wechatBtn,
+[data-theme="dark"] #xiaohongshuBtn,
+[data-theme="dark"] #qqBtn {
+    border-color: rgba(255, 255, 255, .22);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .25);
+}
+[data-theme="dark"] #wechatBtn { background: linear-gradient(150deg, rgba(255, 255, 255, .25) 0%, rgba(255, 255, 255, .08) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #22c55e 88%, transparent), color-mix(in srgb, #16a34a 88%, transparent)); }
+[data-theme="dark"] #xiaohongshuBtn { background: linear-gradient(150deg, rgba(255, 255, 255, .25) 0%, rgba(255, 255, 255, .08) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #ef4444 88%, transparent), color-mix(in srgb, #dc2626 88%, transparent)); }
+[data-theme="dark"] #qqBtn { background: linear-gradient(150deg, rgba(255, 255, 255, .25) 0%, rgba(255, 255, 255, .08) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #60a5fa 88%, transparent), color-mix(in srgb, #3b82f6 88%, transparent)); }
+[data-theme="dark"] #wechatBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #22c55e 96%, transparent), color-mix(in srgb, #16a34a 96%, transparent)); }
+[data-theme="dark"] #xiaohongshuBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #ef4444 96%, transparent), color-mix(in srgb, #dc2626 96%, transparent)); }
+[data-theme="dark"] #qqBtn:hover { background: linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 38%, transparent 64%), linear-gradient(135deg, color-mix(in srgb, #60a5fa 96%, transparent), color-mix(in srgb, #3b82f6 96%, transparent)); }
+
+/* 首页 Hero 搜索按钮在暗色下仍需保持透明（不被上方 CTA 暗色覆盖） */
+[data-theme="dark"] .search-container .search-button {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+}
 
 /* 弹窗面板：高不透明度玻璃，保证内容可读性（纯玻璃会导致文字看不清） */
 #searchModal    > div,
@@ -1237,14 +1312,14 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
 [data-theme="dark"] #shareFab .share-toggle,
 [data-theme="dark"] #shareFab .share-btn {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .08) 40%, transparent 66%),
-        rgba(30, 34, 44, .55);
-    border-color: rgba(255, 255, 255, .22);
+        linear-gradient(150deg, rgba(255, 255, 255, .18) 0%, rgba(255, 255, 255, .05) 40%, transparent 66%),
+        rgba(30, 34, 44, .45);
+    border-color: rgba(255, 255, 255, .14);
     color: var(--text-strong);
     box-shadow:
-        0 10px 26px rgba(0, 0, 0, .50),
-        inset 0 1.5px 2px rgba(255, 255, 255, .28),
-        inset 0 -2px 5px rgba(0, 0, 0, .35);
+        0 6px 18px rgba(0, 0, 0, .40),
+        inset 0 1.5px 2px rgba(255, 255, 255, .18),
+        inset 0 -2px 5px rgba(0, 0, 0, .30);
 }
 
 /* -----------------------------------------------------------
@@ -1277,9 +1352,9 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     --shadow-2: 0 6px 18px -8px rgba(0, 0, 0, .7), 0 2px 6px -4px rgba(0, 0, 0, .5);
     --shadow-3: 0 28px 64px -24px rgba(0, 0, 0, .85), 0 8px 24px -16px rgba(0, 0, 0, .6);
 }
-[data-theme="dark"] #mainNav.glass-effect { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22); }
+[data-theme="dark"] #mainNav.glass-effect { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16); }
 [data-theme="dark"] #mainNav.nav-shadow {
-    box-shadow: 0 4px 18px -12px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .18);
+    box-shadow: 0 4px 18px -12px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .12);
 }
 [data-theme="dark"] #menuBackdrop { background: rgba(0, 0, 0, .5); }
 [data-theme="dark"] #backToTop { border-color: rgba(255, 255, 255, .1); }
