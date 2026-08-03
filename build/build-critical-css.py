@@ -75,7 +75,12 @@ def split_rules(css):
             depth -= 1
             if depth == 0:
                 sel, _, body = buf.partition("{")
-                body = body.rstrip("}")
+                # 只剥掉本规则自己的那一个闭合括号。
+                # 这里绝不能用 rstrip("}")：@keyframes / @media 的 body 以嵌套块
+                # 结尾（"...to{opacity:1}}"），rstrip 会把嵌套块的括号一起吃掉，
+                # 输出的 @keyframes 缺少闭合符，进而把后面所有规则吞进这个块里。
+                if body.endswith("}"):
+                    body = body[:-1]
                 rules.append((sel.strip(), body.strip()))
                 buf = ""
         i += 1

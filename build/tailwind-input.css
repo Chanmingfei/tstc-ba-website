@@ -305,37 +305,16 @@ body {
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
 
-/* ---------- 滚动渐入动画 ---------- */
-/* 说明：移动端菜单的展开/收起动画统一在文件末尾的「苹果设计层」定义
-   （#mobileMenu.menu-pop / .menu-pop-out），此处原有的 menuPop/menuPopOut
-   关键帧已被完全覆盖，属于死代码，已删除。 */
-
-/* 滚动渐入：默认可见，仅 JS 启用后先隐藏再随滚动渐入，保证无 JS 也能正常浏览。
-   位移更明显、缓动更柔和（参考高校官网电脑端的优雅入场感）。 */
+/* ---------- 滚动渐入 ----------
+   默认可见，仅在 JS 启用后才先隐藏再随滚动淡入，保证无 JS 环境照样能读。
+   位移量与时长由文件末尾设计层的 §8 统一给出，这里只声明结构性行为。 */
 .reveal-item {
     will-change: opacity, transform;
-    transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-body.reveal-ready .reveal-item {
-    opacity: 0;
-    transform: translateY(48px);
-}
-
-body.reveal-ready .reveal-item.in-view {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* 若某块同时带有 animate-fade-in（旧的开场动画），改为随滚动渐入，避免两种动画互相打架 */
 .reveal-item.animate-fade-in {
     animation: none;
-}
-
-/* 尊重系统「减少动态效果」偏好（其余项统一在文件末尾的 reduced-motion 块处理） */
-@media (prefers-reduced-motion: reduce) {
-    body.reveal-ready .reveal-item { opacity: 1; transform: none; }
 }
 
 /* ===========================================================
@@ -431,9 +410,6 @@ body {
 [data-theme="dark"] .border-blue-200 { border-color: rgba(91, 155, 255, .35); }
 [data-theme="dark"] .border-primary { border-color: var(--primary); }
 
-/* 移动端菜单顶部白线：覆写 Tailwind .border-t 默认浅色 */
-[data-theme="dark"] #mobileMenu { border-color: var(--border); }
-
 /* 首页头图在暗色下进一步压暗，避免与深色主视觉冲突 */
 [data-theme="dark"] header > .absolute.inset-0 { opacity: .08; }
 
@@ -463,361 +439,554 @@ body {
 /* ---------- 主题切换按钮（日/夜滑动开关，参考 SegmentFault「单标签日夜间切换」） ----------
    药丸轨道左侧太阳、右侧月亮；点击时太阳滑向右侧变月亮，背景从蓝天切到星空夜空，0.5s 过渡。
    轨道底色固定（不随站点明暗变），仅表示当前日/夜状态。状态由 html[data-theme="dark"] 驱动。 */
-/* 主题切换按钮：照搬 SegmentFault「单标签日夜间切换」原文，所有数值统一乘缩放系数
-   k = 68/220 ≈ 0.309（宽度 220→68px，高度 90→28px，比例与原文预览完全一致）。
-   状态由 html[data-theme="dark"] 驱动（对应原文 div.active）。 */
+/* 主题切换按钮：iOS 工具栏风格小圆按钮
+   原先 SegmentFault 风格的复杂轨道（日月同屏）与整站的 Apple 极简语言不统一，
+   改为 36×36 圆钮，太阳/月亮双图标淡入淡出切换，体积更小、与顶栏更协调。 */
 .theme-toggle {
     position: relative;
     flex: none;
-    width: 68px;
-    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     padding: 0;
-    border: none;
-    border-radius: 28px;
+    border: 0;
+    border-radius: 50%;
+    color: var(--text-strong);
+    background: var(--fill-quaternary);
     cursor: pointer;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at 18% 6.2px, #fff, #fff 1.9px, transparent 2.2px),
-        radial-gradient(circle at 35% 13.9px, #fff, #fff 0.3px, transparent 0.6px),
-        radial-gradient(circle at 10% 21.6px, #fff, #fff 0.8px, transparent 1.1px),
-        radial-gradient(circle at 25% 4.6px, #fff, #fff 0.9px, transparent 1.2px),
-        radial-gradient(circle at 15% 15.5px, #fff, #fff 0.5px, transparent 0.8px),
-        radial-gradient(circle at 30% 23.2px, #fff, #fff 1.5px, transparent 1.9px),
-        radial-gradient(circle at 5% 9.3px, #fff, #fff 0.15px, transparent 0.5px),
-        radial-gradient(circle at 25% 18.5px, #fff, #fff 0.15px, transparent 0.5px),
-        radial-gradient(circle at 7% 10.8px, #fff, #fff 0.15px, transparent 0.5px),
-        linear-gradient(90deg, #2b303e 0 50%, #5a81b4 50% 100%);
-    background-repeat: no-repeat;
-    background-size: 200% 100%;
-    background-position: 100% 0;
-    box-shadow:
-        0 -1px 2px #999,
-        inset 0 1px 2px #333,
-        0 1px 2px #ffe,
-        inset 0 -1px 2px #ddd;
-    transition: .5s all;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                transform var(--dur-press) var(--ease-out);
 }
-.theme-toggle::before,
-.theme-toggle::after {
-    content: "";
+.theme-toggle:hover { background: var(--fill-tertiary); }
+.theme-toggle:active { transform: scale(.90); }
+.theme-toggle i {
     position: absolute;
-    transition: .5s all;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: opacity var(--dur-fast) var(--ease-out),
+                transform var(--dur-fast) var(--ease-spring);
 }
-.theme-toggle::before {
-    width: 23px;
-    height: 23px;
-    inset: 2.5px;
-    border-radius: 50%;
-    background: #e9cb50;
-    box-shadow:
-        0 0 2px #333,
-        inset 1px 1px 1px #f8f4e4,
-        inset -1px -1px 1px #665613;
-    z-index: 1;
-}
-.theme-toggle::after {
-    width: 22px;
-    height: 22px;
-    inset: 3px;
-    border-radius: 50%;
-    background: transparent;
-    box-shadow:
-        3.1px 18.5px 0 3.1px #fff,
-        20.1px 18.5px 0 1.5px #fff,
-        29.4px 21.6px 0 3.1px #fff,
-        41.7px 13.9px 0 1.5px #fff,
-        52.5px 10.8px 0 3.1px #fff,
-        60.2px -1.5px 0 3.1px #fff,
-        -3.1px 0 0 15.5px rgba(255, 255, 255, .2),
-        4.6px 0 0 15.5px rgba(255, 255, 255, .15),
-        12.4px 0 0 15.5px rgba(255, 255, 255, .21),
-        3.1px 12.4px 0 3.1px #abc1d9,
-        21.6px 10.8px 0 3.1px #abc1d9,
-        29.4px 12.4px 0 3.1px #abc1d9,
-        41.7px 6.2px 0 3.1px #abc1d9,
-        47.9px 4.6px 0 3.1px #abc1d9,
-        58.7px -6.2px 0 3.1px #abc1d9;
-}
-.theme-toggle:hover::before {
-    filter: contrast(90%) brightness(110%);
-    scale: 1.05;
-}
+.theme-toggle .fa-sun { opacity: 1; transform: rotate(0deg); }
+.theme-toggle .fa-moon { opacity: 0; transform: rotate(-90deg) scale(.7); }
+html[data-theme="dark"] .theme-toggle { background: var(--fill-quaternary); color: var(--text-strong); }
+html[data-theme="dark"] .theme-toggle .fa-sun { opacity: 0; transform: rotate(90deg) scale(.7); }
+html[data-theme="dark"] .theme-toggle .fa-moon { opacity: 1; transform: rotate(0deg); }
 
-/* 暗色（对应原文 div.active）：轨道切到夜空；太阳滑到右侧变月亮（环形山）；云点淡出、柔光晕随月亮平移。
-   原文的高光边框与太阳阴影在深色页面上会发白/发黑，此处只做暗色适配：轨道改暗色微立体边框，月亮加柔光晕。 */
-html[data-theme="dark"] .theme-toggle {
-    background-position: 0 0;
-    box-shadow:
-        0 -1px 2px rgba(0, 0, 0, .5),
-        inset 0 1px 3px rgba(0, 0, 0, .65),
-        0 1px 2px rgba(255, 255, 255, .08),
-        inset 0 -1px 2px rgba(255, 255, 255, .15);
-}
-html[data-theme="dark"] .theme-toggle::before {
-    translate: 40px;
-    background:
-        radial-gradient(circle at 50% 6.2px, #939aa5, #939aa5 2px, transparent 2.2px),
-        radial-gradient(circle at 35% 13.9px, #939aa5, #939aa5 3.6px, transparent 3.7px),
-        radial-gradient(circle at 72% 15.5px, #939aa5, #939aa5 2.6px, transparent 2.8px),
-        #cbcdda;
-    box-shadow:
-        0 0 8px rgba(255, 255, 255, .25),
-        inset 1px 1px 1px rgba(255, 255, 255, .6),
-        inset -1px -1px 1px rgba(70, 70, 85, .4);
-}
-html[data-theme="dark"] .theme-toggle::after {
-    transform: translate(40px);
-    box-shadow:
-        3.1px 18.5px 0 3.1px transparent,
-        20.1px 18.5px 0 1.5px transparent,
-        29.4px 21.6px 0 3.1px transparent,
-        41.7px 13.9px 0 1.5px transparent,
-        52.5px 10.8px 0 3.1px transparent,
-        60.2px -1.5px 0 3.1px transparent,
-        3.1px 0 0 15.5px rgba(255, 255, 255, .2),
-        -4.6px 0 0 15.5px rgba(255, 255, 255, .15),
-        -12.4px 0 0 15.5px rgba(255, 255, 255, .21),
-        3.1px 12.4px 0 3.1px transparent,
-        21.6px 10.8px 0 3.1px transparent,
-        29.4px 12.4px 0 3.1px transparent,
-        41.7px 6.2px 0 3.1px transparent,
-        47.9px 4.6px 0 3.1px transparent,
-        58.7px -6.2px 0 3.1px transparent;
-}
+@media (max-width: 767px) { .theme-toggle { margin-right: 0.5rem; } }
 
-/* 移动端：让顶栏切换按钮与搜索按钮之间留出呼吸间距（桌面端由导航 flex 间隙控制，不受影响） */
-@media (max-width: 767px) {
-    .theme-toggle {
-        margin-right: 0.75rem;
-    }
-}
+
 
 /* ===========================================================
-   ★ APPLE 设计风格增强层（2026-08-03 追加，可整体移除以还原）
-   原则：磨砂材质(backdrop-filter)、spring 式 ease-out 动效、
-   柔和大圆角与景深、即时按压反馈、光学排版、reduced-motion。
-   仅改样式，复用现有素材，不影响结构与功能。
+   ★ APPLE DESIGN SYSTEM v2 —— 全站 iOS 设计语言层
+   （2026-08-03；整块删除即可回到 Tailwind 原始观感）
+
+   四条原则，后面每一条规则都是它们的推论：
+
+   1. 材质优先（Material）
+      浮层用「半透明 + backdrop-filter」表达层级，而不是靠深色描边和重阴影。
+   2. 发丝线（Hairline）
+      分隔一律 1px 极淡线；系统里不存在 2px 以上的深色边框。
+   3. 单一表面（Single Surface）
+      一个浮层只允许一个元素负责背景 / 圆角 / 阴影，子元素一律透明。
+      —— 这条是为了根治「子元素圆角露出父元素方角」这类割裂感。
+   4. 位移守恒（Contained Motion）
+      展开类动画只能在容器内部「生长」（行高 / 裁剪），禁止用 transform 位移，
+      否则元素会溢出父级并盖住相邻组件（例如菜单展开瞬间糊住顶栏）。
    =========================================================== */
 
+/* -----------------------------------------------------------
+   §1 令牌：全站唯一取值来源
+   ----------------------------------------------------------- */
 :root {
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* 进入/退出默认 */
-    --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);  /* 轻微回弹（ playful 元素） */
-    --ease-in-out-apple: cubic-bezier(0.77, 0, 0.175, 1);
-    --nav-border: rgba(255, 255, 255, 0.45);
-    --card-radius: 1rem;
+    /* 缓动：整站只用这四条曲线，其它 cubic-bezier 一律视为技术债 */
+    --ease-out:    cubic-bezier(.22, .61, .36, 1);   /* 标准减速：进入 / 展开 */
+    --ease-in-out: cubic-bezier(.45, 0, .2, 1);      /* 双向：配色 / 主题切换 */
+    --ease-spring: cubic-bezier(.34, 1.28, .64, 1);  /* 轻回弹：可交互元素 */
+    --ease-exit:   cubic-bezier(.4, 0, 1, 1);        /* 加速离场 */
+
+    /* 时长阶梯：位移越大、时间越长 */
+    --dur-press: .12s;   /* 按压反馈 */
+    --dur-fast:  .22s;   /* 小元素淡入淡出 */
+    --dur-base:  .34s;   /* 面板展开、遮罩 */
+    --dur-slow:  .48s;   /* 大位移、滚动渐入 */
+
+    /* 圆角阶梯（iOS 连续曲率的近似值） */
+    --r-xs:   8px;
+    --r-sm:  12px;
+    --r-md:  16px;
+    --r-lg:  20px;
+    --r-xl:  26px;
+    --r-full: 999px;
+    --card-radius: var(--r-md);      /* 兼容旧引用 */
+
+    /* 阴影三档：层级越高 = 离页面越远 = 扩散越大、颜色越淡 */
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, .04), 0 1px 3px rgba(0, 0, 0, .05);
+    --shadow-2: 0 6px 18px -8px rgba(0, 0, 0, .16), 0 2px 6px -4px rgba(0, 0, 0, .08);
+    --shadow-3: 0 28px 64px -24px rgba(0, 0, 0, .30), 0 8px 24px -16px rgba(0, 0, 0, .14);
+
+    /* 发丝分隔线（对应 iOS separator） */
+    --hairline: rgba(60, 60, 67, .13);
+    --nav-border: var(--hairline);
+
+    /* 交互色：品牌蓝 #0465bc 继续作为身份色（Logo / 渐变 / 强调标题），
+       但可点击元素改用提亮后的 --tint，小字号下对比度更稳。 */
+    --tint: #0a6cd6;
+    --tint-press: #08529f;
+    --tint-soft: rgba(10, 108, 214, .10);
+
+    /* iOS 填充色：列表行的 hover / pressed 状态 */
+    --fill-quaternary: rgba(116, 116, 128, .08);
+    --fill-tertiary:   rgba(116, 116, 128, .16);
+
+    /* 材质 */
+    --material-thick: saturate(180%) blur(22px);
+    --material-thin:  saturate(150%) blur(12px);
+
+    /* 分组背景（页脚等「设置页」质感的区块） */
+    --grouped-bg: #f2f2f7;
 }
 
-/* 全局排版：光学尺寸 + 抗锯齿 + 大标题负字距 */
+/* -----------------------------------------------------------
+   §2 排版：系统字体栈 + 光学对齐
+   ----------------------------------------------------------- */
 body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter',
+                 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei', sans-serif;
     font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
 }
-h1, h2, h3 { letter-spacing: -0.02em; }
-.article-content h2, .article-content h3 { letter-spacing: normal; }
+/* 大字号收紧字距（苹果的 optical tracking），正文保持默认 */
+h1, h2, h3 { letter-spacing: -.022em; }
+h1 { line-height: 1.08; }
+.article-content h2,
+.article-content h3 { letter-spacing: -.01em; }
 
-/* 导航：Apple 磨砂材质（强模糊 + 饱和 + 高光描边） */
+/* -----------------------------------------------------------
+   §3 顶栏：全站唯一的材质容器
+   移动端菜单是它的子元素，所有圆角 / 阴影 / 背景都由顶栏承担。
+   ----------------------------------------------------------- */
 #mainNav.glass-effect {
     background: var(--nav-bg);
-    backdrop-filter: blur(22px) saturate(180%);
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    border-bottom: 1px solid var(--nav-border);
-    box-shadow: 0 8px 30px -16px rgba(0, 0, 0, .18);
+    -webkit-backdrop-filter: var(--material-thick);
+    backdrop-filter: var(--material-thick);
+    border-bottom: 1px solid transparent;   /* 置顶时无线，滚动后才出现 */
+    box-shadow: none;
+    overflow: hidden;                        /* 菜单只能在内部生长 */
+    transition:
+        border-radius var(--dur-base) var(--ease-out),
+        box-shadow    var(--dur-base) var(--ease-out),
+        border-color  var(--dur-base) var(--ease-out),
+        background-color var(--dur-base) var(--ease-in-out);
 }
-/* 导航内链接 hover 轻微高亮（即时反馈，pointer fine 才生效） */
+/* 滚动后：只加一条发丝线 + 极浅投影（apple.com 的做法） */
+#mainNav.nav-shadow {
+    border-bottom-color: var(--hairline);
+    box-shadow: 0 4px 16px -14px rgba(0, 0, 0, .5);
+}
+/* 菜单展开：圆角与阴影长在顶栏上，菜单本身永远是透明的 */
+#mainNav.menu-open {
+    border-bottom-left-radius: var(--r-xl);
+    border-bottom-right-radius: var(--r-xl);
+    border-bottom-color: transparent;
+    box-shadow: var(--shadow-3);
+}
+
+/* 导航链接 */
+#mainNav a {
+    transition: color var(--dur-fast) var(--ease-out),
+                opacity var(--dur-press) linear;
+    -webkit-tap-highlight-color: transparent;
+}
 @media (hover: hover) and (pointer: fine) {
-    #mainNav a:hover { color: var(--primary); }
+    #mainNav a:hover { color: var(--tint); }
 }
 
-/* 卡片：材质 + 景深 + spring 式悬浮 */
-.card-hover {
-    border: 1px solid var(--border);
-    border-radius: var(--card-radius);
-    background-clip: padding-box;
-    transition:
-        transform .5s var(--ease-out),
-        box-shadow .5s var(--ease-out),
-        background-color .4s cubic-bezier(.4, 0, .2, 1),
-        border-color .4s cubic-bezier(.4, 0, .2, 1);
-    will-change: transform;
+/* -----------------------------------------------------------
+   §3.2 移动端菜单：在顶栏内部「长出来」
+   用 grid-template-rows 0fr→1fr 做高度动画：
+   元素本身不位移，因此不可能溢出去盖住顶栏。
+   ----------------------------------------------------------- */
+@media (max-width: 767px) {
+    /* 关闭时要让 Tailwind 的 .hidden(display:none) 继续生效，
+       所以用 :not(.hidden) 避开 ID 特异性把它压掉。 */
+    #mobileMenu:not(.hidden) {
+        display: grid;
+        grid-template-rows: 0fr;
+        background: transparent;   /* 材质由 #mainNav 提供 —— 原则 3 */
+        border: 0;
+        box-shadow: none;
+        transition: grid-template-rows var(--dur-base) var(--ease-out);
+    }
+    #mainNav.menu-open #mobileMenu:not(.hidden) { grid-template-rows: 1fr; }
 }
-.card-hover:hover {
-    transform: translateY(-6px) scale(1.012);
-    box-shadow: 0 22px 48px -16px rgba(0, 0, 0, .22);
+/* 内层容器负责裁剪（0fr 行高的实现前提） */
+#mobileMenu > div {
+    overflow: hidden;
+    min-height: 0;
+    padding-top: 2px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+/* 顶栏内容与菜单之间的发丝线 */
+#mainNav.menu-open #mobileMenu > div {
+    border-top: 1px solid var(--hairline);
+}
+/* 干掉 Tailwind space-y-3 的行间距，行距改由 margin 统一控制 */
+#mobileMenu > div > * + * { margin-top: 0; }
+
+/* 行样式：iOS「内嵌分组列表」
+   链接 HTML 上仍带有 Tailwind 工具类（.py-3 .px-3 .rounded-lg 等），
+   多个类连写的特异性会高于 #mobileMenu a，因此关键属性用 !important
+   统一覆盖，确保设计语言不被历史类名稀释。 */
+#mobileMenu a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 2px 0 !important;
+    padding: 13px 14px !important;
+    border-radius: var(--r-sm) !important;
+    font-size: 17px !important;    /* iOS body */
+    font-weight: 500 !important;
+    letter-spacing: -.01em !important;
+    color: var(--text-strong) !important;
+    background: transparent !important;
+    -webkit-tap-highlight-color: transparent !important;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                transform var(--dur-press) var(--ease-out) !important;
+}
+#mobileMenu a:hover  { background: var(--fill-quaternary) !important; }
+#mobileMenu a:active { background: var(--fill-tertiary) !important; transform: scale(.985) !important; }
+
+/* 行尾 chevron：暗示「点了会跳走」，与 iOS 设置页一致 */
+#mobileMenu a::after {
+    content: '';
+    flex: none;
+    margin-left: auto;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    border-radius: 1px;
+    transform: rotate(-45deg);
+    opacity: .28;
 }
 
-/* 按钮/胶囊 CTA：即时按压反馈（苹果式 scale 0.97） */
-a[class*="rounded-full"],
-button[class*="rounded-full"] {
-    transition:
-        transform 160ms var(--ease-out),
-        background-color .3s cubic-bezier(.4, 0, .2, 1),
-        box-shadow .3s ease;
+/* 逐行入场（40ms 阶梯），比整块淡入更有「展开」的实感 */
+@keyframes menuRowIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
 }
-a[class*="rounded-full"]:active,
-button[class*="rounded-full"]:active {
-    transform: scale(0.97);
+#mainNav.menu-open #mobileMenu a {
+    animation: menuRowIn var(--dur-base) var(--ease-out) backwards;
 }
+#mainNav.menu-open #mobileMenu a:nth-child(1) { animation-delay: .04s; }
+#mainNav.menu-open #mobileMenu a:nth-child(2) { animation-delay: .08s; }
+#mainNav.menu-open #mobileMenu a:nth-child(3) { animation-delay: .12s; }
+#mainNav.menu-open #mobileMenu a:nth-child(4) { animation-delay: .16s; }
+#mainNav.menu-open #mobileMenu a:nth-child(5) { animation-delay: .20s; }
+#mainNav.menu-open #mobileMenu a:nth-child(6) { animation-delay: .24s; }
+#mainNav.menu-open #mobileMenu a:nth-child(7) { animation-delay: .28s; }
+#mainNav.menu-open #mobileMenu a:nth-child(8) { animation-delay: .32s; }
 
-/* 搜索弹窗面板：更大圆角 + 柔光阴影（入场已由 searchPop 用苹果 ease 驱动） */
-#searchModal > div {
-    border-radius: 1.5rem;
-    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .38);
-    border: 1px solid rgba(255, 255, 255, .5);
+/* 汉堡按钮：双图标交叉淡入 + 旋转（JS 在初始化时注入 .menu-icon 结构） */
+#menuBtn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-full);
+    color: var(--text-strong);
+    background: transparent;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--dur-fast) var(--ease-out),
+                transform var(--dur-press) var(--ease-out);
 }
-/* 弹窗遮罩更克制的磨砂 */
-#searchModal {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+#menuBtn:active { background: var(--fill-tertiary); transform: scale(.92); }
+#menuBtn .menu-icon { position: relative; display: block; width: 20px; height: 20px; }
+#menuBtn .menu-icon i {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    line-height: 1;
+    transition: opacity var(--dur-fast) var(--ease-out),
+                transform var(--dur-base) var(--ease-spring);
 }
+#menuBtn .menu-icon .fa-bars       { opacity: 1; transform: none; }
+#menuBtn .menu-icon .fa-times      { opacity: 0; transform: rotate(-90deg) scale(.6); }
+#menuBtn.open .menu-icon .fa-bars  { opacity: 0; transform: rotate(90deg) scale(.6); }
+#menuBtn.open .menu-icon .fa-times { opacity: 1; transform: none; }
 
-/* Hero 大标题：收一点字距、降一点阴影，更显精致 */
-.bg-gradient-primary h1 {
-    letter-spacing: -0.03em;
-    line-height: 1.08;
-}
-.bg-gradient-primary .text-shadow {
-    text-shadow: 0 1px 3px rgba(0, 0, 0, .18);
-}
-
-/* 回到顶部 / 分享按钮：按压反馈 */
-#backToTop:active,
-#shareFab .share-btn:active {
-    transform: scale(0.94);
-    transition: transform 140ms var(--ease-out);
-}
-
-/* ---------- 暗色模式下的苹果材质适配 ---------- */
-[data-theme="dark"] {
-    --nav-border: rgba(255, 255, 255, .08);
-}
-[data-theme="dark"] .card-hover {
-    border-color: rgba(255, 255, 255, .07);
-}
-[data-theme="dark"] .card-hover:hover {
-    box-shadow: 0 22px 48px -16px rgba(255, 255, 255, .14);
-}
-[data-theme="dark"] #mainNav.glass-effect {
-    box-shadow: 0 8px 30px -18px rgba(0, 0, 0, .6);
-}
-[data-theme="dark"] #searchModal > div {
-    border-color: rgba(255, 255, 255, .1);
-}
-
-/* ---------- 移动端导航菜单：iOS 风格毛玻璃抽屉 ---------- */
-/* 半透明磨砂遮罩（由 JS 动态插入 #menuBackdrop，点击关闭 + 锁定背景滚动） */
+/* 菜单遮罩：覆盖顶栏以外的全部区域（含圆角缺口），层级 900 < 顶栏 1000 */
 #menuBackdrop {
     position: fixed;
     inset: 0;
     z-index: var(--z-backdrop);
-    background: rgba(0, 0, 0, .28);
-    backdrop-filter: blur(3px) saturate(120%);
-    -webkit-backdrop-filter: blur(3px) saturate(120%);
+    background: rgba(0, 0, 0, .32);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
     opacity: 0;
     visibility: hidden;
-    transition: opacity .35s var(--ease-out), visibility 0s linear .35s;
+    transition: opacity var(--dur-base) var(--ease-out),
+                visibility 0s linear var(--dur-base);
 }
 #menuBackdrop.show {
     opacity: 1;
     visibility: visible;
-    transition: opacity .35s var(--ease-out);
+    transition: opacity var(--dur-base) var(--ease-out);
 }
 
-/* 菜单抽屉：自顶栏下沿展开，与导航同款磨砂材质 + 圆角下底 */
-#mobileMenu {
-    position: relative;
-    background: var(--nav-bg);
-    backdrop-filter: blur(22px) saturate(180%);
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    border-top: 1px solid var(--nav-border);
-    border-bottom-left-radius: 22px;
-    border-bottom-right-radius: 22px;
-    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .35);
+/* -----------------------------------------------------------
+   §4 卡片 / 按钮 / 输入框
+   ----------------------------------------------------------- */
+.card-hover {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    background-clip: padding-box;
+    box-shadow: var(--shadow-1);
+    transition: transform  var(--dur-base) var(--ease-out),
+                box-shadow var(--dur-base) var(--ease-out),
+                background-color var(--dur-base) var(--ease-in-out),
+                border-color     var(--dur-base) var(--ease-in-out);
+}
+/* 悬浮只在真鼠标环境生效，触屏上不会「卡」在 hover 态 */
+@media (hover: hover) and (pointer: fine) {
+    .card-hover:hover { transform: translateY(-4px); box-shadow: var(--shadow-2); }
+}
+.card-hover:active { transform: scale(.99); transition-duration: var(--dur-press); }
+
+/* 胶囊按钮 / CTA：苹果式即时按压 */
+a[class*="rounded-full"],
+button[class*="rounded-full"],
+.search-button {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform var(--dur-press) var(--ease-out),
+                background-color var(--dur-fast) var(--ease-in-out),
+                box-shadow var(--dur-fast) var(--ease-out);
+}
+a[class*="rounded-full"]:active,
+button[class*="rounded-full"]:active,
+.search-button:active { transform: scale(.96); }
+
+/* 首屏搜索框：iOS 搜索栏质感 + 聚焦光环 */
+.search-container {
+    border-radius: var(--r-full);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-1);
     overflow: hidden;
+    transition: box-shadow var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out);
 }
-/* 链接行：iOS 分组列表风格（大圆角 + 按压回弹 + 悬停高亮） */
-#mobileMenu a {
-    display: flex;
-    align-items: center;
-    margin: 6px 8px;
-    padding: 15px 16px;
-    border-radius: 14px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+.search-container:focus-within {
+    border-color: var(--tint);
+    box-shadow: var(--shadow-2), 0 0 0 4px var(--tint-soft);
+}
+.search-input { font-size: 17px; }
+.search-button { background-color: var(--tint); }
+.search-button:hover { background-color: var(--tint-press); }
+
+/* -----------------------------------------------------------
+   §5 弹窗：桌面居中卡片，移动端一律改为 iOS 底部抽屉
+   ----------------------------------------------------------- */
+#searchModal,
+#changelogModal,
+#qrModal {
+    background: rgba(0, 0, 0, .32);
+    -webkit-backdrop-filter: blur(6px) saturate(120%);
+    backdrop-filter: blur(6px) saturate(120%);
+}
+#searchModal    > div,
+#changelogModal > div,
+#qrModal        > div {
+    border-radius: var(--r-xl);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-3);
+}
+
+@keyframes sheetUp   { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes sheetDown { from { transform: none; } to { transform: translateY(100%); } }
+
+@media (max-width: 639px) {
+    #searchModal,
+    #changelogModal,
+    #qrModal {
+        align-items: flex-end;
+        padding: 0;
+    }
+    #searchModal    > div,
+    #changelogModal > div,
+    #qrModal        > div {
+        width: 100%;
+        max-width: 100% !important;
+        max-height: 92vh !important;
+        border-radius: var(--r-xl) var(--r-xl) 0 0;
+        border-bottom: 0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        animation: sheetUp var(--dur-base) var(--ease-out);
+    }
+    /* 抽屉顶部的把手（grabber） */
+    #searchModal    > div::before,
+    #changelogModal > div::before,
+    #qrModal        > div::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        z-index: 3;
+        width: 36px;
+        height: 5px;
+        margin-left: -18px;
+        border-radius: var(--r-full);
+        background: var(--fill-tertiary);
+        pointer-events: none;
+    }
+    /* 给把手让出空间 */
+    #searchModal    > div > :first-child,
+    #changelogModal > div > :first-child,
+    #qrModal        > div > :first-child { padding-top: 22px; }
+
+    #searchModal    > div.animate-search-pop-out,
+    #changelogModal > div.animate-search-pop-out,
+    #qrModal        > div.animate-search-pop-out {
+        animation: sheetDown var(--dur-fast) var(--ease-exit) forwards;
+    }
+}
+
+/* -----------------------------------------------------------
+   §6 页脚：从「品牌蓝大色块」改为 iOS 分组背景 + 发丝线
+   理由：全站只有一个主色块（首屏 Hero）时，品牌色才显得贵；
+   页脚也用主色会把页面压成两头重的三明治。
+   ----------------------------------------------------------- */
+footer.bg-primary {
+    background: var(--grouped-bg);
+    border-top: 1px solid var(--hairline);
+    color: var(--text-muted);
+}
+footer.bg-primary h3 {
     color: var(--text-strong);
-    background: transparent;
-    transition: background-color .2s var(--ease-out), transform .15s var(--ease-out);
+    font-size: 15px;
+    font-weight: 600;
 }
-#mobileMenu a:hover { background: var(--surface-2); }
-#mobileMenu a:active { transform: scale(.97); background: var(--surface-2); }
+footer.bg-primary p,
+footer.bg-primary span,
+footer.bg-primary a {
+    font-size: 13px;
+    line-height: 1.55;
+}
+footer.bg-primary [class*="text-white"] { color: var(--text-muted); }
+footer.bg-primary h3[class*="text-white"],
+footer.bg-primary a[class*="text-white"] { color: var(--text-strong); }
+footer.bg-primary a { transition: color var(--dur-fast) var(--ease-out); }
+footer.bg-primary a:hover { color: var(--tint); }
+footer.bg-primary [class*="border-white"] { border-color: var(--hairline); }
+footer.bg-primary img { box-shadow: var(--shadow-1); }
 
-/* 弹簧展开 / 收起（覆盖旧的 menuPop 轻微缩放） */
-@keyframes menuSheetIn {
-    from { opacity: 0; transform: translateY(-14px) scale(.985); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+/* -----------------------------------------------------------
+   §7 浮动按钮：返回顶部 / 分享
+   ----------------------------------------------------------- */
+#backToTop {
+    background: var(--tint);
+    border: 1px solid rgba(255, 255, 255, .16);
+    box-shadow: var(--shadow-2);
+    transition: transform var(--dur-press) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out),
+                opacity var(--dur-base) var(--ease-out),
+                visibility var(--dur-base);
 }
-@keyframes menuSheetOut {
-    from { opacity: 1; transform: translateY(0) scale(1); }
-    to   { opacity: 0; transform: translateY(-14px) scale(.985); }
+#backToTop:hover { transform: scale(1.05); box-shadow: var(--shadow-3); }
+#backToTop:active,
+#shareFab .share-toggle:active,
+#shareFab .share-btn:active {
+    transform: scale(.92);
+    transition-duration: var(--dur-press);
 }
-#mobileMenu.menu-pop {
-    animation: menuSheetIn .42s var(--ease-spring);
-    transform-origin: top center;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-}
-#mobileMenu.menu-pop-out {
-    animation: menuSheetOut .28s cubic-bezier(.4, 0, 1, 1) forwards;
-    transform-origin: top center;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
+#shareFab .share-toggle { box-shadow: var(--shadow-2); }
+#shareFab .share-btn {
+    box-shadow: var(--shadow-1);
+    border: 1px solid var(--hairline);
 }
 
-/* 汉堡按钮：开合时旋转 90°，强化「打开/收起」手势 */
-#menuBtn {
-    transition: transform .3s var(--ease-spring);
-    will-change: transform;
+/* -----------------------------------------------------------
+   §8 动效系统：滚动渐入统一为 24px / 480ms
+   位移越小越高级；48px 的大位移在长页面上会显得廉价。
+   ----------------------------------------------------------- */
+.reveal-item {
+    transition: opacity var(--dur-slow) var(--ease-out),
+                transform var(--dur-slow) var(--ease-out);
 }
-#menuBtn.open { transform: rotate(90deg); }
+body.reveal-ready .reveal-item { opacity: 0; transform: translateY(24px); }
+body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
 
-/* 暗色模式：抽屉材质与阴影同步 */
-[data-theme="dark"] #mobileMenu {
-    background: var(--nav-bg);
-    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .6);
+/* -----------------------------------------------------------
+   §9 暗色模式：只换令牌，不改结构
+   ----------------------------------------------------------- */
+[data-theme="dark"] {
+    --hairline: rgba(255, 255, 255, .11);
+    --tint: #4c9bff;
+    --tint-press: #3d84e0;
+    --tint-soft: rgba(76, 155, 255, .14);
+    --fill-quaternary: rgba(235, 235, 245, .07);
+    --fill-tertiary:   rgba(235, 235, 245, .14);
+    --grouped-bg: #0f131a;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, .5);
+    --shadow-2: 0 6px 18px -8px rgba(0, 0, 0, .7), 0 2px 6px -4px rgba(0, 0, 0, .5);
+    --shadow-3: 0 28px 64px -24px rgba(0, 0, 0, .85), 0 8px 24px -16px rgba(0, 0, 0, .6);
 }
-[data-theme="dark"] #mobileMenu a { color: var(--text-strong); }
-[data-theme="dark"] #mobileMenu a:hover,
-[data-theme="dark"] #mobileMenu a:active { background: var(--surface-2); }
+[data-theme="dark"] #mainNav.nav-shadow { box-shadow: 0 4px 18px -12px rgba(0, 0, 0, .9); }
+[data-theme="dark"] #menuBackdrop { background: rgba(0, 0, 0, .5); }
+[data-theme="dark"] #backToTop { border-color: rgba(255, 255, 255, .1); }
+[data-theme="dark"] #shareFab .share-btn { background: var(--surface-2); color: var(--text); }
+[data-theme="dark"] footer.bg-primary { background: var(--grouped-bg); }
 
-/* ---------- reduced-motion：保留颜色过渡，去掉位移/缩放手势 ---------- */
+/* -----------------------------------------------------------
+   §10 reduced-motion：保留配色过渡，去掉全部位移与缩放
+   ----------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
+
     .card-hover,
     a[class*="rounded-full"],
     button[class*="rounded-full"],
+    .search-button,
     #backToTop,
+    #menuBtn,
+    #shareFab .share-toggle,
     #shareFab .share-btn {
-        transition-property: background-color, color, border-color, box-shadow !important;
+        transition-property: background-color, color, border-color, box-shadow, opacity !important;
     }
     .card-hover:hover,
+    .card-hover:active,
     a[class*="rounded-full"]:active,
     button[class*="rounded-full"]:active,
+    .search-button:active,
+    #backToTop:hover,
     #backToTop:active,
-    #shareFab .share-btn:active {
-        transform: none !important;
-    }
+    #menuBtn:active,
+    #shareFab .share-toggle:active,
+    #shareFab .share-btn:active,
+    .animate-scale:hover { transform: none !important; }
+
     .animate-slide-up,
     .animate-fade-in,
     .animate-search-pop,
     .animate-search-pop-out,
-    .animate-result-in {
-        animation: none !important;
-    }
-    .animate-scale:hover { transform: none !important; }
-    #mobileMenu.menu-pop,
-    #mobileMenu.menu-pop-out { animation: none !important; }
-    #menuBackdrop { transition: opacity .2s !important; }
-    #menuBtn { transition: none !important; }
+    .animate-result-in,
+    #mainNav.menu-open #mobileMenu a { animation: none !important; }
+
+    body.reveal-ready .reveal-item { opacity: 1; transform: none; }
+
+    #mobileMenu:not(.hidden),
+    #mainNav.glass-effect { transition-duration: .01ms !important; }
+    #menuBtn .menu-icon i { transition-property: opacity !important; }
 }

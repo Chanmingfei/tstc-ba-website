@@ -58,6 +58,9 @@ document.addEventListener('DOMContentLoaded', function () {
         let ticking = false;
         const flush = () => {
             ticking = false;
+            // 菜单打开时 body 被 position:fixed 锁住，scrollY 会假性归零；
+            // 这里直接跳过，否则打开菜单的瞬间顶栏阴影和返回顶部会闪一下。
+            if (document.body.style.position === 'fixed') return;
             const y = window.scrollY || window.pageYOffset || 0;
             for (let i = 0; i < scrollHandlers.length; i++) {
                 try { scrollHandlers[i](y); } catch (_) {}
@@ -82,47 +85,128 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* ---------- 移动端菜单（iOS 风格毛玻璃抽屉） ---------- */
+    /* ---------- 移动端菜单：在顶栏内部展开的 iOS 抽屉 ----------
+       设计约束（对应 CSS 的「位移守恒」原则）：
+       · 菜单是 #mainNav 的子元素，展开靠 grid-template-rows 0fr→1fr 撑高，
+         自身不做任何 transform 位移，所以不可能溢出去盖住顶栏。
+       · 圆角 / 阴影 / 磨砂材质全部由 #mainNav.menu-open 承担，
+         菜单本体透明，不会出现「子元素圆角露出父元素方角」。
+       · 遮罩层级 900 低于顶栏 1000，因此圆角切出来的缺口露出的是遮罩，
+         而不是页面内容。 */
     const menuBtn = document.getElementById('menuBtn');
     const mobileMenu = document.getElementById('mobileMenu');
-    if (menuBtn && mobileMenu) {
-        // 动态创建毛玻璃遮罩（点击关闭 + 锁定背景滚动）
+    if (menuBtn && mainNav && mobileMenu) {
+        // 汉堡 / 关闭双图标共存，靠 CSS 交叉淡入，避免 innerHTML 重建导致的闪烁
+        if (!menuBtn.querySelector('.menu-icon')) {
+            menuBtn.innerHTML =
+                '<span class="menu-icon"><i class="fa fa-bars"></i><i class="fa fa-times"></i></span>';
+        }
+        menuBtn.setAttribute('aria-controls', 'mobileMenu');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        if (!menuBtn.getAttribute('aria-label')) {
+            menuBtn.setAttribute('aria-label', document.documentElement.lang === 'en' ? 'Menu' : '菜单');
+        }
+
         let backdrop = document.getElementById('menuBackdrop');
         if (!backdrop) {
             backdrop = document.createElement('div');
             backdrop.id = 'menuBackdrop';
+            backdrop.setAttribute('aria-hidden', 'true');
             document.body.appendChild(backdrop);
         }
+
+        /* 背景滚动锁：用 position:fixed 而不是 overflow:hidden，
+           因为 iOS Safari 会无视 body 的 overflow 继续橡皮筋滚动。
+           关闭时把滚动位置精确还原（临时关掉 smooth，避免"弹回去"的动画）。 */
+        let savedY = 0;
+        let locked = false;
+        const lockScroll = () => {
+            if (locked) return;
+            savedY = window.scrollY || window.pageYOffset || 0;
+            locked = true;
+            const b = document.body;
+            b.style.position = 'fixed';
+            b.style.top = -savedY + 'px';
+            b.style.left = '0';
+            b.style.right = '0';
+            b.style.width = '100%';
+        };
+        const unlockScroll = () => {
+            if (!locked) return;
+            const b = document.body;
+            b.style.position = '';
+            b.style.top = '';
+            b.style.left = '';
+            b.style.right = '';
+            b.style.width = '';
+            const root = document.documentElement;
+            const prev = root.style.scrollBehavior;
+            root.style.scrollBehavior = 'auto';
+            window.scrollTo(0, savedY);
+            root.style.scrollBehavior = prev;
+            locked = false;
+        };
+
+        let closeTimer = null;
+        const isOpen = () => mainNav.classList.contains('menu-open');
+
         const openMenu = () => {
+            if (isOpen()) return;
+            clearTimeout(closeTimer);
             mobileMenu.classList.remove('hidden');
-            mobileMenu.classList.remove('menu-pop');
-            void mobileMenu.offsetWidth; // 重放展开动画
-            mobileMenu.classList.add('menu-pop');
+            void mobileMenu.offsetHeight;          // 先让 0fr 生效，再切 1fr 才有过渡
+            mainNav.classList.add('menu-open');
             menuBtn.classList.add('open');
-            menuBtn.innerHTML = '<i class="fa fa-times text-xl"></i>';
+            menuBtn.setAttribute('aria-expanded', 'true');
             backdrop.classList.add('show');
-            document.body.style.overflow = 'hidden';
+            lockScroll();
         };
+
         const closeMenu = () => {
-            if (mobileMenu.classList.contains('hidden')) return;
-            mobileMenu.classList.remove('menu-pop');
-            mobileMenu.classList.add('menu-pop-out');
+            if (!isOpen()) return;
+            mainNav.classList.remove('menu-open');
             menuBtn.classList.remove('open');
-            menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
+            menuBtn.setAttribute('aria-expanded', 'false');
             backdrop.classList.remove('show');
-            document.body.style.overflow = '';
-            setTimeout(() => {
-                mobileMenu.classList.add('hidden');
-                mobileMenu.classList.remove('menu-pop-out');
-            }, 280);
+            unlockScroll();
+            // 收起动画跑完再 display:none，否则会瞬间消失没有回收感
+            clearTimeout(closeTimer);
+            closeTimer = setTimeout(() => {
+                if (!isOpen()) mobileMenu.classList.add('hidden');
+            }, 360);
         };
-        menuBtn.addEventListener('click', () => {
-            if (mobileMenu.classList.contains('hidden')) openMenu();
-            else closeMenu();
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isOpen() ? closeMenu() : openMenu();
         });
         backdrop.addEventListener('click', closeMenu);
-        document.querySelectorAll('#mobileMenu a').forEach(link => {
+        mobileMenu.querySelectorAll('a').forEach((link) => {
             link.addEventListener('click', closeMenu);
+        });
+
+        // Esc 关闭（键盘用户）；仅在没有弹窗抢焦点时响应
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isOpen()) closeMenu();
+        });
+        // 转横屏 / 拉宽到桌面断点：菜单必须收起，否则会残留一段空白
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768 && isOpen()) closeMenu();
+        });
+        // 浏览器前进后退（锚点跳转）时同样收起
+        window.addEventListener('hashchange', closeMenu);
+        window.addEventListener('pagehide', closeMenu);
+
+        // 菜单打开时把 Tab 限制在「汉堡按钮 + 菜单内链接」之间
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Tab' || !isOpen()) return;
+            const nodes = [menuBtn].concat(
+                Array.prototype.slice.call(mobileMenu.querySelectorAll('a[href]'))
+            );
+            if (nodes.length < 2) return;
+            const first = nodes[0], last = nodes[nodes.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
         });
     }
 
@@ -1464,7 +1548,8 @@ function createThemeToggle(isEnPage) {
     btn.className = 'theme-toggle';
     btn.setAttribute('aria-label', isEnPage ? 'Toggle dark mode' : '切换夜间模式');
     btn.setAttribute('title', isEnPage ? 'Dark mode' : '夜间模式');
-    // 太阳/月亮由 CSS 伪元素（::before/::after）依据 html[data-theme] 渲染，无需内联图标
+    // 双图标：由 CSS 根据 html[data-theme] 显示对应的那个，过渡由 opacity 完成
+    btn.innerHTML = '<i class="fa fa-sun" aria-hidden="true"></i><i class="fa fa-moon" aria-hidden="true"></i>';
     btn.addEventListener('click', toggleTheme);
     return btn;
 }
