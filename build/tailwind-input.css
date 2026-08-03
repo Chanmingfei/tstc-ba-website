@@ -1103,12 +1103,19 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
 /* -----------------------------------------------------------
    §7 浮动按钮：返回顶部 / 分享
    ----------------------------------------------------------- */
-#backToTop {
-    background: rgba(255, 255, 255, .78);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+#backToTop,
+#shareFab .share-toggle,
+#shareFab .share-btn {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .85) 0%, rgba(255, 255, 255, .28) 40%, rgba(255, 255, 255, 0) 66%),
+        rgba(255, 255, 255, .50);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, .60);
+    box-shadow:
+        0 10px 26px rgba(0, 0, 0, .18),
+        inset 0 1.5px 2px rgba(255, 255, 255, .90),
+        inset 0 -2px 5px rgba(0, 0, 0, .08);
     color: var(--tint);
     transition: transform var(--dur-press) var(--ease-out),
                 box-shadow var(--dur-fast) var(--ease-out),
@@ -1122,26 +1129,18 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
     transform: scale(.92);
     transition-duration: var(--dur-press);
 }
-#shareFab .share-toggle {
-    background: rgba(255, 255, 255, .78);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    color: var(--tint);
-}
-#shareFab .share-btn {
-    background: rgba(255, 255, 255, .78);
-    -webkit-backdrop-filter: var(--glass-blur);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-}
 [data-theme="dark"] #backToTop,
 [data-theme="dark"] #shareFab .share-toggle,
 [data-theme="dark"] #shareFab .share-btn {
-    background: rgba(30, 34, 44, .78);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .08) 40%, transparent 66%),
+        rgba(30, 34, 44, .55);
+    border-color: rgba(255, 255, 255, .22);
     color: var(--text-strong);
+    box-shadow:
+        0 10px 26px rgba(0, 0, 0, .50),
+        inset 0 1.5px 2px rgba(255, 255, 255, .28),
+        inset 0 -2px 5px rgba(0, 0, 0, .35);
 }
 
 /* -----------------------------------------------------------
