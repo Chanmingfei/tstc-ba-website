@@ -50,6 +50,12 @@ html {
 
 body {
     font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    /* 柔和渐变底色：让液态玻璃卡片产生可见的折射层次（不透明度低，不影响文字可读） */
+    background:
+        radial-gradient(ellipse 1300px 700px at 50% 30%, rgba(10, 108, 214, .10), transparent 58%),
+        radial-gradient(1200px 600px at 80% -5%, rgba(10, 108, 214, .10), transparent 55%),
+        radial-gradient(1000px 500px at -3% 8%, rgba(124, 58, 237, .07), transparent 50%),
+        linear-gradient(180deg, #ffffff 0%, #edf2fa 40%, #e3edf8 100%);
 }
 
 /* ---------- 层级落地：ID 选择器覆盖 HTML 里的 Tailwind z-* 工具类 ----------
@@ -371,7 +377,7 @@ body {
 }
 
 /* ---------- 暗色下工具类映射 ---------- */
-[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+[data-theme="dark"] body { background: linear-gradient(180deg, #070a0f 0%, #0b1018 100%); color: var(--text); }
 [data-theme="dark"] .bg-light { background-color: var(--bg); }
 [data-theme="dark"] .bg-white { background-color: var(--surface); }
 [data-theme="dark"] .bg-gray-50 { background-color: var(--bg-alt); }
@@ -385,7 +391,6 @@ body {
 [data-theme="dark"] .shadow-sm { --tw-shadow: 0 1px 2px 0 rgba(255, 255, 255, .08); }
 [data-theme="dark"] .shadow-md { --tw-shadow: 0 4px 6px -1px rgba(255, 255, 255, .10), 0 2px 4px -2px rgba(255, 255, 255, .10); }
 [data-theme="dark"] .shadow-lg { --tw-shadow: 0 10px 15px -3px rgba(255, 255, 255, .12), 0 4px 6px -4px rgba(255, 255, 255, .12); }
-[data-theme="dark"] .card-hover:hover { box-shadow: 0 12px 24px rgba(255, 255, 255, .16); }
 [data-theme="dark"] .nav-shadow { box-shadow: 0 4px 6px -1px rgba(255, 255, 255, .08), 0 2px 4px -2px rgba(255, 255, 255, .06); }
 [data-theme="dark"] #backToTop { box-shadow: 0 6px 18px rgba(255, 255, 255, .12); }
 [data-theme="dark"] #backToTop:hover { box-shadow: 0 8px 22px rgba(255, 255, 255, .16); }
@@ -884,11 +889,20 @@ h1 { line-height: 1.08; }
 /* -----------------------------------------------------------
    §4 卡片 / 按钮 / 输入框
    ----------------------------------------------------------- */
+/* 卡片：液态玻璃（磨砂）质感 —— 镜面高光渐变 + 半透明基底 + 折射模糊 + 高光描边 + 内发光 */
 .card-hover {
-    border: 1px solid var(--hairline);
     border-radius: var(--r-md);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .82) 0%, rgba(255, 255, 255, .42) 40%, rgba(255, 255, 255, 0) 70%),
+        rgba(255, 255, 255, .32);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, .65);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, .10),
+        inset 0 1px 1px rgba(255, 255, 255, .8),
+        inset 0 -1px 1px rgba(0, 0, 0, .05);
     background-clip: padding-box;
-    box-shadow: var(--shadow-1);
     transition: transform  var(--dur-base) var(--ease-out),
                 box-shadow var(--dur-base) var(--ease-out),
                 background-color var(--dur-base) var(--ease-in-out),
@@ -896,9 +910,35 @@ h1 { line-height: 1.08; }
 }
 /* 悬浮只在真鼠标环境生效，触屏上不会「卡」在 hover 态 */
 @media (hover: hover) and (pointer: fine) {
-    .card-hover:hover { transform: translateY(-4px); box-shadow: var(--shadow-2); }
+    .card-hover:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, .85);
+        box-shadow:
+            0 14px 34px rgba(0, 0, 0, .16),
+            inset 0 1px 1px rgba(255, 255, 255, .9),
+            inset 0 -1px 1px rgba(0, 0, 0, .05);
+    }
 }
 .card-hover:active { transform: scale(.99); transition-duration: var(--dur-press); }
+
+/* 暗色：玻璃面板用深半透明 + 白色高光内发光，保持玻璃质感 */
+[data-theme="dark"] .card-hover {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .20) 0%, rgba(255, 255, 255, .07) 40%, transparent 70%),
+        rgba(30, 34, 44, .55);
+    border-color: rgba(255, 255, 255, .14);
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, .45),
+        inset 0 1px 1px rgba(255, 255, 255, .18),
+        inset 0 -1px 2px rgba(0, 0, 0, .40);
+}
+[data-theme="dark"] .card-hover:hover {
+    border-color: rgba(255, 255, 255, .24);
+    box-shadow:
+        0 14px 34px rgba(0, 0, 0, .55),
+        inset 0 1px 1px rgba(255, 255, 255, .28),
+        inset 0 -1px 2px rgba(0, 0, 0, .40);
+}
 
 /* 胶囊按钮 / CTA：苹果式即时按压 */
 a[class*="rounded-full"],

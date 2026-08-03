@@ -529,6 +529,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // 完整更新日志 HTML（与 CHANGELOG.md 保持一致，按日期归档）
     // 完整更新日志（中英文各一份，按日期归档，与 CHANGELOG.md 保持一致）
     const CHANGELOG_DATA = [
+        { d: '2026-08-03', zh: [
+            '【重大】全站液态玻璃（Liquid Glass）设计上线：半透明表面 + 折射模糊（backdrop-filter: blur() saturate()）+ 白色高光边框 + 内发光，覆盖顶栏工具、主按钮 / 胶囊 CTA、返回顶部、分享浮标、幽灵按钮；分享主按钮与返回顶部进一步强化镜面高光，玻璃质感明显',
+            '【优化】移动端顶栏修复：搜索按钮改 38×38 正圆、主题切换放大至 scale(.85)、站点标题完整显示（去省略号）、搜索 / 主题切换 / 汉堡三按钮以正常尺寸单行排列',
+            '【优化】平台色二维码按钮保色 + 玻璃：微信绿 / 小红书红 / QQ 蓝 品牌色保留，叠加折射模糊与高光，白字保持可读',
+            '【优化】弹窗格式统一：意见反馈弹窗与二维码弹窗同为居中、高不透明度玻璃面板，统一圆角 / 边框 / 阴影',
+            '【优化】卡片液态玻璃化：首页快捷链接 / 吧务组公示 / 新闻卡片（含相关阅读）统一改为磨砂玻璃 —— 半透明 + 折射模糊 + 高光描边 + 内发光；并给页面加极淡渐变底色，让玻璃产生可见折射层次',
+            '【修复】二维码按钮白底白字不可见（玻璃规则误判为幽灵按钮套上透明玻璃）；分享 / 返回顶部看不到玻璃变化（品牌蓝渐变掩盖玻璃）：均已修正，白玻璃 + 品牌色图标，变化一目了然'
+        ], en: [
+            '[Major] Site-wide Liquid Glass design: translucent surface + refractive blur (backdrop-filter: blur() saturate()) + white highlight border + inner glow, covering navbar tools, primary/pill CTAs, back-to-top, share FAB and ghost buttons; the share toggle and back-to-top gain an extra specular highlight for a clearly visible glass look',
+            '[Opt] Mobile top bar fix: search button is now a 38×38 circle, theme toggle scaled to .85, site title shows in full (no ellipsis), and search / toggle / hamburger sit on one line at normal size',
+            '[Opt] Colored QR buttons keep brand color + glass: WeChat green / Xiaohongshu red / QQ blue are preserved, with blur and highlight; white text stays readable',
+            '[Opt] Unified modal styling: the feedback modal now shares the centered, high-opacity glass panel with the QR modal (matching radius / border / shadow)',
+            '[Opt] Cards go Liquid Glass: homepage quick links, mod-team cards and news cards (incl. related reading) now use a frosted-glass look — translucent + refractive blur + highlight border + inner glow; a faint page gradient backdrop was added so the glass refraction is visible',
+            '[Fix] QR buttons were invisible (white on transparent glass from a misapplied ghost rule); share/back-to-top glass was not visible (a brand-blue gradient covered it): both fixed with white glass + brand-color icons'
+        ]},
         { d: '2026-08-02', zh: [
             '【新增】全站夜间模式：顶栏新增太阳/月亮切换按钮，配色与卡片、搜索框等组件平滑过渡（0.4s cubic-bezier）；未手动选择时自动跟随系统 prefers-color-scheme；在 <head> 最前面注入防闪烁脚本，刷新瞬间即可应用主题，避免暗色用户白屏闪烁',
             '【优化】夜间模式视觉调整：头图与页脚蓝色大幅降饱和，避免刺眼；切换按钮从移动端顶栏移除，改为桌面端导航末尾图标 + 移动端菜单底部分行标签；修复移动菜单展开时的顶部分隔白线；加深页面背景、提亮卡片表面与边框，使卡片轮廓更清晰',
@@ -1451,7 +1466,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     : '<div class="w-full h-32 bg-gradient-primary flex items-center justify-center"><i class="fa ' + icon + ' text-white/80 text-3xl"></i></div>';
                 var card = document.createElement('a');
                 card.href = item.slug + '.html';
-                card.className = 'group block bg-white rounded-xl shadow-md overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all duration-200';
+                card.className = 'group block bg-white rounded-xl shadow-md overflow-hidden card-hover';
                 card.innerHTML = cover +
                     '<div class="p-4">' +
                         '<div class="flex items-center text-xs text-gray-500 mb-2"><span class="bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">' + escapeHtml(item.category) + '</span><span class="ml-2"><i class="fa fa-calendar mr-1"></i>' + item.date + '</span></div>' +
