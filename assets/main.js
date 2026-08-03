@@ -56,32 +56,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* ---------- 移动端菜单 ---------- */
+    /* ---------- 移动端菜单（iOS 风格毛玻璃抽屉） ---------- */
     const menuBtn = document.getElementById('menuBtn');
     const mobileMenu = document.getElementById('mobileMenu');
     if (menuBtn && mobileMenu) {
+        // 动态创建毛玻璃遮罩（点击关闭 + 锁定背景滚动）
+        let backdrop = document.getElementById('menuBackdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'menuBackdrop';
+            document.body.appendChild(backdrop);
+        }
+        const openMenu = () => {
+            mobileMenu.classList.remove('hidden');
+            mobileMenu.classList.remove('menu-pop');
+            void mobileMenu.offsetWidth; // 重放展开动画
+            mobileMenu.classList.add('menu-pop');
+            menuBtn.classList.add('open');
+            menuBtn.innerHTML = '<i class="fa fa-times text-xl"></i>';
+            backdrop.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        };
+        const closeMenu = () => {
+            if (mobileMenu.classList.contains('hidden')) return;
+            mobileMenu.classList.remove('menu-pop');
+            mobileMenu.classList.add('menu-pop-out');
+            menuBtn.classList.remove('open');
+            menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
+            backdrop.classList.remove('show');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('menu-pop-out');
+            }, 280);
+        };
         menuBtn.addEventListener('click', () => {
-            if (mobileMenu.classList.contains('hidden')) {
-                mobileMenu.classList.remove('hidden');
-                mobileMenu.classList.remove('menu-pop');
-                void mobileMenu.offsetWidth; // 重放展开动画
-                mobileMenu.classList.add('menu-pop');
-                menuBtn.innerHTML = '<i class="fa fa-times text-xl"></i>';
-            } else {
-                mobileMenu.classList.remove('menu-pop');
-                mobileMenu.classList.add('menu-pop-out');
-                menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
-                setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 240);
-            }
+            if (mobileMenu.classList.contains('hidden')) openMenu();
+            else closeMenu();
         });
+        backdrop.addEventListener('click', closeMenu);
         document.querySelectorAll('#mobileMenu a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (!mobileMenu.classList.contains('hidden')) {
-                    mobileMenu.classList.add('menu-pop-out');
-                    setTimeout(() => { mobileMenu.classList.add('hidden'); mobileMenu.classList.remove('menu-pop-out'); }, 240);
-                }
-                menuBtn.innerHTML = '<i class="fa fa-bars text-xl"></i>';
-            });
+            link.addEventListener('click', closeMenu);
         });
     }
 

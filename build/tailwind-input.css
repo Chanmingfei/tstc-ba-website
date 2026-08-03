@@ -714,6 +714,88 @@ button[class*="rounded-full"]:active {
     border-color: rgba(255, 255, 255, .1);
 }
 
+/* ---------- 移动端导航菜单：iOS 风格毛玻璃抽屉 ---------- */
+/* 半透明磨砂遮罩（由 JS 动态插入 #menuBackdrop，点击关闭 + 锁定背景滚动） */
+#menuBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(0, 0, 0, .28);
+    backdrop-filter: blur(3px) saturate(120%);
+    -webkit-backdrop-filter: blur(3px) saturate(120%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .35s var(--ease-out), visibility 0s linear .35s;
+}
+#menuBackdrop.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .35s var(--ease-out);
+}
+
+/* 菜单抽屉：自顶栏下沿展开，与导航同款磨砂材质 + 圆角下底 */
+#mobileMenu {
+    position: relative;
+    background: var(--nav-bg);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-top: 1px solid var(--nav-border);
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
+    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .35);
+    overflow: hidden;
+}
+/* 链接行：iOS 分组列表风格（大圆角 + 按压回弹 + 悬停高亮） */
+#mobileMenu a {
+    display: flex;
+    align-items: center;
+    margin: 6px 8px;
+    padding: 15px 16px;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text-strong);
+    background: transparent;
+    transition: background-color .2s var(--ease-out), transform .15s var(--ease-out);
+}
+#mobileMenu a:hover { background: var(--surface-2); }
+#mobileMenu a:active { transform: scale(.97); background: var(--surface-2); }
+
+/* 弹簧展开 / 收起（覆盖旧的 menuPop 轻微缩放） */
+@keyframes menuSheetIn {
+    from { opacity: 0; transform: translateY(-14px) scale(.985); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes menuSheetOut {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(-14px) scale(.985); }
+}
+#mobileMenu.menu-pop {
+    animation: menuSheetIn .42s var(--ease-spring);
+    transform-origin: top center;
+}
+#mobileMenu.menu-pop-out {
+    animation: menuSheetOut .28s cubic-bezier(.4, 0, 1, 1) forwards;
+    transform-origin: top center;
+}
+
+/* 汉堡按钮：开合时旋转 90°，强化「打开/收起」手势 */
+#menuBtn {
+    transition: transform .3s var(--ease-spring);
+    will-change: transform;
+}
+#menuBtn.open { transform: rotate(90deg); }
+
+/* 暗色模式：抽屉材质与阴影同步 */
+[data-theme="dark"] #mobileMenu {
+    background: var(--nav-bg);
+    box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .6);
+}
+[data-theme="dark"] #mobileMenu a { color: var(--text-strong); }
+[data-theme="dark"] #mobileMenu a:hover,
+[data-theme="dark"] #mobileMenu a:active { background: var(--surface-2); }
+
 /* ---------- reduced-motion：保留颜色过渡，去掉位移/缩放手势 ---------- */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -739,4 +821,8 @@ button[class*="rounded-full"]:active {
         animation: none !important;
     }
     .animate-scale:hover { transform: none !important; }
+    #mobileMenu.menu-pop,
+    #mobileMenu.menu-pop-out { animation: none !important; }
+    #menuBackdrop { transition: opacity .2s !important; }
+    #menuBtn { transition: none !important; }
 }
