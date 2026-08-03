@@ -1426,6 +1426,24 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
         inset 0 -1px 1px rgba(0, 0, 0, .15);
 }
 
+/* 分享面板子按钮需要更强的通透感（压在各种复杂内容上，比主按钮更透才看得出来玻璃） */
+[data-theme="dark"] #shareFab .share-btn {
+    background: rgba(255, 255, 255, .08);
+    border-color: rgba(255, 255, 255, .18);
+    box-shadow:
+        0 3px 12px rgba(0, 0, 0, .30),
+        inset 0 1px 1px rgba(255, 255, 255, .14),
+        inset 0 -1px 1px rgba(0, 0, 0, .12);
+}
+[data-theme="dark"] #shareFab .share-btn:hover {
+    background: rgba(255, 255, 255, .16);
+    border-color: rgba(255, 255, 255, .24);
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, .34),
+        inset 0 1px 1px rgba(255, 255, 255, .18),
+        inset 0 -1px 1px rgba(0, 0, 0, .12);
+}
+
 /* -----------------------------------------------------------
    §8 动效系统：滚动渐入统一为 24px / 480ms
    位移越小越高级；48px 的大位移在长页面上会显得廉价。
