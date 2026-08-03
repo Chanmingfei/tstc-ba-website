@@ -813,13 +813,13 @@ document.addEventListener('DOMContentLoaded', function () {
             css.id = 'shareWidgetStyle';
             css.textContent =
                 '#shareFab{position:fixed;left:16px;bottom:16px;z-index:var(--z-fab);display:flex;flex-direction:column;align-items:center;gap:10px}' +
-                '#shareFab .share-toggle{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease}' +
+                '#shareFab .share-toggle{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);border:1px solid rgba(255,255,255,.38);color:var(--tint);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 6px 20px rgba(0,0,0,.14),inset 0 1px 1px rgba(255,255,255,.45);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}' +
                 '#shareFab .share-toggle:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(0,0,0,.24)}' +
                 '#shareFab .share-panel{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:2px;transform-origin:bottom center}' +
                 '#shareFab .share-panel.hidden{display:none}' +
                 '#shareFab .share-panel:not(.hidden){animation:sharePop .18s ease}' +
                 '@keyframes sharePop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}' +
-                '#shareFab .share-btn{width:44px;height:44px;border-radius:50%;background:#fff;color:#555;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.14);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease;text-decoration:none}' +
+                '#shareFab .share-btn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);border:1px solid rgba(255,255,255,.38);color:#555;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 20px rgba(0,0,0,.14),inset 0 1px 1px rgba(255,255,255,.45);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;text-decoration:none}' +
                 '#shareFab .share-btn:hover{transform:scale(1.06);box-shadow:0 6px 16px rgba(0,0,0,.2)}' +
                 '#shareToast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;font-size:14px;padding:9px 16px;border-radius:999px;z-index:var(--z-toast);opacity:0;transition:opacity .2s ease;pointer-events:none}' +
                 '#shareToast.show{opacity:1}';

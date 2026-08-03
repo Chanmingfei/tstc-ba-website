@@ -720,10 +720,27 @@ h1 { line-height: 1.08; }
         display: flex !important;
         align-items: center;
     }
-    /* 缩小按钮组尺寸，确保 390px 屏也能一行放下 */
-    #mainNav .theme-toggle { transform: scale(0.72); margin-right: 0.25rem !important; }
-    #mainNav #mobileTopSearchBtn { margin-right: 0.5rem !important; font-size: 16px; }
-    #mainNav #menuBtn { width: 36px; height: 36px; }
+    /* 移动端顶栏：保持按钮正常可视尺寸并单行排列（390px 起适用） */
+    #mainNav .theme-toggle { transform: scale(0.85); margin-right: 0.25rem !important; }
+    #mainNav #mobileTopSearchBtn {
+        margin-right: 0.4rem !important;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    #mainNav #menuBtn { width: 38px; height: 38px; }
+    #mainNav .container > div > div:first-child > img {
+        width: 32px;
+        height: 32px;
+    }
+    #mainNav .container > div > div:first-child > a {
+        font-size: 18px;
+        overflow: visible;
+        text-overflow: clip;
+    }
 }
 
 /* -----------------------------------------------------------
@@ -962,6 +979,14 @@ button[class*="rounded-full"]:active,
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+@media (min-width: 768px) {
+    #navSearchBtn { width: 36px; height: 36px; }
 }
 #menuBtn:hover,
 #mobileTopSearchBtn:hover,
@@ -970,11 +995,8 @@ button[class*="rounded-full"]:active,
 #mobileTopSearchBtn:active,
 #navSearchBtn:active { transform: scale(.92); }
 
-/* 主按钮 / 胶囊 CTA / 返回顶部 / 分享浮标：在品牌色上叠液态玻璃 */
+/* 主按钮 / 胶囊 CTA：在品牌色上叠液态玻璃 */
 .search-button,
-#backToTop,
-#shareFab .share-toggle,
-#shareFab .share-btn,
 a[class*="rounded-full"].bg-primary,
 button[class*="rounded-full"].bg-primary,
 a[class*="rounded-full"].bg-secondary,
@@ -991,9 +1013,6 @@ button[class*="rounded-full"].bg-secondary {
     color: #fff;
 }
 .search-button:hover,
-#backToTop:hover,
-#shareFab .share-toggle:hover,
-#shareFab .share-btn:hover,
 a[class*="rounded-full"].bg-primary:hover,
 button[class*="rounded-full"].bg-primary:hover,
 a[class*="rounded-full"].bg-secondary:hover,
@@ -1017,10 +1036,28 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
     background: rgba(255, 255, 255, .32);
 }
 
+/* 平台色按钮（微信/小红书/QQ）：保留品牌色 + 叠加液态玻璃 */
+#wechatBtn,
+#xiaohongshuBtn,
+#qqBtn {
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, .35);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .16), inset 0 1px 1px rgba(255, 255, 255, .45);
+    color: #fff;
+}
+#wechatBtn { background: linear-gradient(135deg, color-mix(in srgb, #22c55e 88%, transparent), color-mix(in srgb, #16a34a 88%, transparent)); }
+#xiaohongshuBtn { background: linear-gradient(135deg, color-mix(in srgb, #ef4444 88%, transparent), color-mix(in srgb, #dc2626 88%, transparent)); }
+#qqBtn { background: linear-gradient(135deg, color-mix(in srgb, #60a5fa 88%, transparent), color-mix(in srgb, #3b82f6 88%, transparent)); }
+#wechatBtn:hover { background: linear-gradient(135deg, color-mix(in srgb, #22c55e 96%, transparent), color-mix(in srgb, #16a34a 96%, transparent)); }
+#xiaohongshuBtn:hover { background: linear-gradient(135deg, color-mix(in srgb, #ef4444 96%, transparent), color-mix(in srgb, #dc2626 96%, transparent)); }
+#qqBtn:hover { background: linear-gradient(135deg, color-mix(in srgb, #60a5fa 96%, transparent), color-mix(in srgb, #3b82f6 96%, transparent)); }
+
 /* 弹窗面板：高不透明度玻璃，保证内容可读性（纯玻璃会导致文字看不清） */
 #searchModal    > div,
 #changelogModal > div,
-#qrModal        > div {
+#qrModal        > div,
+#feedbackModal  > div {
     background: rgba(255, 255, 255, .78);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
@@ -1029,7 +1066,8 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 }
 [data-theme="dark"] #searchModal    > div,
 [data-theme="dark"] #changelogModal > div,
-[data-theme="dark"] #qrModal        > div {
+[data-theme="dark"] #qrModal        > div,
+[data-theme="dark"] #feedbackModal  > div {
     background: rgba(18, 22, 30, .88);
 }
 
@@ -1066,9 +1104,12 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
    §7 浮动按钮：返回顶部 / 分享
    ----------------------------------------------------------- */
 #backToTop {
-    background: var(--tint);
-    border: 1px solid rgba(255, 255, 255, .16);
-    box-shadow: var(--shadow-2);
+    background: rgba(255, 255, 255, .78);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    color: var(--tint);
     transition: transform var(--dur-press) var(--ease-out),
                 box-shadow var(--dur-fast) var(--ease-out),
                 opacity var(--dur-base) var(--ease-out),
@@ -1081,10 +1122,26 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
     transform: scale(.92);
     transition-duration: var(--dur-press);
 }
-#shareFab .share-toggle { box-shadow: var(--shadow-2); }
+#shareFab .share-toggle {
+    background: rgba(255, 255, 255, .78);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    color: var(--tint);
+}
 #shareFab .share-btn {
-    box-shadow: var(--shadow-1);
-    border: 1px solid var(--hairline);
+    background: rgba(255, 255, 255, .78);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+[data-theme="dark"] #backToTop,
+[data-theme="dark"] #shareFab .share-toggle,
+[data-theme="dark"] #shareFab .share-btn {
+    background: rgba(30, 34, 44, .78);
+    color: var(--text-strong);
 }
 
 /* -----------------------------------------------------------
