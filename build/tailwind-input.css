@@ -439,48 +439,131 @@ body {
 /* ---------- 主题切换按钮（日/夜滑动开关，参考 SegmentFault「单标签日夜间切换」） ----------
    药丸轨道左侧太阳、右侧月亮；点击时太阳滑向右侧变月亮，背景从蓝天切到星空夜空，0.5s 过渡。
    轨道底色固定（不随站点明暗变），仅表示当前日/夜状态。状态由 html[data-theme="dark"] 驱动。 */
-/* 主题切换按钮：iOS 工具栏风格小圆按钮
-   原先 SegmentFault 风格的复杂轨道（日月同屏）与整站的 Apple 极简语言不统一，
-   改为 36×36 圆钮，太阳/月亮双图标淡入淡出切换，体积更小、与顶栏更协调。 */
 .theme-toggle {
     position: relative;
     flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 68px;
+    height: 28px;
     padding: 0;
-    border: 0;
-    border-radius: 50%;
-    color: var(--text-strong);
-    background: var(--fill-quaternary);
+    border: none;
+    border-radius: 28px;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: background-color var(--dur-fast) var(--ease-out),
-                transform var(--dur-press) var(--ease-out);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 18% 6.2px, #fff, #fff 1.9px, transparent 2.2px),
+        radial-gradient(circle at 35% 13.9px, #fff, #fff 0.3px, transparent 0.6px),
+        radial-gradient(circle at 10% 21.6px, #fff, #fff 0.8px, transparent 1.1px),
+        radial-gradient(circle at 25% 4.6px, #fff, #fff 0.9px, transparent 1.2px),
+        radial-gradient(circle at 15% 15.5px, #fff, #fff 0.5px, transparent 0.8px),
+        radial-gradient(circle at 30% 23.2px, #fff, #fff 1.5px, transparent 1.9px),
+        radial-gradient(circle at 5% 9.3px, #fff, #fff 0.15px, transparent 0.5px),
+        radial-gradient(circle at 25% 18.5px, #fff, #fff 0.15px, transparent 0.5px),
+        radial-gradient(circle at 7% 10.8px, #fff, #fff 0.15px, transparent 0.5px),
+        linear-gradient(90deg, #2b303e 0 50%, #5a81b4 50% 100%);
+    background-repeat: no-repeat;
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    box-shadow:
+        0 -1px 2px #999,
+        inset 0 1px 2px #333,
+        0 1px 2px #ffe,
+        inset 0 -1px 2px #ddd;
+    transition: .5s all;
 }
-.theme-toggle:hover { background: var(--fill-tertiary); }
-.theme-toggle:active { transform: scale(.90); }
-.theme-toggle i {
+.theme-toggle::before,
+.theme-toggle::after {
+    content: "";
     position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: opacity var(--dur-fast) var(--ease-out),
-                transform var(--dur-fast) var(--ease-spring);
+    transition: .5s all;
 }
-.theme-toggle .fa-sun { opacity: 1; transform: rotate(0deg); }
-.theme-toggle .fa-moon { opacity: 0; transform: rotate(-90deg) scale(.7); }
-html[data-theme="dark"] .theme-toggle { background: var(--fill-quaternary); color: var(--text-strong); }
-html[data-theme="dark"] .theme-toggle .fa-sun { opacity: 0; transform: rotate(90deg) scale(.7); }
-html[data-theme="dark"] .theme-toggle .fa-moon { opacity: 1; transform: rotate(0deg); }
+.theme-toggle::before {
+    width: 23px;
+    height: 23px;
+    inset: 2.5px;
+    border-radius: 50%;
+    background: #e9cb50;
+    box-shadow:
+        0 0 2px #333,
+        inset 1px 1px 1px #f8f4e4,
+        inset -1px -1px 1px #665613;
+    z-index: 1;
+}
+.theme-toggle::after {
+    width: 22px;
+    height: 22px;
+    inset: 3px;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow:
+        3.1px 18.5px 0 3.1px #fff,
+        20.1px 18.5px 0 1.5px #fff,
+        29.4px 21.6px 0 3.1px #fff,
+        41.7px 13.9px 0 1.5px #fff,
+        52.5px 10.8px 0 3.1px #fff,
+        60.2px -1.5px 0 3.1px #fff,
+        -3.1px 0 0 15.5px rgba(255, 255, 255, .2),
+        4.6px 0 0 15.5px rgba(255, 255, 255, .15),
+        12.4px 0 0 15.5px rgba(255, 255, 255, .21),
+        3.1px 12.4px 0 3.1px #abc1d9,
+        21.6px 10.8px 0 3.1px #abc1d9,
+        29.4px 12.4px 0 3.1px #abc1d9,
+        41.7px 6.2px 0 3.1px #abc1d9,
+        47.9px 4.6px 0 3.1px #abc1d9,
+        58.7px -6.2px 0 3.1px #abc1d9;
+}
+.theme-toggle:hover::before {
+    filter: contrast(90%) brightness(110%);
+    scale: 1.05;
+}
 
-@media (max-width: 767px) { .theme-toggle { margin-right: 0.5rem; } }
+/* 暗色（对应原文 div.active）：轨道切到夜空；太阳滑到右侧变月亮（环形山）；云点淡出、柔光晕随月亮平移。
+   原文的高光边框与太阳阴影在深色页面上会发白/发黑，此处只做暗色适配：轨道改暗色微立体边框，月亮加柔光晕。 */
+html[data-theme="dark"] .theme-toggle {
+    background-position: 0 0;
+    box-shadow:
+        0 -1px 2px rgba(0, 0, 0, .5),
+        inset 0 1px 3px rgba(0, 0, 0, .65),
+        0 1px 2px rgba(255, 255, 255, .08),
+        inset 0 -1px 2px rgba(255, 255, 255, .15);
+}
+html[data-theme="dark"] .theme-toggle::before {
+    translate: 40px;
+    background:
+        radial-gradient(circle at 50% 6.2px, #939aa5, #939aa5 2px, transparent 2.2px),
+        radial-gradient(circle at 35% 13.9px, #939aa5, #939aa5 3.6px, transparent 3.7px),
+        radial-gradient(circle at 72% 15.5px, #939aa5, #939aa5 2.6px, transparent 2.8px),
+        #cbcdda;
+    box-shadow:
+        0 0 8px rgba(255, 255, 255, .25),
+        inset 1px 1px 1px rgba(255, 255, 255, .6),
+        inset -1px -1px 1px rgba(70, 70, 85, .4);
+}
+html[data-theme="dark"] .theme-toggle::after {
+    transform: translate(40px);
+    box-shadow:
+        3.1px 18.5px 0 3.1px transparent,
+        20.1px 18.5px 0 1.5px transparent,
+        29.4px 21.6px 0 3.1px transparent,
+        41.7px 13.9px 0 1.5px transparent,
+        52.5px 10.8px 0 3.1px transparent,
+        60.2px -1.5px 0 3.1px transparent,
+        3.1px 0 0 15.5px rgba(255, 255, 255, .2),
+        -4.6px 0 0 15.5px rgba(255, 255, 255, .15),
+        -12.4px 0 0 15.5px rgba(255, 255, 255, .21),
+        3.1px 12.4px 0 3.1px transparent,
+        21.6px 10.8px 0 3.1px transparent,
+        29.4px 12.4px 0 3.1px transparent,
+        41.7px 6.2px 0 3.1px transparent,
+        47.9px 4.6px 0 3.1px transparent,
+        58.7px -6.2px 0 3.1px transparent;
+}
 
-
+/* 移动端：让顶栏切换按钮与搜索按钮之间留出呼吸间距（桌面端由导航 flex 间隙控制，不受影响） */
+@media (max-width: 767px) {
+    .theme-toggle {
+        margin-right: 0.75rem;
+    }
+}
 
 /* ===========================================================
    ★ APPLE DESIGN SYSTEM v2 —— 全站 iOS 设计语言层
@@ -797,7 +880,9 @@ button[class*="rounded-full"]:active,
 .search-button:hover { background-color: var(--tint-press); }
 
 /* -----------------------------------------------------------
-   §5 弹窗：桌面居中卡片，移动端一律改为 iOS 底部抽屉
+   §5 弹窗：居中卡片（保持原有居中布局，只优化圆角/阴影/材质）
+   说明：用户反馈移动端底部抽屉在搜索结果多时显示混乱，
+   因此恢复为居中弹窗，避免改变原有弹窗结构。
    ----------------------------------------------------------- */
 #searchModal,
 #changelogModal,
@@ -812,55 +897,6 @@ button[class*="rounded-full"]:active,
     border-radius: var(--r-xl);
     border: 1px solid var(--hairline);
     box-shadow: var(--shadow-3);
-}
-
-@keyframes sheetUp   { from { transform: translateY(100%); } to { transform: none; } }
-@keyframes sheetDown { from { transform: none; } to { transform: translateY(100%); } }
-
-@media (max-width: 639px) {
-    #searchModal,
-    #changelogModal,
-    #qrModal {
-        align-items: flex-end;
-        padding: 0;
-    }
-    #searchModal    > div,
-    #changelogModal > div,
-    #qrModal        > div {
-        width: 100%;
-        max-width: 100% !important;
-        max-height: 92vh !important;
-        border-radius: var(--r-xl) var(--r-xl) 0 0;
-        border-bottom: 0;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        animation: sheetUp var(--dur-base) var(--ease-out);
-    }
-    /* 抽屉顶部的把手（grabber） */
-    #searchModal    > div::before,
-    #changelogModal > div::before,
-    #qrModal        > div::before {
-        content: '';
-        position: absolute;
-        top: 8px;
-        left: 50%;
-        z-index: 3;
-        width: 36px;
-        height: 5px;
-        margin-left: -18px;
-        border-radius: var(--r-full);
-        background: var(--fill-tertiary);
-        pointer-events: none;
-    }
-    /* 给把手让出空间 */
-    #searchModal    > div > :first-child,
-    #changelogModal > div > :first-child,
-    #qrModal        > div > :first-child { padding-top: 22px; }
-
-    #searchModal    > div.animate-search-pop-out,
-    #changelogModal > div.animate-search-pop-out,
-    #qrModal        > div.animate-search-pop-out {
-        animation: sheetDown var(--dur-fast) var(--ease-exit) forwards;
-    }
 }
 
 /* -----------------------------------------------------------

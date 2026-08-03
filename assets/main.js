@@ -1548,8 +1548,7 @@ function createThemeToggle(isEnPage) {
     btn.className = 'theme-toggle';
     btn.setAttribute('aria-label', isEnPage ? 'Toggle dark mode' : '切换夜间模式');
     btn.setAttribute('title', isEnPage ? 'Dark mode' : '夜间模式');
-    // 双图标：由 CSS 根据 html[data-theme] 显示对应的那个，过渡由 opacity 完成
-    btn.innerHTML = '<i class="fa fa-sun" aria-hidden="true"></i><i class="fa fa-moon" aria-hidden="true"></i>';
+    // 太阳/月亮由 CSS 伪元素（::before/::after）依据 html[data-theme] 渲染，无需内联图标
     btn.addEventListener('click', toggleTheme);
     return btn;
 }
