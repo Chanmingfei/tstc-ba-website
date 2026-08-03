@@ -6,7 +6,7 @@
   "scripts": {
     "build:css": "tailwindcss -c build/tailwind.config.js -i build/tailwind-input.css -o assets/style.css --minify",
     "build:critical": "python3 build/build-critical-css.py",
-    "build": "npm run build:css && npm run build:critical && node build/generate-manifest.js && node build/inject-theme.js"
+    "build": "npm run build:css && npm run build:critical && node build/generate-manifest.js && node build/inject-theme.js && node build/inject-doctype.js"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.19"

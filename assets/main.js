@@ -44,15 +44,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     addLangToggle();
 
+    /* ---------- 全站唯一滚动监听（passive + rAF 节流） ----------
+       原先「导航栏阴影」与「返回顶部」各挂一个 scroll 监听，每帧读两次 scrollY、
+       各写一次 class，低端机上容易掉帧。这里合并为一个被动监听 + rAF 节流：
+       一帧只采样一次、只广播一次。需要响应滚动的模块调用 onScroll(fn) 注册，
+       不要再自行 addEventListener('scroll')。 */
+    const scrollHandlers = [];
+    const onScroll = (fn) => {
+        scrollHandlers.push(fn);
+        fn(window.scrollY || window.pageYOffset || 0);   // 立即跑一次，修正刷新后停在半页的状态
+    };
+    (function initScrollLoop() {
+        let ticking = false;
+        const flush = () => {
+            ticking = false;
+            const y = window.scrollY || window.pageYOffset || 0;
+            for (let i = 0; i < scrollHandlers.length; i++) {
+                try { scrollHandlers[i](y); } catch (_) {}
+            }
+        };
+        window.addEventListener('scroll', () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(flush);
+        }, { passive: true });
+    })();
+
     /* ---------- 导航栏滚动阴影 ---------- */
     const mainNav = document.getElementById('mainNav');
     if (mainNav) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                mainNav.classList.add('nav-shadow');
-            } else {
-                mainNav.classList.remove('nav-shadow');
-            }
+        let shadowOn = null;
+        onScroll((y) => {
+            const next = y > 50;
+            if (next === shadowOn) return;        // 状态未变就不碰 DOM
+            shadowOn = next;
+            mainNav.classList.toggle('nav-shadow', next);
         });
     }
 
@@ -364,8 +390,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (modal) return modal;
         modal = document.createElement('div');
         modal.id = 'searchModal';
-        modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
-        modal.style.zIndex = '60';
+        modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
         modal.innerHTML =
             '<div class="relative w-full origin-center overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 flex flex-col transition-all duration-200 animate-search-pop" style="max-width:42rem;max-height:84vh">' +
                 '<div class="px-6 pt-6 pb-4">' +
@@ -646,8 +671,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (modal) return modal;
             modal = document.createElement('div');
             modal.id = 'changelogModal';
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
-            modal.style.zIndex = '80';
+            modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
             modal.innerHTML =
                 '<div class="relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 flex flex-col transition-all duration-200 animate-search-pop" style="max-width:44rem;max-height:86vh">' +
                     '<div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">' +
@@ -704,7 +728,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const css = document.createElement('style');
             css.id = 'shareWidgetStyle';
             css.textContent =
-                '#shareFab{position:fixed;left:16px;bottom:16px;z-index:40;display:flex;flex-direction:column;align-items:center;gap:10px}' +
+                '#shareFab{position:fixed;left:16px;bottom:16px;z-index:var(--z-fab);display:flex;flex-direction:column;align-items:center;gap:10px}' +
                 '#shareFab .share-toggle{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease}' +
                 '#shareFab .share-toggle:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(0,0,0,.24)}' +
                 '#shareFab .share-panel{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:2px;transform-origin:bottom center}' +
@@ -713,7 +737,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 '@keyframes sharePop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}' +
                 '#shareFab .share-btn{width:44px;height:44px;border-radius:50%;background:#fff;color:#555;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(0,0,0,.14);cursor:pointer;border:none;transition:transform .15s ease,box-shadow .15s ease;text-decoration:none}' +
                 '#shareFab .share-btn:hover{transform:scale(1.06);box-shadow:0 6px 16px rgba(0,0,0,.2)}' +
-                '#shareToast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;font-size:14px;padding:9px 16px;border-radius:999px;z-index:60;opacity:0;transition:opacity .2s ease;pointer-events:none}' +
+                '#shareToast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;font-size:14px;padding:9px 16px;border-radius:999px;z-index:var(--z-toast);opacity:0;transition:opacity .2s ease;pointer-events:none}' +
                 '#shareToast.show{opacity:1}';
             document.head.appendChild(css);
         }
@@ -1241,7 +1265,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!box) {
             box = document.createElement('div');
             box.id = 'lightbox';
-            box.className = 'fixed inset-0 z-[70] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
+            box.className = 'fixed inset-0 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
             box.innerHTML =
                 '<button data-close class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Close' : '关闭') + '"><i class="fa fa-times text-xl"></i></button>' +
                 '<a data-download="1" class="absolute right-20 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition" aria-label="' + (isEn ? 'Download image' : '下载图片') + '" title="' + (isEn ? 'Download image' : '下载图片') + '" download><i class="fa fa-download text-xl"></i></a>' +
@@ -1363,9 +1387,12 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ---------- 返回顶部 ---------- */
     const backToTop = document.getElementById('backToTop');
     if (backToTop) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 400) backToTop.classList.add('show');
-            else backToTop.classList.remove('show');
+        let shown = null;
+        onScroll((y) => {
+            const next = y > 400;
+            if (next === shown) return;
+            shown = next;
+            backToTop.classList.toggle('show', next);
         });
         backToTop.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1465,7 +1492,7 @@ function initTheme(isEnPage) {
         const fn = (e) => {
             if (e.matches) document.documentElement.setAttribute('data-theme', 'dark');
             else document.documentElement.removeAttribute('data-theme');
-            updateThemeLabels(e.matches);
+            // 按钮图标由 CSS 伪元素依据 html[data-theme] 自动切换，无需在 JS 里改文案
         };
         if (mq.addEventListener) mq.addEventListener('change', fn);
         else if (mq.addListener) mq.addListener(fn);

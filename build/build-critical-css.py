@@ -9,15 +9,17 @@
 2. 解析 assets/style.css，保留以下规则：
    - 基础/重置样式（*, html, body, :root, ::before, ::after 等）
    - 选择器中包含任一“首屏 class”的整条规则（含其 :hover / :focus 等变体）
+   - @media / @supports 块中命中首屏类的内部规则
+   - 被保留规则 body 中实际引用到的 @keyframes
+   - 固定的 ID/全局基础规则（防 FOUC）
 3. 将关键 CSS 压缩后写入 assets/critical.css，并内联到每个 HTML 的 <head> 中，
    同时把完整 style.css 改为异步加载（preload + onload）。
 
-这样首屏可立即绘制，导航栏与三条横线（汉堡按钮）无需等待完整 CSS 下载，
-用户体验不变，但首屏时间大幅缩短。
+这样首屏可立即绘制，导航栏与汉堡按钮无需等待完整 CSS 下载，
+同时修复了 @media、@keyframes 及部分 ID 基础规则被丢弃导致的 FOUC。
 """
 import os
 import re
-import html as html_module
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STYLE_CSS = os.path.join(ROOT, "assets", "style.css")
@@ -26,16 +28,24 @@ INDEX_HTML = os.path.join(ROOT, "index.html")
 
 GLOBAL_SELECTORS = {"*", "html", "body", ":root", "::before", "::after"}
 
+# 这些选择器对应首屏可见的固定元素，其基础规则必须保留，避免异步 CSS 到达前 FOUC
+ALWAYS_KEEP_PREFIX = (
+    "#mainNav", "#mobileMenu", "#menuBackdrop", "#menuBtn",
+    "#backToTop", "#shareFab", ".theme-toggle",
+    ":root", "html", "body", "[data-theme",
+)
+
+# 体积告警线（字节）
+SIZE_WARNING = 24 * 1024
+
 
 def extract_first_screen_classes():
     """从 index.html 中截取首屏（到 newsPreview 之前）的 class。"""
     with open(INDEX_HTML, "r", encoding="utf-8") as f:
         content = f.read()
-    # body 起始位置
     body_start = content.find("<body")
     if body_start == -1:
         body_start = 0
-    # 首屏结束标记
     marker = content.find('id="newsPreview"')
     if marker == -1:
         marker = content.find('id="newsGrid"')
@@ -50,65 +60,91 @@ def extract_first_screen_classes():
 
 
 def split_rules(css):
-    """把 CSS 拆成 (selector, body) 列表，正确跳过 {} 内的内容。"""
+    """把 CSS 拆成顶层规则列表，保留 @media / @supports / @keyframes / @font-face 整块。"""
     rules = []
     i = 0
     n = len(css)
     depth = 0
     buf = ""
-    for ch in css:
+    while i < n:
+        ch = css[i]
         buf += ch
         if ch == "{":
             depth += 1
         elif ch == "}":
             depth -= 1
             if depth == 0:
-                # 完整规则结束
                 sel, _, body = buf.partition("{")
                 body = body.rstrip("}")
                 rules.append((sel.strip(), body.strip()))
                 buf = ""
+        i += 1
     return rules
 
 
-def minify_rule(selector, body):
-    sel = re.sub(r"\s+", " ", selector).strip()
-    body = body.strip()
-    body = re.sub(r"\s*([{}:;,])\s*", r"\1", body)
-    body = re.sub(r";}", "}", body)
-    return sel + "{" + body + "}"
+def minify_css(text):
+    """简单压缩：归并空白、去除注释。"""
+    text = re.sub(r"/\*[^*]*\*+(?:[^/*][^*]*\*+)*/", "", text)
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s*([{}:;,])\s*", r"\1", text)
+    text = re.sub(r";}", "}", text)
+    return text.strip()
 
 
-def rule_should_keep(selector, first_screen):
+def selector_starts_with_any(selector, prefixes):
+    """判断选择器（或其逗号分隔的某一部分）是否以任一 prefix 开头。"""
+    for part in re.split(r",", selector):
+        part = part.strip()
+        for prefix in prefixes:
+            if part.startswith(prefix):
+                return True
+    return False
+
+
+def rule_should_keep(selector, first_screen, is_inner=False):
     """判断该规则是否应保留为关键 CSS。"""
-    # 文章正文样式（含链接折行）必须同步首屏生效，避免移动端长链接溢出
+    # 文章正文样式必须同步首屏生效
     if ".article-content" in selector:
         return True
-    # 暗色模式令牌与工具类映射：首屏前必须生效，
-    # 否则 data-theme="dark" 用户在完整 style.css 异步加载完成前会先白屏再闪成暗色
+    # 暗色模式令牌与工具类映射
     if "data-theme" in selector:
         return True
-    # 全局/基础规则
+    # 固定 ID / 全局基础规则
+    if selector_starts_with_any(selector, ALWAYS_KEEP_PREFIX):
+        return True
+    # 全局选择器
     sels = [s.strip() for s in re.split(r",", selector)]
-    kept_for_global = False
     for s in sels:
-        # 直接匹配全局选择器（含 :root、::before、::after 等以冒号开头的伪类）
         if s in GLOBAL_SELECTORS:
-            kept_for_global = True
-            break
+            return True
         bare = s.split(":")[0].split("[")[0].strip()
         if bare in GLOBAL_SELECTORS:
-            kept_for_global = True
-            break
-    if kept_for_global:
-        return True
-    # 选择器中包含首屏 class
+            return True
+    # 包含首屏 class
     for s in sels:
-        for m in re.finditer(r"\.([A-Za-z0-9_\\-]+)", s):
+        for m in re.finditer(r"\.([A-Za-z0-9_\\\-]+)", s):
             cls = m.group(1)
             if cls in first_screen:
                 return True
     return False
+
+
+def split_inner_rules(body):
+    """解析 @media / @supports 块内部的规则。"""
+    return split_rules(body)
+
+
+def collect_animation_names(text):
+    """从 CSS body 中收集 animation / animation-name 引用的关键帧名。"""
+    names = set()
+    # animation: name 0.8s ease-out ...
+    for m in re.finditer(r"animation(?:-name)?\s*:\s*([^;{}]+)", text):
+        value = m.group(1)
+        # 取第一个 token（关键帧名）
+        tokens = value.split()
+        if tokens:
+            names.add(tokens[0].strip())
+    return names
 
 
 def build_critical():
@@ -116,14 +152,49 @@ def build_critical():
         full = f.read()
     first_screen = extract_first_screen_classes()
     rules = split_rules(full)
-    kept = []
+
+    kept_rules = []          # (selector, body) for regular rules
+    kept_at_rules = []       # (selector, body) for @media/@supports
+    keyframe_blocks = {}     # name -> (selector, body)
+    referenced_keyframes = set()
+
     for sel, body in rules:
-        if rule_should_keep(sel, first_screen):
-            kept.append(minify_rule(sel, body))
-    critical = "".join(kept)
-    with open(CRITICAL_CSS, "w", encoding="utf-8") as f:
-        f.write(critical)
-    return critical, len(kept)
+        if sel.startswith("@keyframes"):
+            name = sel.replace("@keyframes", "").strip()
+            keyframe_blocks[name] = (sel, body)
+        elif sel.startswith("@media") or sel.startswith("@supports"):
+            inner_rules = split_inner_rules(body)
+            kept_inner = []
+            for inner_sel, inner_body in inner_rules:
+                if rule_should_keep(inner_sel, first_screen, is_inner=True):
+                    kept_inner.append((inner_sel, inner_body))
+                    referenced_keyframes.update(collect_animation_names(inner_body))
+            if kept_inner:
+                inner_min = " ".join(minify_css(s + "{" + b + "}") for s, b in kept_inner)
+                kept_at_rules.append((sel, inner_min))
+        elif sel.startswith("@font-face"):
+            kept_rules.append((sel, body))
+            referenced_keyframes.update(collect_animation_names(body))
+        else:
+            if rule_should_keep(sel, first_screen):
+                kept_rules.append((sel, body))
+                referenced_keyframes.update(collect_animation_names(body))
+
+    # 二遍：保留被引用的 keyframes
+    kept_keyframes = []
+    for name in referenced_keyframes:
+        if name in keyframe_blocks:
+            kept_keyframes.append(keyframe_blocks[name])
+
+    # 组装：keyframes 放在规则之前（CSS 不要求顺序，但习惯如此）
+    parts = []
+    for sel, body in kept_keyframes + kept_rules:
+        parts.append(minify_css(sel + "{" + body + "}"))
+    for sel, body in kept_at_rules:
+        parts.append(minify_css(sel + "{" + body + "}"))
+
+    critical = "".join(parts)
+    return critical, len(parts)
 
 
 def apply_to_html(critical):
@@ -135,13 +206,12 @@ def apply_to_html(critical):
             if fn.endswith(".html"):
                 html_files.append(os.path.join(root, fn))
     applied = 0
-    inline_block = "<style>" + critical + "</style>"
+    inline_block = '<style id="critical">' + critical + "</style>"
     for path in html_files:
         with open(path, "r", encoding="utf-8") as f:
             content = f.read()
-        # 移除已存在的首屏 critical <style> 块
-        content = re.sub(r"<style>[\s\S]*?</style>", "", content, count=1)
-        # 在异步 style.css 的 preload 链接之前插入内联 critical
+        # 幂等：移除已存在的 critical <style> 块（带或不带 id）
+        content = re.sub(r'<style[^>]*>[\s\S]*?</style>', "", content, count=1)
         preload_pattern = re.compile(
             r'(<link rel="preload" href="[^"]*style\.css[^"]*" as="style"[^>]*>)',
             re.IGNORECASE,
@@ -162,7 +232,11 @@ def main():
         return
     critical, n_rules = build_critical()
     size = len(critical.encode("utf-8"))
+    with open(CRITICAL_CSS, "w", encoding="utf-8") as f:
+        f.write(critical)
     print(f"▶ 生成 critical.css：{n_rules} 条规则，{size} 字节")
+    if size > SIZE_WARNING:
+        print(f"⚠ 警告：critical.css 体积超过 {SIZE_WARNING} 字节，建议检查 @media 保留范围或 safelist")
     applied, files = apply_to_html(critical)
     print(f"▶ 已内联到 {applied} 个 HTML 文件")
 

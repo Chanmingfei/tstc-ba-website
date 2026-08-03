@@ -26,6 +26,22 @@
     --nav-bg: rgba(255, 255, 255, .72);
     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
     --selection: rgba(37, 117, 252, .15);
+
+    /* ---------- 层级令牌（全站唯一来源，禁止再手写 z-index 数字） ----------
+       800  浮动按钮（分享 / 返回顶部）  ← 菜单打开时应被遮罩盖住
+       900  菜单遮罩
+       950  移动端菜单抽屉
+       1000 顶栏（始终在菜单与遮罩之上，展开动画不得覆盖）
+       1100 常规弹窗（搜索 / 更新日志 / 二维码）
+       1200 图片灯箱
+       1300 Toast 提示（最高，任何层之上都要可见）                       */
+    --z-fab: 800;
+    --z-backdrop: 900;
+    --z-menu: 950;
+    --z-nav: 1000;
+    --z-modal: 1100;
+    --z-lightbox: 1200;
+    --z-toast: 1300;
 }
 
 html {
@@ -36,6 +52,19 @@ body {
     font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
 
+/* ---------- 层级落地：ID 选择器覆盖 HTML 里的 Tailwind z-* 工具类 ----------
+   ID 特异性(0,1,0,0) > 类(0,0,1,0)，因此无需 !important 即可生效。
+   新增浮层一律引用 --z-* 令牌，不要再写裸数字。 */
+#mainNav        { z-index: var(--z-nav); }
+#menuBackdrop   { z-index: var(--z-backdrop); }
+#shareFab,
+#backToTop      { z-index: var(--z-fab); }
+#searchModal    { z-index: var(--z-modal); }
+#qrModal        { z-index: calc(var(--z-modal) + 5); }   /* 二维码可从搜索结果里唤起 */
+#changelogModal { z-index: calc(var(--z-modal) + 10); }  /* 更新日志最后打开，压在最上 */
+#lightbox       { z-index: var(--z-lightbox); }
+#shareToast     { z-index: var(--z-toast); }
+
 /* ---------- 自定义工具类（原 @layer utilities 内容） ---------- */
 .content-auto {
     content-visibility: auto;
@@ -45,16 +74,8 @@ body {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.card-hover {
-    transition: transform 0.3s ease, box-shadow 0.3s ease,
-                background-color 0.4s cubic-bezier(.4, 0, .2, 1),
-                border-color 0.4s cubic-bezier(.4, 0, .2, 1);
-}
-
-.card-hover:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
+/* .card-hover 的唯一定义在文件末尾的「苹果设计层」，此处不再重复声明，
+   避免同名规则分散在三个位置互相覆盖、调参时改了却不生效。 */
 
 .animate-fade-in {
     animation: fadeIn 0.8s ease-out;
@@ -270,7 +291,7 @@ body {
     opacity: 0;
     visibility: hidden;
     transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.3s ease, visibility 0.3s ease;
-    z-index: 40;
+    z-index: var(--z-fab);
     cursor: pointer;
 }
 
@@ -284,32 +305,10 @@ body {
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
 }
 
-/* ---------- 移动端菜单与滚动渐入动画 ---------- */
-/* 菜单：自顶栏下沿等比展开 + 淡入（纯 transform/opacity，无上移位移，绝不遮挡顶栏；
-   不使用 backdrop-filter，避免每帧重绘造成的卡顿） */
-@keyframes menuPop {
-    from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
-}
-
-.menu-pop {
-    animation: menuPop 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-    transform-origin: top center;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-}
-
-@keyframes menuPopOut {
-    from { opacity: 1; transform: scale(1); }
-    to   { opacity: 0; transform: scale(0.96); }
-}
-
-.menu-pop-out {
-    animation: menuPopOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
-    transform-origin: top center;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-}
+/* ---------- 滚动渐入动画 ---------- */
+/* 说明：移动端菜单的展开/收起动画统一在文件末尾的「苹果设计层」定义
+   （#mobileMenu.menu-pop / .menu-pop-out），此处原有的 menuPop/menuPopOut
+   关键帧已被完全覆盖，属于死代码，已删除。 */
 
 /* 滚动渐入：默认可见，仅 JS 启用后先隐藏再随滚动渐入，保证无 JS 也能正常浏览。
    位移更明显、缓动更柔和（参考高校官网电脑端的优雅入场感）。 */
@@ -334,10 +333,9 @@ body.reveal-ready .reveal-item.in-view {
     animation: none;
 }
 
-/* 尊重系统「减少动态效果」偏好，避免个别用户感到眩晕 */
+/* 尊重系统「减少动态效果」偏好（其余项统一在文件末尾的 reduced-motion 块处理） */
 @media (prefers-reduced-motion: reduce) {
     body.reveal-ready .reveal-item { opacity: 1; transform: none; }
-    .menu-pop, .menu-pop-out { animation: none; }
 }
 
 /* ===========================================================
@@ -364,13 +362,6 @@ body.reveal-ready .reveal-item.in-view {
 .article-content li, .article-content ul, .article-content ol {
     transition: background-color 0.4s cubic-bezier(.4, 0, .2, 1),
                 color 0.4s cubic-bezier(.4, 0, .2, 1),
-                border-color 0.4s cubic-bezier(.4, 0, .2, 1);
-}
-
-/* 卡片：保留 hover 位移/阴影（transform），并叠加丝滑配色过渡 */
-.card-hover {
-    transition: transform 0.3s ease, box-shadow 0.3s ease,
-                background-color 0.4s cubic-bezier(.4, 0, .2, 1),
                 border-color 0.4s cubic-bezier(.4, 0, .2, 1);
 }
 
@@ -719,7 +710,7 @@ button[class*="rounded-full"]:active {
 #menuBackdrop {
     position: fixed;
     inset: 0;
-    z-index: 40;
+    z-index: var(--z-backdrop);
     background: rgba(0, 0, 0, .28);
     backdrop-filter: blur(3px) saturate(120%);
     -webkit-backdrop-filter: blur(3px) saturate(120%);
@@ -774,10 +765,14 @@ button[class*="rounded-full"]:active {
 #mobileMenu.menu-pop {
     animation: menuSheetIn .42s var(--ease-spring);
     transform-origin: top center;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 #mobileMenu.menu-pop-out {
     animation: menuSheetOut .28s cubic-bezier(.4, 0, 1, 1) forwards;
     transform-origin: top center;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* 汉堡按钮：开合时旋转 90°，强化「打开/收起」手势 */
