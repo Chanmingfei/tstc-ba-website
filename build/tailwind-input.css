@@ -162,7 +162,7 @@ body {
     position: relative;
     display: flex;
     align-items: center;
-    background-color: var(--glass-bg);
+    background-color: rgba(255, 255, 255, .6);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
@@ -1041,7 +1041,7 @@ button[class*="rounded-full"]:active,
 .search-container {
     border-radius: var(--r-full);
     border: 1px solid var(--glass-border);
-    background: var(--glass-bg);
+    background: rgba(255, 255, 255, .6);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     box-shadow: var(--glass-shadow);
