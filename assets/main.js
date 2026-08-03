@@ -541,7 +541,10 @@ document.addEventListener('DOMContentLoaded', function () {
             '【优化】夜间模式按钮边缘与光影柔化：导航工具按钮、主按钮 / 胶囊 CTA、幽灵按钮、平台色按钮与分享浮标（返回顶部 / 分享）统一降低背景不透明度、收窄边框、改用更柔和的内外阴影，边缘不再生硬，光影过渡更自然',
             '【优化】夜间模式顶栏圆型按钮质感统一为「选中态」：搜索按钮与汉堡按钮在夜间的默认背景从暗色渐变玻璃（rgba(30,34,44,.45)）改为平铺雾化白（rgba(255,255,255,.1)），与展开菜单时汉堡被选中后的干净 frosted 质感一致；悬停时稍亮（.16），整体更轻盈、边缘更柔和',
             '【优化】弹窗关闭按钮与顶栏圆型按钮统一为液态玻璃：搜索弹窗、更新日志弹窗、二维码弹窗、意见反馈弹窗的关闭按钮（圆型 ×）统一改为液态玻璃；日间为浅灰 frosted 玻璃，夜间为与顶栏一致的平铺雾化白 rgba(255,255,255,.1) + 折射模糊 + 高光边框 + 内发光',
-            '【优化】夜间弹窗质感柔化、消除白色光圈割裂感：夜间弹窗面板背景改为 rgba(30,34,44,.72) 半透暗玻璃，边框从 rgba(255,255,255,.55) 降到 .12，顶部内发光从 .6 降到 .12，搜索弹窗输入框夜间改为 var(--surface-2) 暗色，消除白色方块与白色光圈的割裂'
+            '【优化】夜间弹窗质感柔化、消除白色光圈割裂感：夜间弹窗面板背景改为 rgba(30,34,44,.72) 半透暗玻璃，边框从 rgba(255,255,255,.55) 降到 .12，顶部内发光从 .6 降到 .12，搜索弹窗输入框夜间改为 var(--surface-2) 暗色，消除白色方块与白色光圈的割裂',
+            '【优化】灯箱按钮与夜间顶栏按钮质感统一、描述卡增强可读性：灯箱左右切换、关闭、下载按钮从高光渐变玻璃改为与夜间顶栏圆钮完全一致的平铺雾化白（rgba(255,255,255,.1) + rgba(255,255,255,.14) 边框 + 柔和内外阴影）；右下角图片描述卡片改为深色半透玻璃（rgba(14,16,21,.62)）并加 text-shadow，压在亮色图片上时文字仍可清晰阅读',
+            '【修复】夜间分享浮标子按钮恢复透明度：修复夜间分享浮标展开后的子按钮因两条暗色不透明规则覆盖而变成实心底色的回归问题；子按钮现与分享主按钮 / 返回顶部统一使用夜间顶栏同款的平铺雾化白玻璃',
+            '【优化】文章内评分链接卡统一为液态玻璃：新生指南系列中「学校食堂评分合集」「学校附近商场评分合集」「体育课评分合集」等外链卡，从原来的 bg-white 实心白卡改为 .glass-link 液态玻璃卡片，并新增 .glass-link-title 让标题颜色跟随主题变量，亮/暗色下都与全站玻璃设计语言一致'
         ], en: [
             '[Opt] Liquid Glass effect strengthened across the board: glass tokens tuned up (opacity, highlight border, inner glow, shadow, blur / saturation), and a uniform top-left specular highlight added to every glass surface; already-glassed buttons, cards and modals now look noticeably more refractive',
             '[Opt] More surfaces adopt Liquid Glass: the homepage hero search box (.search-container) is no longer a solid-white pill but a glass capsule matching the navbar and buttons; the navbar gains a top glass highlight edge to reinforce its glass outline',
@@ -554,7 +557,10 @@ document.addEventListener('DOMContentLoaded', function () {
             '[Opt] Softer night-mode button edges and lighting: navbar tools, primary/pill CTAs, ghost buttons, platform buttons and the share FAB (back-to-top / share) all lower their background opacity, thin their borders and use gentler inner/outer shadows, so edges are no longer harsh and the lighting transitions feel natural',
             '[Opt] Night-mode round navbar buttons now share the "selected" texture: search and hamburger buttons default to a flat frosted-white fill (rgba(255,255,255,.1)) instead of the dark-tinted glass gradient, matching the clean look the hamburger has when the menu is open; hover brightens slightly to .16 for a lighter, softer edge',
             '[Opt] Modal close buttons share the Liquid Glass look of the round navbar buttons: close buttons in the search, changelog, QR and feedback modals are now glass; a subtle gray frost in day mode and frosted-white rgba(255,255,255,.1) with blur + highlight border + inner glow at night to match the navbar',
-            '[Opt] Night modal panels softened to remove the white halo split: panel background changed to rgba(30,34,44,.72) dark glass, border lowered from rgba(255,255,255,.55) to .12, top inset highlight lowered from .6 to .12, and the search modal input now uses var(--surface-2) dark background in night mode, eliminating the white box / white ring contrast'
+            '[Opt] Night modal panels softened to remove the white halo split: panel background changed to rgba(30,34,44,.72) dark glass, border lowered from rgba(255,255,255,.55) to .12, top inset highlight lowered from .6 to .12, and the search modal input now uses var(--surface-2) dark background in night mode, eliminating the white box / white ring contrast',
+            '[Opt] Lightbox controls share the exact night-navbar round-button texture: left/right arrows, close and download buttons switch from a glossy gradient to flat frosted-white rgba(255,255,255,.1) + rgba(255,255,255,.14) border + soft inner/outer shadows; the bottom-right caption card now uses a dark translucent scrim (rgba(14,16,21,.62)) plus text-shadow so it stays legible over light images',
+            '[Fix] Share FAB sub-buttons regain transparency in dark mode: two opaque dark overrides were removed so the expanded sub-buttons share the same frosted-white glass as the share toggle and back-to-top button',
+            '[Opt] Article scoring-link cards adopt Liquid Glass: the "Dining Hall / Nearby Mall / PE Course Ratings" external-link cards in the Freshman Guide series are no longer solid-white bg-white cards; they use a new .glass-link class and .glass-link-title for theme-aware color, unifying them with the site-wide glass language'
         ]},
         { d: '2026-08-03', zh: [
             '【重大】全站液态玻璃（Liquid Glass）设计上线：半透明表面 + 折射模糊（backdrop-filter: blur() saturate()）+ 白色高光边框 + 内发光，覆盖顶栏工具、主按钮 / 胶囊 CTA、返回顶部、分享浮标、幽灵按钮；分享主按钮与返回顶部进一步强化镜面高光，玻璃质感明显',
@@ -1317,16 +1323,20 @@ document.addEventListener('DOMContentLoaded', function () {
             var st = document.createElement('style');
             st.id = 'lightboxNavStyle';
             st.textContent =
-                '#lightbox .lb-nav,#lightbox .lb-ctrl{background:linear-gradient(150deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.15) 38%,transparent 64%),rgba(255,255,255,.12);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);border:1px solid rgba(255,255,255,.35);box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 1px 1px rgba(255,255,255,.5);color:#fff;}' +
-                '#lightbox .lb-nav{position:absolute;top:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9999px;transform:translateY(-50%) scale(1);transition:transform .15s ease,background .15s ease;}' +
-                '#lightbox .lb-ctrl{display:flex;align-items:center;justify-content:center;border-radius:9999px;transition:background .15s ease,transform .15s ease;}' +
-                '#lightbox .lb-nav:hover,#lightbox .lb-ctrl:hover{background:linear-gradient(150deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.25) 38%,transparent 64%),rgba(255,255,255,.2);}' +
+                /* 与夜间顶栏圆钮同一质感：平铺雾化白 .1 + 细高光边 + 柔和投影 */
+                '#lightbox .lb-nav,#lightbox .lb-ctrl{background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);border:1px solid rgba(255,255,255,.14);box-shadow:0 3px 12px rgba(0,0,0,.30),inset 0 1px 1px rgba(255,255,255,.18),inset 0 -1px 1px rgba(0,0,0,.15);background-clip:padding-box;color:#fff;}' +
+                '#lightbox .lb-nav{position:absolute;top:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:9999px;transform:translateY(-50%) scale(1);transition:transform .15s ease,background .15s ease,border-color .15s ease;}' +
+                '#lightbox .lb-ctrl{display:flex;align-items:center;justify-content:center;border-radius:9999px;transition:background .15s ease,transform .15s ease,border-color .15s ease;}' +
+                '#lightbox .lb-nav:hover,#lightbox .lb-ctrl:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.18);}' +
                 '#lightbox .lb-nav:hover{transform:translateY(-50%) scale(1.06);}' +
                 '#lightbox .lb-ctrl:hover{transform:scale(1.06);}' +
+                '#lightbox .lb-nav:active{transform:translateY(-50%) scale(.94);}' +
+                '#lightbox .lb-ctrl:active{transform:scale(.94);}' +
                 '#lightbox .lb-nav.lb-hide{display:none!important;}' +
-                '#lightbox .lb-counter{background:rgba(0,0,0,.45);color:#fff;padding:4px 14px;border-radius:9999px;font-size:13px;letter-spacing:.04em;}' +
+                /* 计数器与描述卡：同族玻璃，但底部压一层深色浮层，保证压在亮图上时文字仍可读 */
+                '#lightbox .lb-counter{background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)),rgba(14,16,21,.62);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);border:1px solid rgba(255,255,255,.14);box-shadow:0 3px 12px rgba(0,0,0,.30),inset 0 1px 1px rgba(255,255,255,.16);background-clip:padding-box;color:#fff;padding:4px 14px;border-radius:9999px;font-size:13px;letter-spacing:.04em;text-shadow:0 1px 2px rgba(0,0,0,.55);}' +
                 '#lightbox .lb-counter.lb-hide{display:none!important;}' +
-                '#lightbox .lb-caption{position:absolute;right:16px;bottom:16px;max-width:min(64vw,340px);padding:10px 14px;border-radius:14px;background:linear-gradient(150deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.15) 38%,transparent 64%),rgba(255,255,255,.12);-webkit-backdrop-filter:blur(14px) saturate(180%);backdrop-filter:blur(14px) saturate(180%);border:1px solid rgba(255,255,255,.3);box-shadow:0 8px 24px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.45);color:#fff;font-size:13px;line-height:1.5;letter-spacing:.02em;}' +
+                '#lightbox .lb-caption{position:absolute;right:16px;bottom:16px;max-width:min(64vw,340px);padding:10px 14px;border-radius:14px;background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)),rgba(14,16,21,.62);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 24px rgba(0,0,0,.42),inset 0 1px 1px rgba(255,255,255,.16),inset 0 -1px 1px rgba(0,0,0,.18);background-clip:padding-box;color:#fff;font-size:13px;line-height:1.5;letter-spacing:.02em;text-shadow:0 1px 2px rgba(0,0,0,.6);}' +
                 '#lightbox .lb-caption.lb-hide{display:none!important;}' +
                 '#lightbox [data-close],#lightbox [data-download],#lightbox .lb-nav,#lightbox .lb-counter,#lightbox .lb-caption{z-index:10;}' +
                 '#lightbox img{z-index:1;position:relative;}' +
