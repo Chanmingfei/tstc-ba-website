@@ -529,6 +529,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // 完整更新日志 HTML（与 CHANGELOG.md 保持一致，按日期归档）
     // 完整更新日志（中英文各一份，按日期归档，与 CHANGELOG.md 保持一致）
     const CHANGELOG_DATA = [
+        { d: '2026-08-05', zh: [
+            '【新增】新生指南（十一）-吧主谈社团组织：重新排版、润色并配图（百团大战现场、到梦空间 APP 截图），含到梦空间学分模块表、院系/校级学生组织职能说明、招新流程及全校官方社团完整名录；社团评分外链采用 .glass-link 液态玻璃卡片，与指南系列风格统一'
+        ], en: [
+            '[New] Freshman Guide (11) – Clubs & Organizations from the Moderator: reformatted, polished, and illustrated with the club recruitment fair and Dao Meng Space app screenshots; includes a credit-module table, department/university-level organization roles, recruitment channels, and the complete official club directory; the rating link uses the .glass-link Liquid Glass card to match the guide series style'
+        ]},
         { d: '2026-08-04', zh: [
             '【优化】液态玻璃质感全面加强：玻璃令牌整体提升（背景透明度、高光边框、内发光、阴影、模糊 / 饱和度），并为所有玻璃表面统一叠加左上镜面高光；已玻璃化的按钮 / 卡片 / 弹窗折射感更明显',
             '【优化】统一更多组件为液态玻璃风格：首页头部搜索框（.search-container）从纯白 pill 改为玻璃药丸，与顶栏 / 按钮风格一致；导航栏顶部增加玻璃高光边线，强化顶栏玻璃轮廓',
