@@ -1728,3 +1728,65 @@ function initTheme(isEnPage) {
         themeSysListener = { mq: mq, fn: fn };
     }
 }
+
+/* ===========================================================
+   A1 · 跨页视图过渡（View Transitions API）—— 渐进增强
+   -----------------------------------------------------------
+   · Chrome 126+ 原生支持 MPA 过渡（pageswap / pagereveal），
+     由 CSS 的 @view-transition { navigation: auto } 自动处理，
+     这里无需做任何 DOM 操作，整页脚本会照常在新页面重新执行。
+   · 本模块只为「支持 startViewTransition 但不支持 MPA 自动过渡」
+     的浏览器（如 Chrome 111–125）提供优雅回退：拦截站内链接点击，
+     用 startViewTransition 做一帧淡出后再整页跳转，避免硬切。
+   · 不支持 startViewTransition 的浏览器：直接放行，普通跳转。
+   · 始终尊重 prefers-reduced-motion：减少动态时完全不拦截。
+   · 任何异常都回退为默认导航，绝不阻断用户到达目标页。
+   =========================================================== */
+(function initCrossPageTransition() {
+    'use strict';
+    const doc = document;
+
+    // 1) 已支持 MPA 自动过渡的浏览器：CSS 已接管，无需 JS 介入
+    if ('pageswap' in window || 'pagereveal' in window) return;
+
+    // 2) 完全不支持 View Transitions：放行，普通整页跳转
+    if (typeof doc.startViewTransition !== 'function') return;
+
+    // 3) 用户要求减少动态：不拦截，避免任何额外动画
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const SAME_ORIGIN = location.origin;
+
+    function isInternalNav(a, href) {
+        if (!a || !href) return false;
+        if (a.target === '_blank' || a.hasAttribute('download')) return false;
+        if (a.hasAttribute('data-no-transition')) return false;
+        let url;
+        try { url = new URL(href, SAME_ORIGIN); } catch (_) { return false; }
+        if (url.origin !== SAME_ORIGIN) return false;            // 外链
+        if (url.pathname === location.pathname && (url.hash || href.startsWith('#'))) return false; // 同页锚点
+        return true;
+    }
+
+    doc.addEventListener('click', function (e) {
+        if (e.defaultPrevented || e.button !== 0 ||
+            e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const a = e.target.closest('a[href]');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (!isInternalNav(a, href)) return;
+
+        e.preventDefault();
+        let target;
+        try { target = new URL(href, SAME_ORIGIN).href; } catch (_) { target = href; }
+
+        const navigate = () => { window.location.href = target; };
+        try {
+            doc.startViewTransition
+                ? doc.startViewTransition(navigate)
+                : navigate();
+        } catch (_) {
+            navigate(); // 任何异常都回退为普通跳转，绝不阻断
+        }
+    }, true); // 捕获阶段：确保在其它处理器之前决定是否拦截
+})();

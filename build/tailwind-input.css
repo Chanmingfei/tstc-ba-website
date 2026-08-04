@@ -23,7 +23,7 @@
     --text-strong: #111827;
     --text-muted: #6b7280;
     --border: #e5e7eb;
-    --nav-bg: rgba(255, 255, 255, .58);
+    --nav-bg: rgba(255, 255, 255, .46);
     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
     --selection: rgba(37, 117, 252, .15);
 
@@ -375,7 +375,7 @@ body {
     --text-strong: #f5f7fa;
     --text-muted: #97a0b0;
     --border: #2f3747;
-    --nav-bg: rgba(7, 10, 15, .42);
+    --nav-bg: rgba(7, 10, 15, .3);
     --card-shadow: 0 6px 18px rgba(255, 255, 255, .12);
     --selection: rgba(91, 155, 255, .28);
 }
@@ -388,7 +388,7 @@ body {
 [data-theme="dark"] .bg-gray-100 { background-color: var(--surface-2); }
 [data-theme="dark"] .bg-blue-50 { background-color: rgba(91, 155, 255, .12); }
 [data-theme="dark"] .glass-effect { background: var(--nav-bg); }
-[data-theme="dark"] .search-container { background-color: rgba(30, 34, 44, .5); box-shadow: 0 10px 30px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .3); }
+[data-theme="dark"] .search-container { background-color: rgba(30, 34, 44, .34); box-shadow: 0 10px 30px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .24); }
 
 /* 暗色下阴影改为白色微光：位移/模糊/动画尺寸与白天一致，仅由黑转白，
    让卡片、导航、搜索框等表面轮廓在深色背景上清晰可见（不改动主题切换按钮自身的 3D 高光） */
@@ -411,10 +411,10 @@ body {
 [data-theme="dark"] #searchModalInput:focus { background-color: rgba(30, 34, 44, .75); }
 [data-theme="dark"] .search-result-item {
     background:
-        linear-gradient(135deg, rgba(255, 255, 255, .14) 0%, transparent 60%),
-        rgba(30, 34, 44, .22) !important;
-    border: 1px solid rgba(255, 255, 255, .15) !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, .12), 0 6px 18px rgba(0, 0, 0, .3) !important;
+        linear-gradient(135deg, rgba(255, 255, 255, .1) 0%, transparent 60%),
+        rgba(30, 34, 44, .14) !important;
+    border: 1px solid rgba(255, 255, 255, .12) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, .1), 0 6px 18px rgba(0, 0, 0, .3) !important;
     -webkit-backdrop-filter: var(--glass-blur) !important;
     backdrop-filter: var(--glass-blur) !important;
 }
@@ -424,25 +424,25 @@ body {
 /* 搜索结果项玻璃光感（日间默认） */
 .search-result-item {
     background:
-        linear-gradient(135deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .1) 28%, rgba(255, 255, 255, .02) 55%, transparent 78%),
-        rgba(255, 255, 255, .05) !important;
-    border: 1px solid rgba(255, 255, 255, .55) !important;
+        linear-gradient(135deg, rgba(255, 255, 255, .18) 0%, rgba(255, 255, 255, .06) 28%, rgba(255, 255, 255, .01) 55%, transparent 78%),
+        rgba(255, 255, 255, .03) !important;
+    border: 1px solid rgba(255, 255, 255, .5) !important;
     box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .75),
-        inset 0 0 12px rgba(255, 255, 255, .12),
-        0 8px 22px rgba(0, 0, 0, .12) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
-    backdrop-filter: blur(20px) saturate(150%) !important;
+        inset 0 1px 0 rgba(255, 255, 255, .7),
+        inset 0 0 12px rgba(255, 255, 255, .1),
+        0 8px 22px rgba(0, 0, 0, .1) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    backdrop-filter: var(--glass-blur) !important;
 }
 
 /* 新闻列表分页：玻璃质感按钮（日间：浅色页面背景上需深色细边框保证可见） */
 .news-pager button {
-    background: rgba(255, 255, 255, .72);
+    background: rgba(255, 255, 255, .55);
     border: 1px solid rgba(15, 23, 42, .12);
     color: #374151;
     -webkit-backdrop-filter: blur(8px) saturate(140%);
     backdrop-filter: blur(8px) saturate(140%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 2px 8px rgba(0, 0, 0, .08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), 0 2px 8px rgba(0, 0, 0, .08);
     /* 按压回弹：与全站 button:active 弹性范式一致 */
     transition: background-color .15s ease, border-color .15s ease, color .15s ease,
                 transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(.34, 1.56, .64, 1));
@@ -465,11 +465,11 @@ body {
 }
 [data-theme="dark"] .news-pager button {
     background:
-        linear-gradient(135deg, rgba(255, 255, 255, .14) 0%, transparent 60%),
-        rgba(30, 34, 44, .4) !important;
-    border: 1px solid rgba(255, 255, 255, .15) !important;
+        linear-gradient(135deg, rgba(255, 255, 255, .1) 0%, transparent 60%),
+        rgba(30, 34, 44, .28) !important;
+    border: 1px solid rgba(255, 255, 255, .12) !important;
     color: var(--text);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 4px 12px rgba(0, 0, 0, .3) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 4px 12px rgba(0, 0, 0, .3) !important;
 }
 [data-theme="dark"] .news-pager button.is-active {
     background: var(--primary) !important;
@@ -723,11 +723,11 @@ html[data-theme="dark"] .theme-toggle::after {
     /* 分组背景（页脚等「设置页」质感的区块） */
     --grouped-bg: #f2f2f7;
 
-    /* 液态玻璃（Liquid Glass）令牌 */
-    --glass-bg:        rgba(255, 255, 255, .28);
-    --glass-border:    rgba(255, 255, 255, .55);
-    --glass-highlight: rgba(255, 255, 255, .85);
-    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .18), inset 0 1px 1px rgba(255, 255, 255, .7);
+    /* 液态玻璃（Liquid Glass）令牌 —— 按用户要求整体更通透（透明度更高、更玻璃感） */
+    --glass-bg:        rgba(255, 255, 255, .16);
+    --glass-border:    rgba(255, 255, 255, .5);   /* 日间：边缘高光清晰，定义玻璃轮廓 */
+    --glass-highlight: rgba(255, 255, 255, .9);   /* 日间：顶部镜面高光（强参考） */
+    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .16), inset 0 1px 1px rgba(255, 255, 255, .7);
     --glass-blur:      blur(22px) saturate(190%);
 }
 
@@ -979,11 +979,11 @@ h1 { line-height: 1.08; }
     overflow: hidden;
     border-radius: var(--r-md);
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .92) 0%, rgba(255, 255, 255, .5) 40%, rgba(255, 255, 255, 0) 70%),
-        rgba(255, 255, 255, .36);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, .8);
+        linear-gradient(150deg, rgba(255, 255, 255, .7) 0%, rgba(255, 255, 255, .3) 40%, rgba(255, 255, 255, 0) 70%),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, .7);
     box-shadow:
         0 10px 28px rgba(0, 0, 0, .14),
         inset 0 1px 1px rgba(255, 255, 255, .9),
@@ -1045,39 +1045,39 @@ h1 { line-height: 1.08; }
     transform: translateY(3px) scale(1.04);
 }
 
-/* 暗色：玻璃面板用深半透明 + 白色高光内发光，保持玻璃质感 */
+/* 暗色：玻璃面板用深半透明 + 白色高光内发光，保持玻璃质感（比日间更通透，高光/描边更收敛） */
 [data-theme="dark"] .card-hover {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .1) 40%, transparent 70%),
-        rgba(30, 34, 44, .62);
-    border-color: rgba(255, 255, 255, .22);
+        linear-gradient(150deg, rgba(255, 255, 255, .22) 0%, rgba(255, 255, 255, .07) 40%, transparent 70%),
+        rgba(30, 34, 44, .42);
+    border-color: rgba(255, 255, 255, .16);
     box-shadow:
         0 12px 32px rgba(0, 0, 0, .5),
+        inset 0 1px 1px rgba(255, 255, 255, .24),
+        inset 0 -1px 2px rgba(0, 0, 0, .40);
+}
+[data-theme="dark"] .card-hover::before { opacity: .3; }
+[data-theme="dark"] .card-hover:hover {
+    border-color: rgba(255, 255, 255, .24);
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, .6),
         inset 0 1px 1px rgba(255, 255, 255, .32),
         inset 0 -1px 2px rgba(0, 0, 0, .40);
 }
-[data-theme="dark"] .card-hover::before { opacity: .42; }
-[data-theme="dark"] .card-hover:hover {
-    border-color: rgba(255, 255, 255, .34);
-    box-shadow:
-        0 18px 40px rgba(0, 0, 0, .6),
-        inset 0 1px 1px rgba(255, 255, 255, .42),
-        inset 0 -1px 2px rgba(0, 0, 0, .40);
-}
 [data-theme="dark"] .card-hover:active {
-    border-color: rgba(255, 255, 255, .4);
+    border-color: rgba(255, 255, 255, .3);
     box-shadow:
         0 4px 16px rgba(0, 0, 0, .6),
-        inset 0 2px 2px rgba(255, 255, 255, .5),
+        inset 0 2px 2px rgba(255, 255, 255, .4),
         inset 0 -4px 8px rgba(0, 0, 0, .5),
-        inset 0 0 14px rgba(255, 255, 255, .12);
+        inset 0 0 14px rgba(255, 255, 255, .1);
 }
-[data-theme="dark"] .card-hover:active::before { opacity: .85; }
+[data-theme="dark"] .card-hover:active::before { opacity: .7; }
 
 /* 文章内提示框（tip / callout）：原是实心底色，统一为液态玻璃，保留左侧品牌色强调边 */
 .article-content .bg-gray-50.border-l-4 {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .18) 40%, transparent 70%),
+        linear-gradient(150deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, .12) 40%, transparent 70%),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
@@ -1088,11 +1088,11 @@ h1 { line-height: 1.08; }
 }
 [data-theme="dark"] .article-content .bg-gray-50.border-l-4 {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .07) 40%, transparent 70%),
-        rgba(30, 34, 44, .62);
+        linear-gradient(150deg, rgba(255, 255, 255, .15) 0%, rgba(255, 255, 255, .05) 40%, transparent 70%),
+        rgba(30, 34, 44, .42);
     border-color: var(--glass-border);
     border-left: 4px solid var(--tint);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .4), inset 0 1px 1px rgba(255, 255, 255, .22);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .4), inset 0 1px 1px rgba(255, 255, 255, .18);
 }
 
 /* 文章内外链卡（各类「评分合集」等）：原为实心白卡，统一为液态玻璃语言 */
@@ -1102,7 +1102,7 @@ h1 { line-height: 1.08; }
     border-radius: 14px;
     text-decoration: none;
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, .2) 40%, transparent 70%),
+        linear-gradient(150deg, rgba(255, 255, 255, .45) 0%, rgba(255, 255, 255, .14) 40%, transparent 70%),
         linear-gradient(135deg, color-mix(in srgb, var(--tint) 10%, transparent), color-mix(in srgb, var(--secondary) 8%, transparent)),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
@@ -1122,10 +1122,10 @@ h1 { line-height: 1.08; }
 .article-content a.glass-link .glass-link-title { color: var(--primary); font-size: 15px; }
 [data-theme="dark"] .article-content a.glass-link {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .2) 0%, rgba(255, 255, 255, .07) 40%, transparent 70%),
-        rgba(30, 34, 44, .62);
+        linear-gradient(150deg, rgba(255, 255, 255, .15) 0%, rgba(255, 255, 255, .05) 40%, transparent 70%),
+        rgba(30, 34, 44, .42);
     border-color: var(--glass-border);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .4), inset 0 1px 1px rgba(255, 255, 255, .22);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .4), inset 0 1px 1px rgba(255, 255, 255, .18);
 }
 [data-theme="dark"] .article-content a.glass-link:hover {
     border-color: color-mix(in srgb, var(--tint) 55%, transparent);
@@ -1135,7 +1135,7 @@ h1 { line-height: 1.08; }
 /* 「关于我们」主内容卡：与文章阅读卡同族，原为实白卡，统一为液态玻璃 */
 .bg-white.rounded-xl.shadow-md.border-l-4 {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .92) 0%, rgba(255, 255, 255, .6) 45%, rgba(255, 255, 255, .4) 100%),
+        linear-gradient(150deg, rgba(255, 255, 255, .7) 0%, rgba(255, 255, 255, .4) 45%, rgba(255, 255, 255, .22) 100%),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
@@ -1146,11 +1146,11 @@ h1 { line-height: 1.08; }
 }
 [data-theme="dark"] .bg-white.rounded-xl.shadow-md.border-l-4 {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .14) 0%, rgba(255, 255, 255, .06) 45%, transparent 100%),
-        rgba(30, 34, 44, .66);
+        linear-gradient(150deg, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, .04) 45%, transparent 100%),
+        rgba(30, 34, 44, .42);
     border-color: var(--glass-border);
     border-left: 4px solid var(--tint);
-    box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .25);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .18);
 }
 
 /* 胶囊按钮 / CTA：苹果式即时按压 */
@@ -1170,7 +1170,7 @@ button[class*="rounded-full"]:active,
 .search-container {
     border-radius: var(--r-full);
     border: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, .6);
+    background: rgba(255, 255, 255, .42);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     box-shadow: var(--glass-shadow);
@@ -1421,7 +1421,7 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 #changelogModal > div,
 #qrModal        > div,
 #feedbackModal  > div {
-    background: rgba(255, 255, 255, .82);
+    background: rgba(255, 255, 255, .76);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
@@ -1431,7 +1431,7 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 [data-theme="dark"] #changelogModal > div,
 [data-theme="dark"] #qrModal        > div,
 [data-theme="dark"] #feedbackModal  > div {
-    background: rgba(30, 34, 44, .72);
+    background: rgba(30, 34, 44, .64);
     border-color: rgba(255, 255, 255, .12);
     box-shadow: 0 24px 60px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .12);
 }
@@ -1597,10 +1597,11 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     --fill-quaternary: rgba(235, 235, 245, .07);
     --fill-tertiary:   rgba(235, 235, 245, .14);
     --grouped-bg: #0f131a;
-    --glass-bg:        rgba(30, 34, 44, .5);
-    --glass-border:    rgba(255, 255, 255, .28);
-    --glass-highlight: rgba(255, 255, 255, .45);
-    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .35);
+    /* 夜间：填充比日间更通透；高光/描边刻意弱于日间（暗背景上光感更显眼，需收敛避免割裂） */
+    --glass-bg:        rgba(30, 34, 44, .38);
+    --glass-border:    rgba(255, 255, 255, .18);
+    --glass-highlight: rgba(255, 255, 255, .3);
+    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .24);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5);
     --shadow-2: 0 6px 18px -8px rgba(0, 0, 0, .7), 0 2px 6px -4px rgba(0, 0, 0, .5);
     --shadow-3: 0 28px 64px -24px rgba(0, 0, 0, .85), 0 8px 24px -16px rgba(0, 0, 0, .6);
@@ -1613,10 +1614,53 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
 [data-theme="dark"] footer.bg-primary { background: var(--grouped-bg); }
 
 /* -----------------------------------------------------------
+   §9.6 跨页视图过渡（View Transitions API）
+   静态多页站点：Chrome 126+ 原生支持「MPA 过渡」
+   （pageswap / pagereveal 机制）。@view-transition 开启自动
+   导航过渡后，用 ::view-transition-* 自定义「液态玻璃」式的
+   轻推 + 淡入淡出 + 微模糊，让整页跳转不再硬切。
+   不支持的浏览器：@view-transition 被忽略，自动回退为普通
+   整页跳转 —— 渐进增强，无需 JS 兜底。
+   ----------------------------------------------------------- */
+@view-transition { navigation: auto; }
+
+/* 顶栏在跨页时保持原位（共享元素），只有内容区做过渡，避免导航条闪动 */
+#mainNav { view-transition-name: site-nav; }
+
+/* 根快照：旧页轻微上浮淡出 + 起雾，新页从下方清透淡入 */
+::view-transition-old(root) {
+    animation: vt-page-out var(--dur-base) var(--ease-out) both;
+}
+::view-transition-new(root) {
+    animation: vt-page-in var(--dur-base) var(--ease-out) both;
+}
+@keyframes vt-page-out {
+    from { opacity: 1; transform: translateY(0) scale(1);    filter: blur(0); }
+    to   { opacity: 0; transform: translateY(-12px) scale(.985); filter: blur(7px); }
+}
+@keyframes vt-page-in {
+    from { opacity: 0; transform: translateY(12px) scale(.985); filter: blur(7px); }
+    to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0); }
+}
+/* 共享的顶栏不参与根快照的位移，独立淡入即可 */
+::view-transition-old(site-nav),
+::view-transition-new(site-nav) {
+    animation-duration: var(--dur-base);
+    animation-timing-function: var(--ease-out);
+    height: 100%;
+}
+
+/* -----------------------------------------------------------
    §10 reduced-motion：保留配色过渡，去掉全部位移与缩放
    ----------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
+
+    /* 跨页视图过渡：关闭位移/缩放/模糊，仅保留瞬时切换 */
+    ::view-transition-group(*),
+    ::view-transition-image-pair(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) { animation: none !important; }
 
     .card-hover,
     a[class*="rounded-full"],
