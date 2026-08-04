@@ -1220,13 +1220,16 @@ document.addEventListener('DOMContentLoaded', function () {
             if (pageSize <= 0 || totalPages <= 1) return;
             var pager = document.createElement('div');
             pager.className = 'news-pager flex items-center justify-center gap-2 mt-10 flex-wrap';
-            var baseCls = 'h-10 px-3 rounded-lg text-sm font-medium transition-all';
+            var baseCls = 'h-10 px-3 rounded-lg text-sm font-medium transition-colors cursor-pointer';
             function addBtn(label, target, active, disabled, extra) {
                 var b = document.createElement('button');
                 b.type = 'button';
                 b.innerHTML = label;
-                b.className = baseCls + (extra ? ' ' + extra : '') +
-                    (active ? ' is-active' : '') + (disabled ? ' is-disabled' : '');
+                var cls = baseCls + (extra ? ' ' + extra : '');
+                if (active) cls += ' is-active';
+                else if (!disabled) cls += ' hover:border-primary hover:text-primary';
+                if (disabled) cls += ' is-disabled';
+                b.className = cls;
                 if (disabled) { b.disabled = true; }
                 else { b.addEventListener('click', function () { goToPage(target); }); }
                 pager.appendChild(b);
