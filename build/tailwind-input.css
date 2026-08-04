@@ -419,6 +419,7 @@ body {
     backdrop-filter: var(--glass-blur) !important;
 }
 [data-theme="dark"] .search-result-item:hover { border-color: var(--tint); }
+.search-modal-icon { color: #111827; }
 [data-theme="dark"] .search-modal-icon { color: #fff; }
 /* 搜索结果项玻璃光感（日间默认） */
 .search-result-item {

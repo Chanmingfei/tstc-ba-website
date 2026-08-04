@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         '<button id="searchModalClose" aria-label="' + (isEn ? 'Close' : '关闭') + '" class="flex h-9 w-9 items-center justify-center rounded-full"><i class="fa fa-times"></i></button>' +
                     '</div>' +
                     '<div class="relative mt-4">' +
-                        '<i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-900 search-modal-icon" style="text-shadow:0 0 2px rgba(255,255,255,.6)"></i>' +
+                        '<i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 search-modal-icon"></i>' +
                         '<input id="searchModalInput" type="text" placeholder="' + (isEn ? 'Search keywords...' : '输入关键词搜索...') + '" class="w-full rounded-xl border border-gray-200 bg-white/40 backdrop-blur-sm py-3 pl-11 pr-24 text-gray-700 placeholder-gray-400 outline-none transition focus:border-primary focus:bg-white/60 focus:ring-4 focus:ring-primary/10" />' +
                         '<button id="searchModalBtn" class="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-secondary">' + (isEn ? 'Search' : '搜索') + '</button>' +
                     '</div>' +
