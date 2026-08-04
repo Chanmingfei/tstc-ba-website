@@ -411,6 +411,7 @@ body {
 [data-theme="dark"] #searchModalInput:focus { background-color: rgba(30, 34, 44, .75); }
 [data-theme="dark"] .search-result-item { background-color: rgba(30, 34, 44, .25); border-color: rgba(255, 255, 255, .12); }
 [data-theme="dark"] .search-result-item:hover { border-color: var(--tint); }
+[data-theme="dark"] .search-modal-icon { color: rgba(255, 255, 255, .9); }
 
 [data-theme="dark"] .text-dark,
 [data-theme="dark"] .text-gray-800 { color: var(--text); }
