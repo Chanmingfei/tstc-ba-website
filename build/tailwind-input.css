@@ -400,9 +400,17 @@ body {
 [data-theme="dark"] #backToTop:hover { box-shadow: 0 8px 22px rgba(255, 255, 255, .16); }
 
 [data-theme="dark"] .search-input { background-color: transparent; color: var(--text); }
-[data-theme="dark"] #searchModalInput { background-color: var(--surface-2); border-color: var(--border); color: var(--text); }
+/* 搜索弹窗夜间深色玻璃适配 */
+[data-theme="dark"] #searchModal > div {
+    background: rgba(30, 34, 44, .82);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+}
+[data-theme="dark"] #searchModalInput { background-color: rgba(30, 34, 44, .55); border-color: var(--glass-border); color: var(--text); }
 [data-theme="dark"] #searchModalInput::placeholder { color: var(--text-muted); }
-[data-theme="dark"] #searchModalInput:focus { background-color: var(--surface-2); }
+[data-theme="dark"] #searchModalInput:focus { background-color: rgba(30, 34, 44, .75); }
+[data-theme="dark"] .search-result-item { background-color: rgba(30, 34, 44, .55); border-color: rgba(255, 255, 255, .1); }
+[data-theme="dark"] .search-result-item:hover { border-color: var(--tint); }
 
 [data-theme="dark"] .text-dark,
 [data-theme="dark"] .text-gray-800 { color: var(--text); }
