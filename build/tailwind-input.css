@@ -424,7 +424,7 @@ body {
 .search-result-item {
     background:
         linear-gradient(135deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .08) 45%, transparent 75%),
-        rgba(255, 255, 255, .10) !important;
+        rgba(255, 255, 255, .06) !important;
     border: 1px solid rgba(255, 255, 255, .6) !important;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, .55), 0 6px 18px rgba(0, 0, 0, .1) !important;
     -webkit-backdrop-filter: blur(12px) !important;
