@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.id = 'searchModal';
         modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
         modal.innerHTML =
-            '<div class="relative w-full origin-center overflow-hidden rounded-2xl bg-white/55 shadow-2xl ring-1 ring-black/5 backdrop-blur flex flex-col transition-all duration-200 animate-search-pop" style="max-width:42rem;max-height:84vh">' +
+            '<div class="relative w-full origin-center overflow-hidden rounded-2xl bg-white/45 shadow-2xl ring-1 ring-black/5 backdrop-blur flex flex-col transition-all duration-200 animate-search-pop" style="max-width:42rem;max-height:84vh">' +
                 '<div class="px-6 pt-6 pb-4">' +
                     '<div class="flex items-center justify-between">' +
                         '<div class="flex items-center gap-3">' +
