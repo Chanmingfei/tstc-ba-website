@@ -226,6 +226,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (e.isIntersecting) {
                             e.target.classList.add('in-view');
                             revealed++;
+                            // 入场动画播完后释放 transform，把 hover/按下 反馈交还给卡片自身
+                            // （否则 .reveal-item.in-view 的 transform:none 会覆盖 .card-hover 的上浮/回弹）
+                            setTimeout(() => e.target.classList.remove('reveal-item'), 1000);
                             io.unobserve(e.target);
                         }
                     });
