@@ -975,6 +975,8 @@ h1 { line-height: 1.08; }
    ----------------------------------------------------------- */
 /* 卡片：液态玻璃（磨砂）质感 —— 镜面高光渐变 + 半透明基底 + 折射模糊 + 高光描边 + 内发光 */
 .card-hover {
+    position: relative;          /* 承载 ::before 高光层，并裁剪到圆角 */
+    overflow: hidden;
     border-radius: var(--r-md);
     background:
         linear-gradient(150deg, rgba(255, 255, 255, .92) 0%, rgba(255, 255, 255, .5) 40%, rgba(255, 255, 255, 0) 70%),
@@ -987,11 +989,31 @@ h1 { line-height: 1.08; }
         inset 0 1px 1px rgba(255, 255, 255, .9),
         inset 0 -1px 1px rgba(0, 0, 0, .05);
     background-clip: padding-box;
-    transition: transform  var(--dur-base) var(--ease-out),
+    /* 离手回弹用弹性曲线（液态玻璃的“软回弹”）；悬浮抬升在 hover 块内走标准减速 */
+    transition: transform  var(--dur-base) var(--ease-spring),
                 box-shadow var(--dur-base) var(--ease-out),
                 background-color var(--dur-base) var(--ease-in-out),
                 border-color     var(--dur-base) var(--ease-in-out);
 }
+/* 顶部镜面高光：静止时极淡，按压时增亮并随表面下压微移，模拟玻璃折射 */
+.card-hover::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    background: linear-gradient(180deg,
+        rgba(255, 255, 255, .65) 0%,
+        rgba(255, 255, 255, .12) 26%,
+        rgba(255, 255, 255, 0) 50%);
+    opacity: .5;
+    mix-blend-mode: screen;
+    transition: opacity var(--dur-press) var(--ease-out),
+                transform var(--dur-press) var(--ease-out);
+}
+.card-hover > * { position: relative; z-index: 1; }
+
 /* 悬浮只在真鼠标环境生效，触屏上不会「卡」在 hover 态 */
 @media (hover: hover) and (pointer: fine) {
     .card-hover:hover {
@@ -1001,9 +1023,27 @@ h1 { line-height: 1.08; }
             0 18px 40px rgba(0, 0, 0, .2),
             inset 0 1px 1px rgba(255, 255, 255, 1),
             inset 0 -1px 1px rgba(0, 0, 0, .05);
+        transition: transform var(--dur-base) var(--ease-out),
+                    box-shadow var(--dur-base) var(--ease-out),
+                    border-color var(--dur-base) var(--ease-in-out);
     }
 }
-.card-hover:active { transform: scale(.99); transition-duration: var(--dur-press); }
+/* 液态玻璃按压：快速下压（无回弹），离手由弹性曲线软回弹 */
+.card-hover:active {
+    transform: scale(.975);
+    border-color: rgba(255, 255, 255, .95);
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, .18),
+        inset 0 2px 2px rgba(255, 255, 255, 1),
+        inset 0 -4px 8px rgba(0, 0, 0, .12),
+        inset 0 0 14px rgba(255, 255, 255, .15);
+    transition-duration: var(--dur-press);
+    transition-timing-function: var(--ease-out);
+}
+.card-hover:active::before {
+    opacity: 1;
+    transform: translateY(3px) scale(1.04);
+}
 
 /* 暗色：玻璃面板用深半透明 + 白色高光内发光，保持玻璃质感 */
 [data-theme="dark"] .card-hover {
@@ -1016,6 +1056,7 @@ h1 { line-height: 1.08; }
         inset 0 1px 1px rgba(255, 255, 255, .32),
         inset 0 -1px 2px rgba(0, 0, 0, .40);
 }
+[data-theme="dark"] .card-hover::before { opacity: .42; }
 [data-theme="dark"] .card-hover:hover {
     border-color: rgba(255, 255, 255, .34);
     box-shadow:
@@ -1023,6 +1064,15 @@ h1 { line-height: 1.08; }
         inset 0 1px 1px rgba(255, 255, 255, .42),
         inset 0 -1px 2px rgba(0, 0, 0, .40);
 }
+[data-theme="dark"] .card-hover:active {
+    border-color: rgba(255, 255, 255, .4);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, .6),
+        inset 0 2px 2px rgba(255, 255, 255, .5),
+        inset 0 -4px 8px rgba(0, 0, 0, .5),
+        inset 0 0 14px rgba(255, 255, 255, .12);
+}
+[data-theme="dark"] .card-hover:active::before { opacity: .85; }
 
 /* 文章内提示框（tip / callout）：原是实心底色，统一为液态玻璃，保留左侧品牌色强调边 */
 .article-content .bg-gray-50.border-l-4 {
