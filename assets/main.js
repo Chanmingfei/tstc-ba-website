@@ -476,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.id = 'searchModal';
         modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
         modal.innerHTML =
-            '<div class="relative w-full origin-center overflow-hidden rounded-2xl bg-white/90 shadow-2xl ring-1 ring-black/5 backdrop-blur flex flex-col transition-all duration-200 animate-search-pop" style="max-width:42rem;max-height:84vh">' +
+            '<div class="relative w-full origin-center overflow-hidden rounded-2xl bg-white/65 shadow-2xl ring-1 ring-black/5 backdrop-blur flex flex-col transition-all duration-200 animate-search-pop" style="max-width:42rem;max-height:84vh">' +
                 '<div class="px-6 pt-6 pb-4">' +
                     '<div class="flex items-center justify-between">' +
                         '<div class="flex items-center gap-3">' +
@@ -1058,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const url = '/' + item.url.replace(/^\/+/, ''); // 绝对路径，任意层级页面均可跳转
             const ql = query.toLowerCase();
             const inText = (item.text || '').toLowerCase().indexOf(ql) !== -1;
-            return '<a href="' + url + '" class="group mb-3 flex items-start gap-3 rounded-xl border border-white/50 bg-white/40 backdrop-blur-sm p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg animate-result-in search-result-item" style="animation-delay:' + (i * 45) + 'ms">' +
+            return '<a href="' + url + '" class="group mb-3 flex items-start gap-3 rounded-xl border border-white/60 bg-white/15 backdrop-blur-sm p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg animate-result-in search-result-item" style="animation-delay:' + (i * 45) + 'ms">' +
                 '<span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><i class="fa fa-file-lines"></i></span>' +
                 '<div class="min-w-0 flex-1">' +
                     '<div class="flex items-center gap-2 min-w-0">' +
