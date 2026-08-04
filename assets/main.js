@@ -1195,28 +1195,96 @@ document.addEventListener('DOMContentLoaded', function () {
     // 读取构建时自动生成的 news-manifest.json / news-manifest-en.json
     // （由 generate-manifest.js 扫描 news/ 生成，英文页使用 __NEWS_EN__）
     // 因此只需新建/修改文章 HTML（含 #articleMeta），部署即自动同步，无需手动维护列表
-    function renderNewsFromManifest(containerId, limit, filterCat) {
-        var box = document.getElementById(containerId);
-        if (!box) return;
-        function paint(items) {
+    // 新闻列表渲染，支持分页（pageSize>0 时分页）与数量限制（limit>0，用于首页预览）
+    function renderNewsFromManifest(containerId, opts) {
+        if (typeof opts === 'number') opts = { limit: opts };
+        opts = opts || {};
+        var pageSize = opts.pageSize || 0;
+        var page = opts.page || 1;
+        var filterCat = opts.filterCat || '';
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        var currentData = []; // 当前过滤后的全量数据，缓存用于分页切换
+
+        function buildValid(items) {
             var valid = (items || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
             if (filterCat) valid = valid.filter(function (x) { return x.category === filterCat; });
-            var shown = (limit && limit > 0) ? valid.slice(0, limit) : valid;
+            return valid;
+        }
+
+        function paintPager(curPage, totalPages) {
+            var parent = container.parentNode;
+            var old = parent.querySelector('.news-pager');
+            if (old) old.remove();
+            if (pageSize <= 0 || totalPages <= 1) return;
+            var pager = document.createElement('div');
+            pager.className = 'news-pager flex items-center justify-center gap-2 mt-10 flex-wrap';
+            var baseCls = 'h-10 px-3 rounded-lg text-sm font-medium border transition-colors';
+            var offCls = baseCls + ' bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary';
+            var onCls = baseCls + ' bg-primary text-white border-primary';
+            var disCls = baseCls + ' bg-white text-gray-300 border-gray-100 cursor-not-allowed';
+            function addBtn(label, target, cls, disabled, extra) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.innerHTML = label;
+                b.className = cls + (extra ? ' ' + extra : '');
+                if (disabled) { b.disabled = true; }
+                else { b.addEventListener('click', function () { goToPage(target); }); }
+                pager.appendChild(b);
+            }
+            var prevLabel = isEn ? '&laquo; Prev' : '&laquo; 上一页';
+            var nextLabel = isEn ? 'Next &raquo;' : '下一页 &raquo;';
+            addBtn(prevLabel, curPage - 1, curPage <= 1 ? disCls : offCls, curPage <= 1);
+            for (var i = 1; i <= totalPages; i++) {
+                addBtn(String(i), i, i === curPage ? onCls : offCls, false, 'w-10');
+            }
+            addBtn(nextLabel, curPage + 1, curPage >= totalPages ? disCls : offCls, curPage >= totalPages);
+            parent.appendChild(pager);
+        }
+
+        function paintPage(curPage) {
+            var total = currentData.length;
+            var totalPages = Math.max(1, Math.ceil(total / pageSize));
+            curPage = Math.min(Math.max(1, curPage), totalPages);
+            var shown;
+            if (pageSize > 0) {
+                shown = currentData.slice((curPage - 1) * pageSize, curPage * pageSize);
+            } else if (opts.limit > 0) {
+                shown = currentData.slice(0, opts.limit);
+            } else {
+                shown = currentData;
+            }
             if (!shown.length) {
-                box.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">' +
+                container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">' +
                     (isEn ? 'No articles in this category yet.' : '该分类下暂无文章') + '</p>';
+                paintPager(1, 1);
                 return;
             }
-            box.innerHTML = shown.map(buildNewsCard).join('');
+            container.innerHTML = shown.map(buildNewsCard).join('');
+            paintPager(curPage, totalPages);
         }
+
+        function goToPage(target) {
+            paintPage(target);
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(function () {
+                    var y = container.getBoundingClientRect().top + window.pageYOffset - 80;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                });
+            }
+        }
+
         var data = isEn ? (window.__NEWS_EN__ || []) : (window.__NEWS__ || []);
-        if (data && data.length) { paint(data); return; }
+        if (data && data.length) { currentData = buildValid(data); paintPage(page); return; }
         // 兜底：本地未生成内联数据时，回退到对应语言清单地址
         var url = isEn ? 'news-manifest-en.json' : (window.NEWS_MANIFEST_URL || 'news-manifest.json');
-        fetch(url).then(function (r) { return r.json(); }).then(paint)
-            .catch(function () {
-                box.innerHTML = '<p class="text-gray-500 col-span-full">本地预览请先运行：node generate-manifest.js</p>';
-            });
+        fetch(url).then(function (r) { return r.json(); }).then(function (items) {
+            currentData = buildValid(items);
+            paintPage(page);
+        }).catch(function () {
+            container.innerHTML = '<p class="text-gray-500 col-span-full">本地预览请先运行：node generate-manifest.js</p>';
+        });
     }
 
     // 新闻列表页：根据清单中的分类，自动生成筛选标签（中/英自适应）
@@ -1244,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', function () {
             b.addEventListener('click', function () {
                 wrap.querySelectorAll('button').forEach(function (x) { x.className = offCls; });
                 b.className = onCls;
-                renderNewsFromManifest('newsGrid', 0, cat);
+                renderNewsFromManifest('newsGrid', { pageSize: 5, page: 1, filterCat: cat });
             });
             return b;
         }
@@ -1254,7 +1322,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 列表页：全部文章；首页预览：最新 3 条（按日期自动取最新）
-    renderNewsFromManifest('newsGrid', 0);
+    renderNewsFromManifest('newsGrid', { pageSize: 5, page: 1 });
     renderNewsFromManifest('newsPreview', 3);
     addNewsFilters();
 
