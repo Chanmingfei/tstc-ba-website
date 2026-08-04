@@ -424,12 +424,15 @@ body {
 /* 搜索结果项玻璃光感（日间默认） */
 .search-result-item {
     background:
-        linear-gradient(135deg, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, .02) 35%, transparent 68%),
-        transparent !important;
-    border: 1px solid rgba(255, 255, 255, .25) !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, .18), 0 6px 18px rgba(0, 0, 0, .06) !important;
-    -webkit-backdrop-filter: blur(18px) !important;
-    backdrop-filter: blur(18px) !important;
+        linear-gradient(135deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .1) 28%, rgba(255, 255, 255, .02) 55%, transparent 78%),
+        rgba(255, 255, 255, .05) !important;
+    border: 1px solid rgba(255, 255, 255, .55) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .75),
+        inset 0 0 12px rgba(255, 255, 255, .12),
+        0 8px 22px rgba(0, 0, 0, .12) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+    backdrop-filter: blur(20px) saturate(150%) !important;
 }
 
 [data-theme="dark"] .text-dark,
