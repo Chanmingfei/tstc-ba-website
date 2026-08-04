@@ -240,7 +240,7 @@ function extractSearchTitle(html) {
     // 去掉站点名/品牌后缀，让搜索结果标题更干净（中英文各几种写法）
     t = t.replace(/\s*-\s*TSNU Bar\s*$/i, '')
          .replace(/\s*-\s*Tangshan Normal University Bar\s*$/i, '')
-         .replace(/\s*-\s*Moderator Team Official Site \(Unofficial, Not Affiliated with the School\)\s*$/i, '')
+         .replace(/\s*-\s*Mod Team Official Site \(not affiliated with the school\)\s*$/i, '')
          .replace(/\s*-\s*唐山师范学院吧\s*$/, '');
     return t.trim() || '(untitled)';
 }
