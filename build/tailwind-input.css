@@ -443,6 +443,12 @@ body {
     -webkit-backdrop-filter: blur(8px) saturate(140%);
     backdrop-filter: blur(8px) saturate(140%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 2px 8px rgba(0, 0, 0, .08);
+    /* 按压回弹：与全站 button:active 弹性范式一致 */
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease,
+                transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(.34, 1.56, .64, 1));
+}
+.news-pager button:active {
+    transform: scale(.965);
 }
 .news-pager button.is-active {
     background: var(--primary) !important;
