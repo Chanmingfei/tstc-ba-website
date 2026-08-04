@@ -1220,26 +1220,24 @@ document.addEventListener('DOMContentLoaded', function () {
             if (pageSize <= 0 || totalPages <= 1) return;
             var pager = document.createElement('div');
             pager.className = 'news-pager flex items-center justify-center gap-2 mt-10 flex-wrap';
-            var baseCls = 'h-10 px-3 rounded-lg text-sm font-medium border transition-colors';
-            var offCls = baseCls + ' bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary';
-            var onCls = baseCls + ' bg-primary text-white border-primary';
-            var disCls = baseCls + ' bg-white text-gray-300 border-gray-100 cursor-not-allowed';
-            function addBtn(label, target, cls, disabled, extra) {
+            var baseCls = 'h-10 px-3 rounded-lg text-sm font-medium transition-all';
+            function addBtn(label, target, active, disabled, extra) {
                 var b = document.createElement('button');
                 b.type = 'button';
                 b.innerHTML = label;
-                b.className = cls + (extra ? ' ' + extra : '');
+                b.className = baseCls + (extra ? ' ' + extra : '') +
+                    (active ? ' is-active' : '') + (disabled ? ' is-disabled' : '');
                 if (disabled) { b.disabled = true; }
                 else { b.addEventListener('click', function () { goToPage(target); }); }
                 pager.appendChild(b);
             }
             var prevLabel = isEn ? '&laquo; Prev' : '&laquo; 上一页';
             var nextLabel = isEn ? 'Next &raquo;' : '下一页 &raquo;';
-            addBtn(prevLabel, curPage - 1, curPage <= 1 ? disCls : offCls, curPage <= 1);
+            addBtn(prevLabel, curPage - 1, false, curPage <= 1);
             for (var i = 1; i <= totalPages; i++) {
-                addBtn(String(i), i, i === curPage ? onCls : offCls, false, 'w-10');
+                addBtn(String(i), i, i === curPage, false, 'w-10');
             }
-            addBtn(nextLabel, curPage + 1, curPage >= totalPages ? disCls : offCls, curPage >= totalPages);
+            addBtn(nextLabel, curPage + 1, false, curPage >= totalPages);
             parent.appendChild(pager);
         }
 
@@ -1312,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', function () {
             b.addEventListener('click', function () {
                 wrap.querySelectorAll('button').forEach(function (x) { x.className = offCls; });
                 b.className = onCls;
-                renderNewsFromManifest('newsGrid', { pageSize: 5, page: 1, filterCat: cat });
+                renderNewsFromManifest('newsGrid', { pageSize: 6, page: 1, filterCat: cat });
             });
             return b;
         }
@@ -1322,7 +1320,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 列表页：全部文章；首页预览：最新 3 条（按日期自动取最新）
-    renderNewsFromManifest('newsGrid', { pageSize: 5, page: 1 });
+    renderNewsFromManifest('newsGrid', { pageSize: 6, page: 1 });
     renderNewsFromManifest('newsPreview', 3);
     addNewsFilters();
 
