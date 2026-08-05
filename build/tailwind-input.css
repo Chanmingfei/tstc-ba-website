@@ -1451,7 +1451,28 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 }
 /* 夜间保持原样：纯白底 + 品牌蓝文字 */
 [data-theme="dark"] .c404-home { background: #fff !important; color: var(--primary) !important; }
-[data-theme="dark"] #searchModalBtn { background: var(--tint) !important; color: #fff !important; border-color: transparent !important; box-shadow: 0 4px 14px rgba(0, 0, 0, .35) !important; }
+
+/* 搜索弹窗提交按钮：两模式均为品牌蓝玻璃（与主页搜索按钮一致） */
+#searchModalBtn {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .2) 40%, transparent 66%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid rgba(255, 255, 255, .55);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .18), inset 0 1px 1px rgba(255, 255, 255, .6);
+    color: #fff;
+}
+[data-theme="dark"] #searchModalBtn {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .25) 0%, rgba(255, 255, 255, .08) 40%, transparent 66%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
+        rgba(30, 34, 44, .5) !important;
+    border: 1px solid rgba(255, 255, 255, .22) !important;
+    box-shadow: 0 5px 16px rgba(0, 0, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .25) !important;
+    color: #fff !important;
+}
 
 /* 弹窗关闭按钮：与顶栏圆型按钮统一为液态玻璃语言（自适应明 / 暗面板） */
 #searchModalClose, #changelogClose, #closeModal, #closeFeedbackModal {
