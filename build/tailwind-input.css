@@ -445,10 +445,10 @@ body {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), 0 2px 8px rgba(0, 0, 0, .08);
     /* 按压回弹：与全站 button:active 弹性范式一致 */
     transition: background-color .15s ease, border-color .15s ease, color .15s ease,
-                transform var(--dur-press, 140ms) var(--ease-out, cubic-bezier(.34, 1.56, .64, 1));
+                transform var(--dur-press, 140ms) var(--ease-spring, cubic-bezier(.34, 1.56, .64, 1));
 }
 .news-pager button:active {
-    transform: scale(.965);
+    transform: scale(.96);
 }
 .news-pager button.is-active {
     background: var(--primary) !important;
@@ -882,10 +882,10 @@ h1 { line-height: 1.08; }
     background: transparent !important;
     -webkit-tap-highlight-color: transparent !important;
     transition: background-color var(--dur-fast) var(--ease-out),
-                transform var(--dur-press) var(--ease-out) !important;
+                transform var(--dur-press) var(--ease-spring) !important;
 }
 #mobileMenu a:hover  { background: var(--fill-quaternary) !important; }
-#mobileMenu a:active { background: var(--fill-tertiary) !important; transform: scale(.985) !important; }
+#mobileMenu a:active { background: var(--fill-tertiary) !important; transform: scale(.96) !important; }
 
 /* 行尾 chevron：暗示「点了会跳走」，与 iOS 设置页一致 */
 #mobileMenu a::after {
@@ -931,9 +931,9 @@ h1 { line-height: 1.08; }
     background: transparent;
     -webkit-tap-highlight-color: transparent;
     transition: background-color var(--dur-fast) var(--ease-out),
-                transform var(--dur-press) var(--ease-out);
+                transform var(--dur-press) var(--ease-spring);
 }
-#menuBtn:active { background: var(--fill-tertiary); transform: scale(.92); }
+#menuBtn:active { background: var(--fill-tertiary); transform: scale(.96); }
 #menuBtn .menu-icon { position: relative; display: block; width: 20px; height: 20px; }
 #menuBtn .menu-icon i {
     position: absolute;
@@ -1153,18 +1153,23 @@ h1 { line-height: 1.08; }
     box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .18);
 }
 
-/* 胶囊按钮 / CTA：苹果式即时按压 */
+/* 统一按压回弹：所有按钮 / 胶囊链接 / ARIA 按钮，按下轻微缩小并以轻回弹曲线复位 */
+button,
 a[class*="rounded-full"],
-button[class*="rounded-full"],
-.search-button {
+.search-button,
+[role="button"] {
     -webkit-tap-highlight-color: transparent;
-    transition: transform var(--dur-press) var(--ease-out),
+    transition: transform var(--dur-press) var(--ease-spring),
                 background-color var(--dur-fast) var(--ease-in-out),
                 box-shadow var(--dur-fast) var(--ease-out);
 }
+button:active,
 a[class*="rounded-full"]:active,
-button[class*="rounded-full"]:active,
-.search-button:active { transform: scale(.96); }
+.search-button:active,
+[role="button"]:active {
+    /* 复用 Tailwind 位移变量，避免覆盖定位用的 translate（如搜索弹窗按钮的 -translate-y-1/2） */
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) scale(.96);
+}
 
 /* 首屏搜索框：iOS 搜索栏质感 + 聚焦光环 */
 .search-container {
@@ -1252,7 +1257,7 @@ button[class*="rounded-full"]:active,
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
-    transition: transform var(--dur-press) var(--ease-out),
+    transition: transform var(--dur-press) var(--ease-spring),
                 background-color var(--dur-fast) var(--ease-out),
                 box-shadow var(--dur-fast) var(--ease-out);
 }
@@ -1284,7 +1289,7 @@ button[class*="rounded-full"]:active,
 #navSearchBtn:hover { background: rgba(255, 255, 255, .42); }
 #menuBtn:active,
 #mobileTopSearchBtn:active,
-#navSearchBtn:active { transform: scale(.92); }
+#navSearchBtn:active { transform: scale(.96); }
 
 /* 暗色下顶栏工具按钮：使用「展开菜单时汉堡被选中」的平铺雾化白质感，边缘更干净 */
 [data-theme="dark"] #menuBtn,
@@ -1488,7 +1493,7 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
     transition: background-color var(--dur-fast) var(--ease-out),
                 border-color var(--dur-fast) var(--ease-out),
                 box-shadow var(--dur-fast) var(--ease-out),
-                transform var(--dur-press) var(--ease-out);
+                transform var(--dur-press) var(--ease-spring);
 }
 #searchModalClose:hover, #changelogClose:hover, #closeModal:hover, #closeFeedbackModal:hover { background: rgba(0, 0, 0, .09); transform: scale(.94); }
 [data-theme="dark"] #searchModalClose,
@@ -1559,7 +1564,7 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
         inset 0 1.5px 2px rgba(255, 255, 255, .90),
         inset 0 -2px 5px rgba(0, 0, 0, .08);
     color: var(--tint);
-    transition: transform var(--dur-press) var(--ease-out),
+    transition: transform var(--dur-press) var(--ease-spring),
                 box-shadow var(--dur-fast) var(--ease-out),
                 opacity var(--dur-base) var(--ease-out),
                 visibility var(--dur-base);
@@ -1568,7 +1573,7 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
 #backToTop:active,
 #shareFab .share-toggle:active,
 #shareFab .share-btn:active {
-    transform: scale(.92);
+    transform: scale(.96);
     transition-duration: var(--dur-press);
 }
 /* 暗色浮动按钮：与夜间顶栏圆钮 / 弹窗关闭按钮同一套「平铺雾化白」质感，全站一致 */
