@@ -1446,7 +1446,17 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
         box-shadow: 0 24px 60px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .12);
 }
 
-/* 日间去色：仅日间把 404 按钮与搜索弹窗提交按钮改为玻璃，夜间保持原样 */
+/* 404 按钮：中性玻璃胶囊（与主页搜索按钮同语言）。
+   注：通用 ghost-glass 规则优先级高于 .c404-home，此处用 !important 确保日间生效。 */
+.c404-home {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .2) 40%, transparent 66%),
+        var(--glass-bg) !important;
+    border: 1px solid rgba(255, 255, 255, .55) !important;
+    box-shadow: var(--glass-shadow), inset 0 1px 1px rgba(255, 255, 255, .6) !important;
+    color: #fff !important;
+}
+/* 夜间保持原样：纯白底 + 品牌蓝文字 */
 [data-theme="dark"] .c404-home { background: #fff !important; color: var(--primary) !important; }
 [data-theme="dark"] #searchModalBtn { background: var(--tint) !important; color: #fff !important; border-color: transparent !important; box-shadow: 0 4px 14px rgba(0, 0, 0, .35) !important; }
 
