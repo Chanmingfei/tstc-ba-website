@@ -1228,8 +1228,8 @@ a[class*="rounded-full"]:active,
 #changelogModal,
 #qrModal,
 #feedbackModal {
-    /* 实验：停用弹窗遮罩的全局模糊，仅保留半透明背景，观察弹窗是否更通透 */
-    background: rgba(30, 41, 59, .20);
+    /* 实验：弹窗遮罩去掉全局模糊与背景变暗，遮罩改为全透明（灯箱除外，保持深色） */
+    background: transparent;
 }
 #searchModal    > div,
 #changelogModal > div,
