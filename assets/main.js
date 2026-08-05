@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (modal) return modal;
         modal = document.createElement('div');
         modal.id = 'searchModal';
-        modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
+        modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 hidden opacity-0 transition-opacity duration-300';
         modal.innerHTML =
             '<div class="relative w-full origin-center overflow-hidden rounded-2xl bg-white/30 shadow-2xl ring-1 ring-black/5 backdrop-blur flex flex-col transition-all duration-200 animate-search-pop" style="max-width:42rem;max-height:84vh">' +
                 '<div class="px-6 pt-6 pb-4">' +
@@ -813,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (modal) return modal;
             modal = document.createElement('div');
             modal.id = 'changelogModal';
-            modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300';
+            modal.className = 'fixed inset-0 flex items-center justify-center p-4 bg-black/40 hidden opacity-0 transition-opacity duration-300';
             modal.innerHTML =
                 '<div class="relative w-full overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 flex flex-col transition-all duration-200 animate-search-pop" style="max-width:44rem;max-height:86vh">' +
                     '<div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">' +
@@ -1494,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!box) {
             box = document.createElement('div');
             box.id = 'lightbox';
-            box.className = 'fixed inset-0 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
+            box.className = 'fixed inset-0 hidden items-center justify-center bg-black/85 p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
             box.innerHTML =
                 '<button data-close class="lb-ctrl absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-white" aria-label="' + (isEn ? 'Close' : '关闭') + '"><i class="fa fa-times text-xl"></i></button>' +
                 '<a data-download="1" class="lb-ctrl absolute right-20 top-4 flex h-11 w-11 items-center justify-center rounded-full text-white" aria-label="' + (isEn ? 'Download image' : '下载图片') + '" title="' + (isEn ? 'Download image' : '下载图片') + '" download><i class="fa fa-download text-xl"></i></a>' +

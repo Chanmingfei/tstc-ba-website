@@ -1228,10 +1228,8 @@ a[class*="rounded-full"]:active,
 #changelogModal,
 #qrModal,
 #feedbackModal {
-    /* 由纯灰改为冷调蓝灰半透明 + 更强折射，与液态玻璃面板更协调（日间更通透） */
+    /* 实验：停用弹窗遮罩的全局模糊，仅保留半透明背景，观察弹窗是否更通透 */
     background: rgba(30, 41, 59, .20);
-    -webkit-backdrop-filter: blur(10px) saturate(150%);
-    backdrop-filter: blur(10px) saturate(150%);
 }
 #searchModal    > div,
 #changelogModal > div,
