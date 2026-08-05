@@ -1614,53 +1614,10 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
 [data-theme="dark"] footer.bg-primary { background: var(--grouped-bg); }
 
 /* -----------------------------------------------------------
-   §9.6 跨页视图过渡（View Transitions API）
-   静态多页站点：Chrome 126+ 原生支持「MPA 过渡」
-   （pageswap / pagereveal 机制）。@view-transition 开启自动
-   导航过渡后，用 ::view-transition-* 自定义「液态玻璃」式的
-   轻推 + 淡入淡出 + 微模糊，让整页跳转不再硬切。
-   不支持的浏览器：@view-transition 被忽略，自动回退为普通
-   整页跳转 —— 渐进增强，无需 JS 兜底。
-   ----------------------------------------------------------- */
-@view-transition { navigation: auto; }
-
-/* 顶栏在跨页时保持原位（共享元素），只有内容区做过渡，避免导航条闪动 */
-#mainNav { view-transition-name: site-nav; }
-
-/* 根快照：旧页轻微上浮淡出 + 起雾，新页从下方清透淡入 */
-::view-transition-old(root) {
-    animation: vt-page-out var(--dur-base) var(--ease-out) both;
-}
-::view-transition-new(root) {
-    animation: vt-page-in var(--dur-base) var(--ease-out) both;
-}
-@keyframes vt-page-out {
-    from { opacity: 1; transform: translateY(0) scale(1);    filter: blur(0); }
-    to   { opacity: 0; transform: translateY(-12px) scale(.985); filter: blur(7px); }
-}
-@keyframes vt-page-in {
-    from { opacity: 0; transform: translateY(12px) scale(.985); filter: blur(7px); }
-    to   { opacity: 1; transform: translateY(0) scale(1);       filter: blur(0); }
-}
-/* 共享的顶栏不参与根快照的位移，独立淡入即可 */
-::view-transition-old(site-nav),
-::view-transition-new(site-nav) {
-    animation-duration: var(--dur-base);
-    animation-timing-function: var(--ease-out);
-    height: 100%;
-}
-
-/* -----------------------------------------------------------
    §10 reduced-motion：保留配色过渡，去掉全部位移与缩放
    ----------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-
-    /* 跨页视图过渡：关闭位移/缩放/模糊，仅保留瞬时切换 */
-    ::view-transition-group(*),
-    ::view-transition-image-pair(*),
-    ::view-transition-old(*),
-    ::view-transition-new(*) { animation: none !important; }
 
     .card-hover,
     a[class*="rounded-full"],
