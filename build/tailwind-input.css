@@ -1170,7 +1170,7 @@ button[class*="rounded-full"]:active,
 .search-container {
     border-radius: var(--r-full);
     border: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, .42);
+    background: rgba(255, 255, 255, .22);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     box-shadow: var(--glass-shadow);
@@ -1187,31 +1187,25 @@ button[class*="rounded-full"]:active,
 .search-button { background-color: var(--tint); }
 .search-button:hover { background-color: var(--tint-press); }
 
-/* 首页 Hero 搜索按钮：中性液态玻璃（去掉品牌蓝渲染，保持玻璃语言，与全站去色按钮一致） */
+/* 首页 Hero 搜索按钮：品牌蓝液态玻璃（与搜索框背景区分，提交按钮保持蓝色） */
 .search-container .search-button {
     background:
         linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .2) 40%, transparent 66%),
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid rgba(255, 255, 255, .55);
     box-shadow: 0 6px 18px rgba(0, 0, 0, .18), inset 0 1px 1px rgba(255, 255, 255, .6);
-    color: var(--text-strong);
+    color: #fff;
     margin: 4px;
     border-radius: var(--r-full);
 }
 .search-container .search-button:hover {
     background:
         linear-gradient(150deg, rgba(255, 255, 255, .6) 0%, rgba(255, 255, 255, .25) 40%, transparent 66%),
-        rgba(255, 255, 255, .28);
-}
-/* 夜间保留品牌蓝玻璃（用户确认夜间模式不动） */
-[data-theme="dark"] .search-container .search-button {
-    color: #fff;
-    background:
-        linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .2) 40%, transparent 66%),
-        linear-gradient(135deg, color-mix(in srgb, var(--tint) 78%, transparent), color-mix(in srgb, var(--secondary) 78%, transparent)),
-        var(--glass-bg);
+        linear-gradient(135deg, color-mix(in srgb, var(--tint) 88%, transparent), color-mix(in srgb, var(--secondary) 88%, transparent)),
+        rgba(255, 255, 255, .15);
 }
 [data-theme="dark"] .search-container .search-button:hover {
     background:
@@ -1446,14 +1440,13 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
         box-shadow: 0 24px 60px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .12);
 }
 
-/* 404 按钮：中性玻璃胶囊（与主页搜索按钮同语言）。
-   注：通用 ghost-glass 规则优先级高于 .c404-home，此处用 !important 确保日间生效。 */
+/* 404 按钮：高通透玻璃胶囊（参考效果图：底色更淡、边框更细、几乎全透） */
 .c404-home {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255, .2) 40%, transparent 66%),
-        var(--glass-bg) !important;
-    border: 1px solid rgba(255, 255, 255, .55) !important;
-    box-shadow: var(--glass-shadow), inset 0 1px 1px rgba(255, 255, 255, .6) !important;
+        linear-gradient(150deg, rgba(255, 255, 255, .35) 0%, rgba(255, 255, 255, .08) 40%, transparent 66%),
+        rgba(255, 255, 255, .08) !important;
+    border: 1px solid rgba(255, 255, 255, .3) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, .4) !important;
     color: #fff !important;
 }
 /* 夜间保持原样：纯白底 + 品牌蓝文字 */
