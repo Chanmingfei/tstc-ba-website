@@ -1494,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!box) {
             box = document.createElement('div');
             box.id = 'lightbox';
-            box.className = 'fixed inset-0 hidden items-center justify-center bg-black/85 p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
+            box.className = 'fixed inset-0 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-zoom-out transition-opacity duration-200 opacity-0';
             box.innerHTML =
                 '<button data-close class="lb-ctrl absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full text-white" aria-label="' + (isEn ? 'Close' : '关闭') + '"><i class="fa fa-times text-xl"></i></button>' +
                 '<a data-download="1" class="lb-ctrl absolute right-20 top-4 flex h-11 w-11 items-center justify-center rounded-full text-white" aria-label="' + (isEn ? 'Download image' : '下载图片') + '" title="' + (isEn ? 'Download image' : '下载图片') + '" download><i class="fa fa-download text-xl"></i></a>' +
