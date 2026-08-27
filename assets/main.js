@@ -1225,27 +1225,25 @@ document.addEventListener('DOMContentLoaded', function () {
             if (pageSize <= 0 || totalPages <= 1) return;
             var pager = document.createElement('div');
             pager.className = 'news-pager flex items-center justify-center gap-2 mt-10 flex-wrap';
-            var baseCls = 'h-10 px-3 rounded-lg text-sm font-medium transition-colors cursor-pointer';
-            function addBtn(label, target, active, disabled, extra) {
+            // 统一玻璃按钮：数字用圆形 .ios-btn（带 .circle-overlay 内圈高光），
+            // 上/下页用药丸 .ios-btn--pill；当前页 is-active（实心主色选中），禁用 is-disabled。
+            function addBtn(label, target, active, disabled, isPill) {
                 var b = document.createElement('button');
                 b.type = 'button';
-                b.innerHTML = label;
-                var cls = baseCls + (extra ? ' ' + extra : '');
-                if (active) cls += ' is-active';
-                else if (!disabled) cls += ' hover:border-primary hover:text-primary';
-                if (disabled) cls += ' is-disabled';
-                b.className = cls;
+                b.className = 'ios-btn' + (isPill ? ' ios-btn--pill' : '') +
+                    (active ? ' is-active' : '') + (disabled ? ' is-disabled' : '');
+                b.innerHTML = isPill ? label : ('<span class="circle-overlay"></span>' + label);
                 if (disabled) { b.disabled = true; }
                 else { b.addEventListener('click', function () { goToPage(target); }); }
                 pager.appendChild(b);
             }
             var prevLabel = isEn ? '&laquo; Prev' : '&laquo; 上一页';
             var nextLabel = isEn ? 'Next &raquo;' : '下一页 &raquo;';
-            addBtn(prevLabel, curPage - 1, false, curPage <= 1);
+            addBtn(prevLabel, curPage - 1, false, curPage <= 1, true);
             for (var i = 1; i <= totalPages; i++) {
-                addBtn(String(i), i, i === curPage, false, 'w-10');
+                addBtn(String(i), i, i === curPage, false, false);
             }
-            addBtn(nextLabel, curPage + 1, false, curPage >= totalPages);
+            addBtn(nextLabel, curPage + 1, false, curPage >= totalPages, true);
             parent.appendChild(pager);
         }
 

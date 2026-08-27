@@ -9,8 +9,14 @@
 
     <link rel="preload" href="assets/fontawesome/fa.min.css?v=d108a2fe" as="style" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="assets/fontawesome/fa.min.css?v=d108a2fe"></noscript>
-    <link rel="stylesheet" href="assets/style.css?v=8f2a157e">
+    <link rel="stylesheet" href="assets/style.css?v=55a70541">
 
+    
+    
+    
+    
+    
+    
     
     <link rel="icon" type="image/jpeg" href="/assets/images/bar-logo.jpg">
     <!-- AUTO_OG_START -->
@@ -98,7 +104,7 @@
 <p>下面每次只展示一张照片，用底部的翻页按钮就能一张张切换。等吧主哪天有空传图了，本页会自动按「一页一张」排好。更多照片，敬请期待！</p>
 
 <!-- 照片画廊：一页一张，配新闻列表同款翻页按钮 -->
-<section class="my-8" aria-label="吧主照片画廊">
+<section class="photo-gallery my-8" aria-label="吧主照片画廊">
     <div id="photoStage" class="min-h-[320px] flex items-center justify-center">
         <!-- 由页面底部脚本按 photos 数组渲染当前页照片 -->
     </div>
@@ -144,7 +150,7 @@
         </div>
     </footer>
 
-    <button id="backToTop" class="bg-primary hover:bg-secondary text-white shadow-lg" aria-label="返回顶部">
+    <button id="backToTop" aria-label="返回顶部">
         <i class="fa fa-arrow-up"></i>
     </button>
 
@@ -152,7 +158,7 @@
     <script>window.__SEARCH_INDEX_URL__ = "/assets/search-index.json?v=6fac40a3";</script>
     
     <script>window.__SITE_URL__ = "https://tstc.pp.ua";</script>
-    <script src="assets/main.js?v=716d6120"></script>
+    <script src="assets/main.js?v=25194394"></script>
     <!-- 照片画廊渲染 + 翻页（占位：photos 为空时显示「照片筹备中」；上传后填入数组即可） -->
     <script>
     (function () {
@@ -172,21 +178,21 @@
             if (total <= 1) return; // 仅一页时不显示翻页
             var nav = document.createElement('div');
             nav.className = 'flex items-center justify-center gap-2';
-            function addBtn(html, target, active, disabled, extra) {
+            // 统一玻璃按钮：数字圆形 .ios-btn（带 .circle-overlay 内圈高光），
+            // 上/下页药丸 .ios-btn--pill；当前页 is-active（实心主色选中），禁用 is-disabled。
+            function addBtn(html, target, active, disabled, isPill) {
                 var b = document.createElement('button');
                 b.type = 'button';
-                b.innerHTML = html;
-                b.className = 'h-10 rounded-lg px-3 text-sm font-medium transition-colors border ' +
-                    (active ? 'bg-primary text-white border-primary'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-primary hover:text-primary') +
-                    (extra ? ' ' + extra : '');
-                if (disabled) { b.classList.add('opacity-40', 'cursor-not-allowed'); }
+                b.className = 'ios-btn' + (isPill ? ' ios-btn--pill' : '') +
+                    (active ? ' is-active' : '') + (disabled ? ' is-disabled' : '');
+                b.innerHTML = isPill ? html : ('<span class="circle-overlay"></span>' + html);
+                if (disabled) { b.disabled = true; }
                 else { b.addEventListener('click', function () { page = target; render(); }); }
                 nav.appendChild(b);
             }
-            addBtn('&laquo; 上一页', cur - 1, false, cur <= 1, '');
-            for (var i = 1; i <= total; i++) addBtn(String(i), i, i === cur, false, 'w-10');
-            addBtn('下一页 &raquo;', cur + 1, false, cur >= total, '');
+            addBtn('&laquo; 上一页', cur - 1, false, cur <= 1, true);
+            for (var i = 1; i <= total; i++) addBtn(String(i), i, i === cur, false, false);
+            addBtn('下一页 &raquo;', cur + 1, false, cur >= total, true);
             pager.appendChild(nav);
         }
 
