@@ -1104,7 +1104,7 @@ h1 { line-height: 1.08; }
 /* 「关于我们」主内容卡：与文章阅读卡同族，原为实白卡，统一为液态玻璃 */
 .bg-white.rounded-xl.shadow-md.border-l-4 {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .7) 0%, rgba(255, 255, 255, .4) 45%, rgba(255, 255, 255, .22) 100%),
+        linear-gradient(150deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, .14) 42%, transparent 72%),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
@@ -1128,7 +1128,7 @@ h1 { line-height: 1.08; }
    - 动态：站内搜索结果卡、JS 渲染的新闻卡（main.js） */
 .bg-white.rounded-xl.shadow-md {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .78) 0%, rgba(255, 255, 255, .48) 45%, rgba(255, 255, 255, .26) 100%),
+        linear-gradient(150deg, rgba(255, 255, 255, .4) 0%, rgba(255, 255, 255, .14) 42%, transparent 72%),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
@@ -1387,19 +1387,21 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 #qrModal        > div,
 #feedbackModal  > div {
     background:
-        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
+        linear-gradient(150deg, rgba(255, 255, 255, .35) 0%, rgba(255, 255, 255, .1) 40%, transparent 66%),
         var(--glass-bg);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, .6);
+    box-shadow: var(--glass-shadow);
 }
 [data-theme="dark"] #searchModal    > div,
 [data-theme="dark"] #changelogModal > div,
 [data-theme="dark"] #qrModal        > div,
 [data-theme="dark"] #feedbackModal  > div {
-    background: rgba(30, 34, 44, .64);
-    border-color: rgba(255, 255, 255, .12);
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .12) 0%, rgba(255, 255, 255, .04) 38%, transparent 64%),
+        var(--glass-bg);
+    border-color: var(--glass-border);
         box-shadow: 0 24px 60px rgba(0, 0, 0, .55), var(--glass-inset);
 }
 
@@ -1437,15 +1439,13 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
     color: #fff !important;
 }
 
-/* 弹窗关闭按钮：与顶栏圆型按钮统一为液态玻璃语言（自适应明 / 暗面板） */
+/* 弹窗关闭按钮：与顶栏圆型按钮 / 回到顶部统一为同一套 .box 玻璃语言（自适应明 / 暗） */
 #searchModalClose, #changelogClose, #closeModal, #closeFeedbackModal {
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);
-    background:
-        linear-gradient(150deg, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, .15) 38%, transparent 64%),
-        rgba(0, 0, 0, .05);
-    border: 1px solid rgba(0, 0, 0, .1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .1), inset 0 1px 1px rgba(255, 255, 255, .6);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-inset);
     color: var(--text-strong);
     background-clip: padding-box;
     transition: background-color var(--dur-fast) var(--ease-out),
@@ -1453,14 +1453,14 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
                 box-shadow var(--dur-fast) var(--ease-out),
                 transform var(--dur-press) var(--ease-spring);
 }
-#searchModalClose:hover, #changelogClose:hover, #closeModal:hover, #closeFeedbackModal:hover { background: rgba(0, 0, 0, .09); transform: scale(.94); }
+#searchModalClose:hover, #changelogClose:hover, #closeModal:hover, #closeFeedbackModal:hover { background: rgba(255, 255, 255, .28); transform: scale(.94); }
 [data-theme="dark"] #searchModalClose,
 [data-theme="dark"] #changelogClose,
 [data-theme="dark"] #closeModal,
 [data-theme="dark"] #closeFeedbackModal {
-    background: rgba(255, 255, 255, .1);
-    border-color: rgba(255, 255, 255, .14);
-    box-shadow: 0 3px 12px rgba(0, 0, 0, .3), inset 0 1px 1px rgba(255, 255, 255, .18), inset 0 -1px 1px rgba(0, 0, 0, .15);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-inset), 0 3px 12px rgba(0, 0, 0, .30);
     color: #fff;
 }
 [data-theme="dark"] #searchModalClose:hover,

@@ -975,10 +975,9 @@ document.addEventListener('DOMContentLoaded', function () {
         panel.appendChild(copyBtn);
 
         const toggle = document.createElement('button');
-        toggle.className = 'ios-btn ios-btn--tint';
+        toggle.className = 'ios-btn';
         toggle.style.setProperty('--w', '48px');
         toggle.style.setProperty('--h', '48px');
-        toggle.style.setProperty('--tint', 'var(--primary)');
         toggle.id = 'shareToggle';
         toggle.setAttribute('aria-label', isEn ? 'Share' : '分享');
         toggle.setAttribute('aria-expanded', 'false');
