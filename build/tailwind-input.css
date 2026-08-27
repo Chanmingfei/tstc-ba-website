@@ -299,13 +299,7 @@ body {
     backdrop-filter: blur(2px);
     color: var(--text);
     font-size: 19px;
-    box-shadow:
-        inset 2px -2px 1px -1px rgba(255, 255, 255, 0.9),
-        inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
-        inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
-        inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
-        inset 0 0 2px rgba(0, 0, 0, 0.8),
-        0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--glass-inset);
     opacity: 0;
     visibility: hidden;
     transition: transform 0.15s ease, filter .2s ease, box-shadow 0.15s ease, opacity 0.3s ease, visibility 0.3s ease;
@@ -409,13 +403,7 @@ body {
     background: rgba(255, 255, 255, .06);
     border-color: rgba(255, 255, 255, .14);
     color: var(--text-strong);
-    box-shadow:
-        inset 2px -2px 1px -1px rgba(255, 255, 255, .45),
-        inset -2px 2px 1px -1px rgba(255, 255, 255, .45),
-        inset 6px -6px 1px -6px rgba(255, 255, 255, .25),
-        inset -6px 6px 1px -6px rgba(255, 255, 255, .25),
-        inset 0 0 2px rgba(255, 255, 255, .12),
-        0 4px 10px rgba(0, 0, 0, .5);
+    box-shadow: var(--glass-inset), 0 4px 10px rgba(0, 0, 0, .5);
 }
 [data-theme="dark"] #backToTop:hover { filter: brightness(1.12); }
 
@@ -702,7 +690,13 @@ html[data-theme="dark"] .theme-toggle::after {
     --glass-bg:        rgba(255, 255, 255, .16);
     --glass-border:    rgba(255, 255, 255, .5);   /* 日间：边缘高光清晰，定义玻璃轮廓 */
     --glass-highlight: rgba(255, 255, 255, .9);   /* 日间：顶部镜面高光（强参考） */
-    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .16), inset 0 1px 1px rgba(255, 255, 255, .7);
+    /* .box 玻璃内壁多层高光（与 .ios-btn / #backToTop 完全一致的玻璃签名） */
+    --glass-inset:    inset 2px -2px 1px -1px rgba(255, 255, 255, .9),
+                      inset -2px 2px 1px -1px rgba(255, 255, 255, .9),
+                      inset 6px -6px 1px -6px rgba(255, 255, 255, .55),
+                      inset -6px 6px 1px -6px rgba(255, 255, 255, .55),
+                      inset 0 0 2px rgba(0, 0, 0, .8);
+    --glass-shadow:    var(--glass-inset), 0 10px 30px rgba(0, 0, 0, .16);
     --glass-blur:      blur(22px) saturate(190%);
 }
 
@@ -732,7 +726,7 @@ h1 { line-height: 1.08; }
     -webkit-backdrop-filter: var(--material-thick);
     backdrop-filter: var(--material-thick);
     border-bottom: 1px solid transparent;   /* 置顶时无线，滚动后才出现 */
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45);   /* 玻璃顶边高光 */
+    box-shadow: var(--glass-inset);          /* 与 .ios-btn / 卡片统一的 .box 玻璃内壁高光 */
     overflow: hidden;                        /* 菜单只能在内部生长 */
     transition:
         border-radius var(--dur-base) var(--ease-out),
@@ -743,7 +737,7 @@ h1 { line-height: 1.08; }
 /* 滚动后：只加一条发丝线 + 极浅投影（apple.com 的做法） */
 #mainNav.nav-shadow {
     border-bottom-color: var(--hairline);
-    box-shadow: 0 4px 16px -14px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .38);
+    box-shadow: var(--glass-inset), 0 4px 16px -14px rgba(0, 0, 0, .5);
 }
 /* 菜单展开：圆角与阴影长在顶栏上，菜单本身永远是透明的 */
 #mainNav.menu-open {
@@ -1125,7 +1119,7 @@ h1 { line-height: 1.08; }
         rgba(30, 34, 44, .42);
     border-color: var(--glass-border);
     border-left: 4px solid var(--tint);
-    box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .18);
+    box-shadow: var(--glass-shadow);
 }
 
 /* 全站实体白卡 → 统一液态玻璃（与上方 .border-l-4 强调卡同族，去掉左侧强调条）。
@@ -1147,7 +1141,7 @@ h1 { line-height: 1.08; }
         linear-gradient(150deg, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, .04) 45%, transparent 100%),
         var(--glass-bg);
     border-color: var(--glass-border);
-    box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .18);
+    box-shadow: var(--glass-shadow);
 }
 
 /* 统一按压回弹：所有按钮 / 胶囊链接 / ARIA 按钮，按下轻微缩小并以轻回弹曲线复位 */
@@ -1232,8 +1226,8 @@ a[class*="rounded-full"]:active,
 #changelogModal > div,
 #qrModal        > div {
     border-radius: var(--r-xl);
-    border: 1px solid var(--hairline);
-    box-shadow: var(--shadow-3);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
 }
 
 /* -----------------------------------------------------------
@@ -1292,10 +1286,7 @@ a[class*="rounded-full"]:active,
 [data-theme="dark"] #navSearchBtn {
     background: rgba(255, 255, 255, .1);
     border: 1px solid rgba(255, 255, 255, .14);
-    box-shadow:
-        0 3px 12px rgba(0, 0, 0, .30),
-        inset 0 1px 1px rgba(255, 255, 255, .18),
-        inset 0 -1px 1px rgba(0, 0, 0, .15);
+    box-shadow: var(--glass-inset), 0 3px 12px rgba(0, 0, 0, .30);
 }
 [data-theme="dark"] #menuBtn:hover,
 [data-theme="dark"] #mobileTopSearchBtn:hover,
@@ -1409,7 +1400,7 @@ button[class*="rounded-full"]:not(.bg-primary):not(.bg-secondary):hover {
 [data-theme="dark"] #feedbackModal  > div {
     background: rgba(30, 34, 44, .64);
     border-color: rgba(255, 255, 255, .12);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .12);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, .55), var(--glass-inset);
 }
 
 /* 404 按钮：高通透玻璃胶囊（参考效果图：底色更淡、边框更细、几乎全透） */
@@ -1549,14 +1540,20 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     --glass-bg:        rgba(30, 34, 44, .38);
     --glass-border:    rgba(255, 255, 255, .18);
     --glass-highlight: rgba(255, 255, 255, .3);
-    --glass-shadow:    0 10px 30px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .24);
+    /* .box 玻璃内壁多层高光（夜间收敛白光强度，与 .ios-btn 夜间同族） */
+    --glass-inset:    inset 2px -2px 1px -1px rgba(255, 255, 255, .5),
+                      inset -2px 2px 1px -1px rgba(255, 255, 255, .5),
+                      inset 6px -6px 1px -6px rgba(255, 255, 255, .28),
+                      inset -6px 6px 1px -6px rgba(255, 255, 255, .28),
+                      inset 0 0 2px rgba(255, 255, 255, .12);
+    --glass-shadow:    var(--glass-inset), 0 10px 30px rgba(0, 0, 0, .5);
     --shadow-1: 0 1px 2px rgba(0, 0, 0, .5);
     --shadow-2: 0 6px 18px -8px rgba(0, 0, 0, .7), 0 2px 6px -4px rgba(0, 0, 0, .5);
     --shadow-3: 0 28px 64px -24px rgba(0, 0, 0, .85), 0 8px 24px -16px rgba(0, 0, 0, .6);
 }
-[data-theme="dark"] #mainNav.glass-effect { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16); }
+[data-theme="dark"] #mainNav.glass-effect { box-shadow: var(--glass-inset); }
 [data-theme="dark"] #mainNav.nav-shadow {
-    box-shadow: 0 4px 18px -12px rgba(0, 0, 0, .9), inset 0 1px 0 rgba(255, 255, 255, .12);
+    box-shadow: var(--glass-inset), 0 4px 18px -12px rgba(0, 0, 0, .9);
 }
 [data-theme="dark"] #menuBackdrop { background: rgba(0, 0, 0, .5); }
 [data-theme="dark"] footer.bg-primary { background: var(--grouped-bg); }
@@ -1621,12 +1618,7 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     align-items: center;
     border-radius: var(--r);
     border: 1px double rgba(51, 51, 51, 0.08);
-    box-shadow:
-        inset 2px -2px 1px -1px rgba(255, 255, 255, 0.9),
-        inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
-        inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
-        inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
-        inset 0 0 2px rgba(0, 0, 0, 0.8);
+    box-shadow: var(--glass-inset);
     background: rgba(255, 255, 255, 0.04);
     -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
@@ -1765,13 +1757,7 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
 /* ---------- 夜间模式统一适配 ---------- */
 /* 夜间 .ios-btn：收敛 inset 白色高光，缓解「光感太重」（暗背景上白光更显眼，需克制） */
 [data-theme="dark"] .ios-btn {
-    box-shadow:
-        inset 2px -2px 1px -1px rgba(255, 255, 255, 0.5),
-        inset -2px 2px 1px -1px rgba(255, 255, 255, 0.5),
-        inset 6px -6px 1px -6px rgba(255, 255, 255, 0.28),
-        inset -6px 6px 1px -6px rgba(255, 255, 255, 0.28),
-        inset 0 0 2px rgba(255, 255, 255, 0.12),
-        0 3px 8px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--glass-inset), 0 3px 8px rgba(0, 0, 0, 0.5);
     background: rgba(255, 255, 255, 0.06);
     filter: brightness(1);
 }
