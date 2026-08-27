@@ -404,11 +404,18 @@ body {
 [data-theme="dark"] .shadow-md { --tw-shadow: 0 4px 6px -1px rgba(255, 255, 255, .10), 0 2px 4px -2px rgba(255, 255, 255, .10); }
 [data-theme="dark"] .shadow-lg { --tw-shadow: 0 10px 15px -3px rgba(255, 255, 255, .12), 0 4px 6px -4px rgba(255, 255, 255, .12); }
 [data-theme="dark"] .nav-shadow { box-shadow: 0 4px 6px -1px rgba(255, 255, 255, .08), 0 2px 4px -2px rgba(255, 255, 255, .06); }
+/* 夜间返回顶部：补齐 inset 白色高光，与夜间 .ios-btn 同族呈现玻璃光感（不再扁平） */
 [data-theme="dark"] #backToTop {
     background: rgba(255, 255, 255, .06);
     border-color: rgba(255, 255, 255, .14);
     color: var(--text-strong);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .55);
+    box-shadow:
+        inset 2px -2px 1px -1px rgba(255, 255, 255, .45),
+        inset -2px 2px 1px -1px rgba(255, 255, 255, .45),
+        inset 6px -6px 1px -6px rgba(255, 255, 255, .25),
+        inset -6px 6px 1px -6px rgba(255, 255, 255, .25),
+        inset 0 0 2px rgba(255, 255, 255, .12),
+        0 4px 10px rgba(0, 0, 0, .5);
 }
 [data-theme="dark"] #backToTop:hover { filter: brightness(1.12); }
 
@@ -1121,6 +1128,28 @@ h1 { line-height: 1.08; }
     box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .18);
 }
 
+/* 全站实体白卡 → 统一液态玻璃（与上方 .border-l-4 强调卡同族，去掉左侧强调条）。
+   命中所有带 bg-white rounded-xl shadow-md 的卡片，无需逐一改 HTML：
+   - 静态：首页速览卡、关于页信息卡、文章阅读卡（<article>）
+   - 动态：站内搜索结果卡、JS 渲染的新闻卡（main.js） */
+.bg-white.rounded-xl.shadow-md {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .78) 0%, rgba(255, 255, 255, .48) 45%, rgba(255, 255, 255, .26) 100%),
+        var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    background-clip: padding-box;
+}
+[data-theme="dark"] .bg-white.rounded-xl.shadow-md {
+    background:
+        linear-gradient(150deg, rgba(255, 255, 255, .1) 0%, rgba(255, 255, 255, .04) 45%, transparent 100%),
+        var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .5), inset 0 1px 1px rgba(255, 255, 255, .18);
+}
+
 /* 统一按压回弹：所有按钮 / 胶囊链接 / ARIA 按钮，按下轻微缩小并以轻回弹曲线复位 */
 button,
 a[class*="rounded-full"],
@@ -1488,71 +1517,11 @@ footer.bg-primary img { box-shadow: var(--shadow-1); }
 /* -----------------------------------------------------------
    §7 浮动按钮：返回顶部 / 分享
    ----------------------------------------------------------- */
-#shareFab .share-toggle,
-#shareFab .share-btn {
-    background:
-        linear-gradient(150deg, rgba(255, 255, 255, .85) 0%, rgba(255, 255, 255, .28) 40%, rgba(255, 255, 255, 0) 66%),
-        rgba(255, 255, 255, .50);
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    backdrop-filter: blur(22px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, .60);
-    box-shadow:
-        0 10px 26px rgba(0, 0, 0, .18),
-        inset 0 1.5px 2px rgba(255, 255, 255, .90),
-        inset 0 -2px 5px rgba(0, 0, 0, .08);
-    color: var(--tint);
-    transition: transform var(--dur-press) var(--ease-spring),
-                box-shadow var(--dur-fast) var(--ease-out),
-                opacity var(--dur-base) var(--ease-out),
-                visibility var(--dur-base);
-}
+/* 分享浮窗按钮已统一为 .ios-btn 玻璃钮（见文件尾部 .ios-btn 体系），品牌色经内联 --tint 呈现；
+   容器 / 面板 / 弹出动画 / Toast 的样式由 assets/main.js 的 shareWidgetStyle 注入。 */
 #backToTop:hover { transform: scale(1.06); filter: brightness(1.05); }
-#backToTop:active,
-#shareFab .share-toggle:active,
-#shareFab .share-btn:active {
-    transform: scale(.96);
-    transition-duration: var(--dur-press);
-}
-/* 暗色浮动按钮：与夜间顶栏圆钮 / 弹窗关闭按钮同一套「平铺雾化白」质感，全站一致 */
-[data-theme="dark"] #shareFab .share-toggle,
-[data-theme="dark"] #shareFab .share-btn {
-    background: rgba(255, 255, 255, .1);
-    border: 1px solid rgba(255, 255, 255, .14);
-    color: var(--text-strong);
-    box-shadow:
-        0 3px 12px rgba(0, 0, 0, .30),
-        inset 0 1px 1px rgba(255, 255, 255, .18),
-        inset 0 -1px 1px rgba(0, 0, 0, .15);
-    background-clip: padding-box;
-}
-[data-theme="dark"] #backToTop:hover,
-[data-theme="dark"] #shareFab .share-toggle:hover,
-[data-theme="dark"] #shareFab .share-btn:hover {
-    background: rgba(255, 255, 255, .16);
-    border-color: rgba(255, 255, 255, .18);
-    box-shadow:
-        0 6px 18px rgba(0, 0, 0, .34),
-        inset 0 1px 1px rgba(255, 255, 255, .2),
-        inset 0 -1px 1px rgba(0, 0, 0, .15);
-}
-
-/* 分享面板子按钮需要更强的通透感（压在各种复杂内容上，比主按钮更透才看得出来玻璃） */
-[data-theme="dark"] #shareFab .share-btn {
-    background: rgba(255, 255, 255, .08);
-    border-color: rgba(255, 255, 255, .18);
-    box-shadow:
-        0 3px 12px rgba(0, 0, 0, .30),
-        inset 0 1px 1px rgba(255, 255, 255, .14),
-        inset 0 -1px 1px rgba(0, 0, 0, .12);
-}
-[data-theme="dark"] #shareFab .share-btn:hover {
-    background: rgba(255, 255, 255, .16);
-    border-color: rgba(255, 255, 255, .24);
-    box-shadow:
-        0 6px 18px rgba(0, 0, 0, .34),
-        inset 0 1px 1px rgba(255, 255, 255, .18),
-        inset 0 -1px 1px rgba(0, 0, 0, .12);
-}
+#backToTop:active { transform: scale(.96); transition-duration: var(--dur-press); }
+/* 分享浮窗按钮的夜间样式已由 .ios-btn 体系统一处理（见文件尾部），此处不再单独声明。 */
 
 /* -----------------------------------------------------------
    §8 动效系统：滚动渐入统一为 24px / 480ms
@@ -1602,10 +1571,9 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     a[class*="rounded-full"],
     button[class*="rounded-full"],
     .search-button,
+    .ios-btn,
     #backToTop,
-    #menuBtn,
-    #shareFab .share-toggle,
-    #shareFab .share-btn {
+    #menuBtn {
         transition-property: background-color, color, border-color, box-shadow, opacity !important;
     }
     .card-hover:hover,
@@ -1613,11 +1581,10 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
     a[class*="rounded-full"]:active,
     button[class*="rounded-full"]:active,
     .search-button:active,
+    .ios-btn:active,
     #backToTop:hover,
     #backToTop:active,
     #menuBtn:active,
-    #shareFab .share-toggle:active,
-    #shareFab .share-btn:active,
     .animate-scale:hover { transform: none !important; }
 
     .animate-slide-up,
@@ -1659,8 +1626,7 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
         inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
         inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
         inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
-        inset 0 0 2px rgba(0, 0, 0, 0.8),
-        0 4px 8px rgba(0, 0, 0, 0.2);
+        inset 0 0 2px rgba(0, 0, 0, 0.8);
     background: rgba(255, 255, 255, 0.04);
     -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
@@ -1797,14 +1763,15 @@ body.reveal-ready .reveal-item.in-view { opacity: 1; transform: none; }
 }
 
 /* ---------- 夜间模式统一适配 ---------- */
+/* 夜间 .ios-btn：收敛 inset 白色高光，缓解「光感太重」（暗背景上白光更显眼，需克制） */
 [data-theme="dark"] .ios-btn {
     box-shadow:
-        inset 2px -2px 1px -1px rgba(255, 255, 255, 0.85),
-        inset -2px 2px 1px -1px rgba(255, 255, 255, 0.85),
-        inset 6px -6px 1px -6px rgba(255, 255, 255, 0.5),
-        inset -6px 6px 1px -6px rgba(255, 255, 255, 0.5),
-        inset 0 0 2px rgba(255, 255, 255, 0.18),
-        0 4px 10px rgba(0, 0, 0, 0.55);
+        inset 2px -2px 1px -1px rgba(255, 255, 255, 0.5),
+        inset -2px 2px 1px -1px rgba(255, 255, 255, 0.5),
+        inset 6px -6px 1px -6px rgba(255, 255, 255, 0.28),
+        inset -6px 6px 1px -6px rgba(255, 255, 255, 0.28),
+        inset 0 0 2px rgba(255, 255, 255, 0.12),
+        0 3px 8px rgba(0, 0, 0, 0.5);
     background: rgba(255, 255, 255, 0.06);
     filter: brightness(1);
 }

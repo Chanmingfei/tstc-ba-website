@@ -871,14 +871,10 @@ document.addEventListener('DOMContentLoaded', function () {
             css.id = 'shareWidgetStyle';
             css.textContent =
                 '#shareFab{position:fixed;left:16px;bottom:16px;z-index:var(--z-fab);display:flex;flex-direction:column;align-items:center;gap:10px}' +
-                '#shareFab .share-toggle{width:48px;height:48px;border-radius:50%;background:linear-gradient(150deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.28) 40%,rgba(255,255,255,0) 66%),rgba(255,255,255,.50);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid rgba(255,255,255,.6);color:var(--tint);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 10px 26px rgba(0,0,0,.18),inset 0 1.5px 2px rgba(255,255,255,.9),inset 0 -2px 5px rgba(0,0,0,.08);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}' +
-                '#shareFab .share-toggle:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(0,0,0,.24)}' +
                 '#shareFab .share-panel{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:2px;transform-origin:bottom center}' +
                 '#shareFab .share-panel.hidden{display:none}' +
                 '#shareFab .share-panel:not(.hidden){animation:sharePop .18s ease}' +
                 '@keyframes sharePop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}' +
-                '#shareFab .share-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(150deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.28) 40%,rgba(255,255,255,0) 66%),rgba(255,255,255,.50);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border:1px solid rgba(255,255,255,.6);color:#555;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 10px 26px rgba(0,0,0,.18),inset 0 1.5px 2px rgba(255,255,255,.9),inset 0 -2px 5px rgba(0,0,0,.08);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;text-decoration:none}' +
-                '#shareFab .share-btn:hover{transform:scale(1.06);box-shadow:0 6px 16px rgba(0,0,0,.2)}' +
                 '#shareToast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:rgba(0,0,0,.82);color:#fff;font-size:14px;padding:9px 16px;border-radius:999px;z-index:var(--z-toast);opacity:0;transition:opacity .2s ease;pointer-events:none}' +
                 '#shareToast.show{opacity:1}';
             document.head.appendChild(css);
@@ -940,10 +936,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function makeBtn(cfg) {
             const b = document.createElement('button');
-            b.className = 'share-btn';
+            b.className = 'ios-btn ios-btn--tint';
+            b.style.setProperty('--tint', cfg.color);
             b.setAttribute('aria-label', cfg.label);
             b.title = cfg.label;
-            b.style.color = cfg.color;
             if (cfg.svg) {
                 b.innerHTML = cfg.svg;
             } else if (cfg.text) {
@@ -970,16 +966,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 复制链接按钮（与分享按钮同尺寸、同风格）
         const copyBtn = document.createElement('button');
-        copyBtn.className = 'share-btn';
+        copyBtn.className = 'ios-btn';
         copyBtn.setAttribute('aria-label', isEn ? 'Copy link' : '复制链接');
         copyBtn.title = isEn ? 'Copy link' : '复制链接';
-        copyBtn.style.color = '#6b7280';
+        copyBtn.style.color = 'var(--text-muted)';
         copyBtn.innerHTML = '<i class="fa fa-link"></i>';
         copyBtn.addEventListener('click', function (e) { e.stopPropagation(); copyLink(); });
         panel.appendChild(copyBtn);
 
         const toggle = document.createElement('button');
-        toggle.className = 'share-toggle';
+        toggle.className = 'ios-btn ios-btn--tint';
+        toggle.style.setProperty('--w', '48px');
+        toggle.style.setProperty('--h', '48px');
+        toggle.style.setProperty('--tint', 'var(--primary)');
         toggle.id = 'shareToggle';
         toggle.setAttribute('aria-label', isEn ? 'Share' : '分享');
         toggle.setAttribute('aria-expanded', 'false');
