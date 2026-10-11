@@ -1,0 +1,12 @@
+name = "tstc-ba-website"
+pages_build_output_dir = "."
+compatibility_date = "2024-09-23"
+
+# ── Cloudflare Pages Functions 绑定（D1 / KV）──
+# Pages Functions 的 D1 / KV 绑定请在 Cloudflare 控制台为该项目添加：
+#   站点的 「Functions」→「D1 数据库」绑定变量名：DB
+#   站点的 「Functions」→「KV 命名空间」绑定变量名：SESSIONS（会话）、RATELIMIT（限流）
+# 本地用 wrangler pages dev 时可用 `wrangler d1` / `wrangler kv` 或 miniflare 本地绑定。
+#
+# 部署：wrangler login && wrangler pages deploy
+# 建表：wrangler d1 execute tstc-ba-db --file=./schema.sql
