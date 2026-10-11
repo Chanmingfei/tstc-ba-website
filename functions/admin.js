@@ -77,6 +77,35 @@ export async function onRequest(context) {
   .stat { background:rgba(255,255,255,.55); -webkit-backdrop-filter:blur(22px) saturate(190%); backdrop-filter:blur(22px) saturate(190%); border:1px solid rgba(255,255,255,.7); border-radius:16px; padding:18px; text-align:center; box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.9), inset -2px 2px 1px -1px hsla(0,0%,100%,.9), 0 10px 30px -20px rgba(0,0,0,.24); }
   .stat b { display:block; font-size:26px; color:var(--tint); }
   .err { color:#dc2626; font-size:13px; min-height:18px; }
+  /* ---------- 移动端自适应 ---------- */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px 12px 48px; }
+    .topbar { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 14px; border-radius: 16px; }
+    .brand { gap: 10px; font-size: 15px; }
+    .brand .bar-logo { width: 38px; height: 38px; }
+    .brand .school-badge { height: 24px; }
+    .brand .b-title { font-size: 15px; }
+    .topbar .actions { justify-content: space-between; }
+    .topbar a, .topbar button { flex: 1; text-align: center; padding: 9px 10px; }
+    .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+    .tab { flex: 0 0 auto; padding: 8px 14px; font-size: 13px; }
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat { padding: 14px 10px; }
+    .stat b { font-size: 22px; }
+    .card { padding: 14px; }
+    /* 表格在窄屏横向滚动，避免撑破布局 */
+    .card { overflow-x: auto; }
+    table { min-width: 520px; }
+    .row2 { grid-template-columns: 1fr; }
+    /* 表单控件 16px 起，避免 iOS 聚焦自动缩放 */
+    .panel input, .panel textarea { font-size: 16px; }
+    .btn { padding: 7px 10px; font-size: 12px; }
+    th, td { padding: 8px 6px; font-size: 12px; }
+  }
+  @media (max-width: 400px) {
+    .stats { grid-template-columns: 1fr; }
+    .brand .b-title { font-size: 14px; }
+  }
   @media (prefers-color-scheme: dark) {
     body { color:#e7ecf3; background: radial-gradient(1300px 700px at 50% 26%, rgba(37,117,252,.16), transparent 58%), radial-gradient(1000px 520px at -4% 8%, rgba(124,58,237,.14), transparent 52%), linear-gradient(180deg, #0c253d, #143352); }
     .topbar, .card, .panel, .tab, .stat { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.16); color:#e7ecf3; box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.16), inset -2px 2px 1px -1px hsla(0,0%,100%,.16), 0 16px 40px -22px rgba(0,0,0,.6); }

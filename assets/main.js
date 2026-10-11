@@ -1338,13 +1338,40 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
+        // 合并「后台（D1）新增的文章」：清单由构建脚本扫描静态文件生成，
+        // 只存在于数据库的文章（后台新建）不在清单里，这里追加进来，保证发布后自动出现在列表。
+        function mergeDbArticles(items, done) {
+            var lang = isEn ? 'en' : 'zh';
+            fetch('/api/articles?lang=' + lang + '&limit=50')
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (d) {
+                    var extra = (d && d.articles) ? d.articles : [];
+                    var seen = {};
+                    items.forEach(function (x) { seen[x.slug] = 1; });
+                    extra.forEach(function (x) {
+                        if (!seen[x.slug]) {
+                            seen[x.slug] = 1;
+                            items.push({
+                                slug: x.slug, title: x.title, date: x.date,
+                                category: x.category, author: x.author,
+                                excerpt: x.excerpt || '', cover: x.cover || ''
+                            });
+                        }
+                    });
+                })
+                .catch(function () { /* 接口不可用时仍使用清单数据 */ })
+                .then(function () { done(items); });
+        }
+
         var data = isEn ? (window.__NEWS_EN__ || []) : (window.__NEWS__ || []);
-        if (data && data.length) { currentData = buildValid(data); paintPage(page); return; }
+        if (data && data.length) {
+            mergeDbArticles(data.slice(), function (merged) { currentData = buildValid(merged); paintPage(page); });
+            return;
+        }
         // 兜底：本地未生成内联数据时，回退到对应语言清单地址
         var url = isEn ? 'news-manifest-en.json' : (window.NEWS_MANIFEST_URL || 'news-manifest.json');
         fetch(url).then(function (r) { return r.json(); }).then(function (items) {
-            currentData = buildValid(items);
-            paintPage(page);
+            mergeDbArticles(items, function (merged) { currentData = buildValid(merged); paintPage(page); });
         }).catch(function () {
             container.innerHTML = '<p class="text-gray-500 col-span-full">本地预览请先运行：node generate-manifest.js</p>';
         });
@@ -1371,6 +1398,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var b = document.createElement('button');
             b.type = 'button';
             b.textContent = label;
+            b.dataset.cat = cat;
             b.className = active ? onCls : offCls;
             b.addEventListener('click', function () {
                 wrap.querySelectorAll('button').forEach(function (x) { x.className = offCls; });
@@ -1379,9 +1407,25 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             return b;
         }
+        function addCats(list) {
+            var existing = [];
+            wrap.querySelectorAll('button[data-cat]').forEach(function (x) { existing.push(x.dataset.cat); });
+            var added = [];
+            list.forEach(function (x) {
+                if (x && x.category && cats.indexOf(x.category) === -1) cats.push(x.category);
+            });
+            cats.forEach(function (c) {
+                if (existing.indexOf(c) === -1 && added.indexOf(c) === -1) { added.push(c); wrap.appendChild(makeChip(c, c, false)); }
+            });
+        }
         wrap.appendChild(makeChip(allLabel, '', true));
         cats.forEach(function (c) { wrap.appendChild(makeChip(c, c, false)); });
         grid.parentNode.insertBefore(wrap, grid);
+        // 补充后台新增文章带来的新分类
+        fetch('/api/articles?lang=' + (isEn ? 'en' : 'zh') + '&limit=50')
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) { if (d && d.articles) addCats(d.articles); })
+            .catch(function () { });
     }
 
     // 列表页：全部文章；首页预览：最新 3 条（按日期自动取最新）

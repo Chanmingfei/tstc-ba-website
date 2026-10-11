@@ -2,6 +2,11 @@
 // D1 有正文时读取静态外壳并替换动态区域；否则原样回退静态资源。
 import { getArticleBySlug, renderArticlePage } from '../_lib/article.js';
 
+// 后台新建的文章（如 post-18）在仓库里没有静态页面文件，直接取外壳会 404。
+// 此时借用一篇既有文章页作为设计模板（renderArticlePage 会替换掉标题/元信息/正文），
+// 这样模板始终与主站最新设计同步，无需额外维护模板文件。
+const SHELL_FALLBACK_SLUG = 'post-17';
+
 export async function onRequest(context) {
   const { request, env } = context;
   if (request.method !== 'GET') return env.ASSETS.fetch(request);
@@ -21,8 +26,14 @@ export async function onRequest(context) {
       const shellUrl = new URL(request.url);
       shellUrl.pathname = shellUrl.pathname.replace(/\.html$/, '');
       const shellRes = await env.ASSETS.fetch(new Request(shellUrl.toString(), { method: 'GET' }));
-      const shellText = shellRes.ok ? await shellRes.text() : '';
-      if (!shellText) return env.ASSETS.fetch(request); // 兜底：外壳为空则原样回退静态资源
+      let shellText = shellRes.ok ? await shellRes.text() : '';
+      if (!shellText) {
+        // 无静态外壳（后台新建文章）→ 用既有文章页当模板
+        const fbUrl = new URL(`/news/${SHELL_FALLBACK_SLUG}`, request.url);
+        const fbRes = await env.ASSETS.fetch(new Request(fbUrl.toString(), { method: 'GET' }));
+        shellText = fbRes.ok ? await fbRes.text() : '';
+      }
+      if (!shellText) return env.ASSETS.fetch(request); // 兜底：仍取不到则原样回退静态资源
       const out = renderArticlePage(shellText, article);
       return new Response(out, {
         status: 200,
