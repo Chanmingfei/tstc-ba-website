@@ -100,3 +100,17 @@ export async function requireAdmin(req, env) {
   if (!s || s.role !== 'admin') return null;
   return s;
 }
+
+// 活跃会话：通过 getSession 取会话并校验用户未被封禁（banned）。
+// 用于 /api/me、评论发表、管理后台等需要「有效且未被封禁」身份的场景。
+export async function getActiveSession(req, env) {
+  const s = await getSession(req, env);
+  if (!s) return null;
+  try {
+    const u = await env.DB.prepare('SELECT status FROM users WHERE id = ?').bind(s.userId).first();
+    if (!u || u.status !== 'active') return null;
+  } catch {
+    return null;
+  }
+  return s;
+}

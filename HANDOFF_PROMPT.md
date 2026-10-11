@@ -8,6 +8,8 @@
 
 这是一个**唐山师范学院吧官网**的静态双语（中文 / 英文）多页站点，预编译 Tailwind、自托管 Font Awesome，部署在 Cloudflare Pages。你负责**发布/更新/删除新闻文章**，并维护"单一数据源 → 自动派生"的构建流程。
 
+> **动态能力（2026 新增）**：站点已升级为"静态外壳 + Cloudflare Pages Functions"混合形态。新增**统一认证 SSO**（`sso.tstc.pp.ua` 单独子域，简单用户名+密码，无邮箱）、**全站登录态**、**每篇文章账号评论（中英文共用同一评论串）**、以及**管理员专属后台**（管理用户/文章/评论）。正文已入库（D1），文章页由 Functions 做 SSR 渲染。详见 [§15](#15-动态站架构统一认证--评论--管理后台)。
+
 ---
 
 ## 1. 仓库与部署通道（务必照此操作）
@@ -220,6 +222,16 @@ npm run build
 | `build/inject-theme.js` | 防首屏闪烁脚本；幂等，可重复跑 |
 | `v2-preview.html` | 玻璃风格预览画廊（重大视觉迭代后按需刷新） |
 | `images/` | README 引用的展示图；重新截图后才替换 |
+| `functions/` | **Cloudflare Pages Functions**：认证 API、文章 SSR、管理后台、评论。详见 §15 |
+| `functions/[[path]].js` / `functions/news/[[slug]].js` | 文章 SSR 拦截器（仅 `news/post-N.html`） |
+| `functions/api/[[route]].js` | 统一 API 路由（register/login/logout/me/articles/comments/admin） |
+| `functions/_lib/` | 基础设施：`config.js` `http.js` `auth.js`（PBKDF2+KV 会话）`article.js` `limit.js` |
+| `functions/login.js` / `register.js` / `admin.js` | sso 子域专属页面（host 路由，主站访问 302 回 sso） |
+| `functions/package.json` | `{ "type": "module" }`（Functions 用 ESM） |
+| `wrangler.toml` | Pages Functions 配置 + D1/KV 绑定说明 |
+| `schema.sql` | D1 建表语句（users / articles / comments） |
+| `scripts/migrate-articles.mjs` | 解析 34 个静态文章页 → 生成 `scripts/seed-articles.sql`（入库迁移） |
+| `scripts/seed-articles.sql` | 文章入 D1 的 SQL（INSERT OR REPLACE） |
 
 ---
 
@@ -334,3 +346,68 @@ inset 0 0 2px rgba(0,0,0,.8)
 ## 14. 当前快速上手（新对话第一句可贴）
 
 > 仓库已克隆到 `/workspace/tstc-ba-website`，请接手。背景：唐山师范学院吧官网静态双语站，Cloudflare Pages 部署。当前视觉体系已统一为一套 `.box` 玻璃语言（2026-08-27，`c102ba0`）：`--glass-inset` 多内阴影签名被提取为 token，顶栏 / 搜索按钮 / 分享浮标 / 返回顶部 / 卡片 / 弹窗面板 / 关闭按钮全部共享同一套玻璃签名，日间通透、夜间柔和不发白。此前已落地全站暗色模式 + 昼夜滑动开关、灯箱玻璃化、移动端顶栏单行修复、README 配图重写等。发文章流程见上文第 4/5 节。注意：① 改 `main.js`/`tailwind-input.css` 后必须 `npm run build`；② 新增玻璃组件先看 §12 的暗色自查点；③ 推送只走 `git push origin main`（Gitee），别试 GitHub。
+
+---
+
+## 15. 动态站架构（统一认证 + 评论 + 管理后台，2026 新增）
+
+> 新对话做动态相关改动前先读这节。背景见 §0。核心结论：**静态外壳 + Cloudflare Pages Functions** 混合；登录/注册/后台在 `sso.tstc.pp.ua` 子域，会话 Cookie 设在父域 `.tstc.pp.ua`，主站与子域同源共享，无需 CORS 跨域。
+
+### 15.1 架构总览
+
+- **主站**（`tstc.pp.ua`）：静态页面 + 前端运行时注入登录态（`assets/main.js` 的 `initAuthWidget`）、文章评论（`initComments`）、文章正文由 Functions SSR 渲染。
+- **SSO 子域**（`sso.tstc.pp.ua`）：`/login` `/register` `/admin` 三个页面，仅在该主机渲染；主站访问会 302 回 sso（host 路由在 `login.js`/`register.js`/`admin.js` 内）。
+- **Functions 目录**：`functions/`（根）+ `functions/_lib/`（基础设施）+ `functions/api/`（统一 API）+ `functions/news/`（文章 SSR）。`functions/package.json` 含 `{ "type": "module" }`，Functions 用 ESM。
+
+### 15.2 绑定（D1 / KV，部署前必配）
+
+`wrangler.toml` 已注释说明，但**绑定须在 Cloudflare 控制台为该项目实际创建**，否则页面能构建、但 `/api/*` 会因 `env.DB`/`env.SESSIONS` 未绑定而 500：
+
+- D1 绑定变量名 `DB`（库名如 `tstc-ba-db`）
+- KV 绑定 `SESSIONS`（会话令牌）、`RATELIMIT`（限流计数）
+- 建表：`wrangler d1 execute tstc-ba-db --file=./schema.sql`（users / articles / comments 三表）
+- 子域 `sso.tstc.pp.ua` 指向同一 Pages 项目；会话 Cookie `Domain=.tstc.pp.ua` 让两域通用。
+
+### 15.3 认证与会话
+
+- 密码：PBKDF2-SHA256（Workers WebCrypto 原生，12 万次迭代，16B 随机盐），见 `functions/_lib/auth.js`。
+- 会话：`createSession` 生成 32B 随机令牌存 KV（JSON `{userId,username,role,exp}`，TTL 7 天），`Set-Cookie` 为 `HttpOnly; Secure; SameSite=Lax`。
+- 无邮箱验证（用户决定）；忘记密码由管理员在后台「重置密码」。
+- **封禁**：`getActiveSession` 不仅校验会话，还查 `users.status`，被封禁（banned）会话视为失效 → `/api/me` 401、后台 403。
+
+### 15.4 文章 SSR（正文进数据库）
+
+- `functions/news/[[slug]].js` 仅拦截 `/news/post-N.html` 与 `/news/post-N-en.html`；D1 有正文时读取**静态外壳**（`env.ASSETS.fetch`）并替换动态区域（标题/分类/日期/作者/正文/`#articleMeta`/面包屑），无正文则原样回退静态资源。
+- 替换锚点：`renderArticlePage`（`functions/_lib/article.js`）用正则替换 `.article-content` 与其紧随的 `<!-- AUTO_PREV_NEXT_START -->` 之间的内容；`AUTO_PREV_NEXT` 标记与构建脚本注入的上下篇导航**不可破坏**。
+- 静态 `news/post-N.html` 仍是设计模板与回退；改版式改静态文件，改正文改 D1。
+
+### 15.5 评论（每篇可评，中英文共用一串）
+
+- 接口：`GET/POST /api/comments`（发表需登录）、`DELETE /api/comments/:id`（仅管理员，软删 status='deleted'）。
+- thread = `post-N`（去掉 `-en`），所以 `post-1.html` 与 `post-1-en.html` 共享同一评论串。
+- 前端 `initComments` 挂载在 `.article-content` 之后、`AUTO_PREV_NEXT` 之前（不被 SSR 覆盖）。评论内容**前端 `escapeHtml` 转义**，防止 XSS（已无头验证恶意 `<img onerror>` 被转义为文本）。
+
+### 15.6 管理后台（仅管理员）
+
+- 入口 `https://sso.tstc.pp.ua/admin`，`functions/admin.js` 玻璃风 SPA；非管理员显示「无权限」。
+- 接口 `functions/api/[[route]].js` 的 `adminDispatch`：`/api/admin/{users,articles,comments,stats}` 增删改查 + 用户封禁/解封/重置密码 + 评论软删。
+- 文章正文编辑写 D1（SSR 生效）；删除文章只删库记录，不删静态文件（如需彻底下线要同步处理静态页）。
+
+### 15.7 安全加固（M6）
+
+- **Origin 校验**：变更型请求（POST/PUT/DELETE）校验 `Origin` 在 `ALLOWED_ORIGINS`（`config.js`）内，跨站伪造请求 403。配合 `SameSite=Lax` Cookie，天然抵御 CSRF。
+- **限流**：`functions/_lib/limit.js` 基于 KV（登录 8/分、注册 5/分、评论 10/分、后台 40/分）；无 `RATELIMIT` 绑定时优雅放行（不阻断）。
+- **封禁拦截**：见 15.3。
+- **输入校验**：用户名 `^[a-zA-Z0-9_]{3,20}$`、密码≥6、评论≤1000、thread `^post-\d+$`、slug `^post-\d+(-en)?$`。
+
+### 15.8 文章入库迁移
+
+- `scripts/migrate-articles.mjs` 解析 34 个静态文章页（抽取 `#articleMeta` + `.article-content` 正文）→ 生成 `scripts/seed-articles.sql`（`INSERT OR REPLACE`，已生成，34 篇）。
+- 执行：`wrangler d1 execute tstc-ba-db --remote --file=./scripts/seed-articles.sql`。本地验证可用 `--execute`（需已 `wrangler login`）。
+- 之后改文章正文请走后台或直接改 D1，不要再手改静态 `.article-content`（否则被 SSR 覆盖、且会造成数据源漂移）。
+
+### 15.9 构建坑（重要，曾导致 M2–M5 全部部署失败）
+
+- **Functions 文件相对导入路径写错即构建失败**：wrangler 打包 Functions 时解析 ESM 导入，路径错了报 `Could not resolve "../_lib/xxx"`。规则：**根目录 `functions/*.js` 引用 `_lib` 用 `./_lib/`；子目录 `functions/api/*.js`、`functions/news/*.js` 用 `../_lib/`**。`login.js`/`register.js` 曾错写成 `../_lib/` → 已修复（`859e53a`）。
+- 本地 `node --check` 只校验语法、**不解析导入路径**，发现不了这类问题。验证导入正确性用：遍历 `functions/**/*.js`、解析 `./`/`../` 说明符是否文件存在（本仓已有此检查思路），或 `node --input-type=module -e "await import('./functions/login.js')"` 实测加载整条依赖链。
+- Pages Functions 的 D1/KV 绑定**不写在 wrangler.toml 的 `[d1_database]` 里也能构建**——它们在 Cloudflare 控制台配置；wrangler.toml 仅声明 `pages_build_output_dir` 与 `compatibility_date`。绑定缺失只影响运行时（500），不影响构建。

@@ -4,16 +4,29 @@ import {
   hashPassword,
   verifyPassword,
   getSession,
+  getActiveSession,
   createSession,
   destroySession,
   sessionCookie,
   clearCookie,
 } from '../_lib/auth.js';
+import { ALLOWED_ORIGINS } from '../_lib/config.js';
+import { rateLimit, clientIp } from '../_lib/limit.js';
+
+// 变更型请求（POST/PUT/DELETE）校验 Origin：仅允许同源或白名单来源，抵御跨站伪造。
+// 同源请求浏览器不携带 Origin 或携带同域 Origin；跨站伪造请求将被拒绝。
+function originOk(request) {
+  const origin = request.headers.get('Origin');
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
 
 export async function onRequest(context) {
   const { request, env, params } = context;
   const method = request.method;
   if (method === 'OPTIONS') return handleOptions();
+  if (method !== 'GET' && method !== 'HEAD' && !originOk(request))
+    return json({ error: 'Origin 不被允许' }, 403);
 
   const route = (params.route || '').replace(/^\/+|\/+$/g, '');
   const segments = route.split('/').filter(Boolean);
@@ -40,6 +53,8 @@ export async function onRequest(context) {
 
 // ---------- 认证 ----------
 async function register(request, env) {
+  const rl = await rateLimit(env, 'rl:reg:' + clientIp(request), 5, 60);
+  if (!rl.ok) return json({ error: '注册过于频繁，请稍后再试' }, 429);
   const { username, password } = await request.json().catch(() => ({}));
   if (!username || !password) return json({ error: '缺少用户名或密码' }, 400);
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(username))
@@ -59,6 +74,8 @@ async function register(request, env) {
 }
 
 async function login(request, env) {
+  const rl = await rateLimit(env, 'rl:login:' + clientIp(request), 8, 60);
+  if (!rl.ok) return json({ error: '尝试过于频繁，请稍后再试' }, 429);
   const { username, password } = await request.json().catch(() => ({}));
   if (!username || !password) return json({ error: '缺少用户名或密码' }, 400);
 
@@ -79,7 +96,7 @@ async function logout(request, env) {
 }
 
 async function me(request, env) {
-  const s = await getSession(request, env);
+  const s = await getActiveSession(request, env);
   if (!s) return json({ error: '未登录' }, 401);
   return json({ username: s.username, role: s.role });
 }
@@ -117,7 +134,9 @@ async function listComments(request, env) {
 }
 
 async function postComment(request, env) {
-  const s = await getSession(request, env);
+  const rl = await rateLimit(env, 'rl:cmt:' + clientIp(request), 10, 60);
+  if (!rl.ok) return json({ error: '评论过于频繁，请稍后再试' }, 429);
+  const s = await getActiveSession(request, env);
   if (!s) return json({ error: '请先登录' }, 401);
   const { thread, content } = await request.json().catch(() => ({}));
   if (!THREAD_RE.test(thread || '')) return json({ error: '非法 thread' }, 400);
@@ -140,8 +159,12 @@ async function deleteComment(request, env, id) {
 
 // ---------- 管理后台（M5）----------
 async function adminDispatch(request, env, segments) {
-  const s = await getSession(request, env);
+  const s = await getActiveSession(request, env);
   if (!s || s.role !== 'admin') return json({ error: '无权限' }, 403);
+  if (request.method !== 'GET') {
+    const rl = await rateLimit(env, 'rl:admin:' + clientIp(request), 40, 60);
+    if (!rl.ok) return json({ error: '操作过于频繁' }, 429);
+  }
   const method = request.method;
   const sub = segments[1] || '';
   const id = segments[2];
