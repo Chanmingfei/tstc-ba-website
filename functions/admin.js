@@ -63,8 +63,8 @@ export async function onRequest(context) {
   th { color:var(--text-muted); font-weight:600; }
   .panel { background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.7); border-radius:14px; padding:16px; margin-bottom:16px; }
   .panel label { display:block; font-size:12px; color:#374151; margin:10px 0 4px; }
-  .panel input, .panel textarea { width:100%; padding:9px 11px; border:1px solid var(--hairline); border-radius:10px; font-size:14px; font-family:inherit; outline:none; background:rgba(255,255,255,.7); color:var(--text-strong); }
-  .panel input:focus, .panel textarea:focus { border-color:var(--tint); box-shadow:0 0 0 3px rgba(10,108,214,.16); }
+  .panel input, .panel textarea, .panel select { width:100%; padding:9px 11px; border:1px solid var(--hairline); border-radius:10px; font-size:14px; font-family:inherit; outline:none; background:rgba(255,255,255,.7); color:var(--text-strong); }
+  .panel input:focus, .panel textarea:focus, .panel select:focus { border-color:var(--tint); box-shadow:0 0 0 3px rgba(10,108,214,.16); }
   .panel textarea { min-height:160px; resize:vertical; }
   .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .muted { color:#9ca3af; }
@@ -98,7 +98,7 @@ export async function onRequest(context) {
     table { min-width: 520px; }
     .row2 { grid-template-columns: 1fr; }
     /* 表单控件 16px 起，避免 iOS 聚焦自动缩放 */
-    .panel input, .panel textarea { font-size: 16px; }
+    .panel input, .panel textarea, .panel select { font-size: 16px; }
     .btn { padding: 7px 10px; font-size: 12px; }
     th, td { padding: 8px 6px; font-size: 12px; }
   }
@@ -112,7 +112,8 @@ export async function onRequest(context) {
     .brand { color:#fff; } .brand .b-title small { color:#aab4c2; }
     .tab { color:#aab4c2; }
     th, td { border-bottom-color:rgba(255,255,255,.10); }
-    .panel input, .panel textarea { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.18); color:#fff; }
+    .panel input, .panel textarea, .panel select { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.18); color:#fff; }
+    .panel select option { color:#1f2937; }
     .topbar a, .topbar button { background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18); color:#cfe0ff; }
     .muted { color:#8a93a3; }
   }
@@ -231,7 +232,10 @@ function articleForm(article) {
   return '<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center"><b>' + (article.slug ? '编辑文章' : '新建文章') + '</b>' +
     '<button class="btn ghost" id="cancelArt">取消</button></div>' +
     '<div class="row2"><div><label>slug（post-N 或 post-N-en）</label><input id="f_slug" value="' + esc(article.slug || '') + '" ' + (article.slug ? 'readonly' : '') + '></div>' +
-    '<div><label>语言</label><input id="f_lang" value="' + esc(article.lang || 'zh') + '" readonly></div></div>' +
+    '<div><label>语言</label><select id="f_lang">' +
+    '<option value="zh"' + ((article.lang || 'zh') === 'zh' ? ' selected' : '') + '>中文 zh</option>' +
+    '<option value="en"' + (article.lang === 'en' ? ' selected' : '') + '>English en</option>' +
+    '</select></div></div>' +
     '<label>标题</label><input id="f_title" value="' + esc(article.title || '') + '">' +
     '<div class="row2"><div><label>日期</label><input id="f_date" value="' + esc(article.date || '') + '" placeholder="2025-07-02"></div>' +
     '<div><label>分类</label><input id="f_cat" value="' + esc(article.category || '') + '"></div></div>' +
