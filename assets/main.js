@@ -43,6 +43,66 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     addLangToggle();
+    initAuthWidget();
+
+    /* ---------- 全站登录态（统一认证 SSO）----------
+       调同源 /api/me 读取登录态，注入到导航栏右上角（桌面 + 移动菜单）。
+       登录/注册页在 sso.tstc.pp.ua，会话 Cookie 设在父域 .tstc.pp.ua，两域通用。 */
+    function initAuthWidget() {
+        const nav = document.querySelector('#mainNav');
+        if (!nav) return;
+        const mountDesktop = nav.querySelector('.hidden.md\\:flex');
+        const mountMobile = document.querySelector('#mobileMenu .space-y-3');
+        if (!mountDesktop && !mountMobile) return;
+
+        const ssoBase = 'https://sso.tstc.pp.ua';
+        const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        if (!document.getElementById('authWidgetStyle')) {
+            const st = document.createElement('style');
+            st.id = 'authWidgetStyle';
+            st.textContent = '.auth-user{font-weight:600;color:var(--text-strong,#111827)}' +
+                '.auth-admin{margin-left:8px;color:var(--primary,#4f46e5);text-decoration:none}' +
+                '.auth-logout{margin-left:8px;color:#ef4444;background:none;border:0;cursor:pointer;font-size:14px}' +
+                '#mainNav .auth-logout:hover{text-decoration:underline}';
+            document.head.appendChild(st);
+        }
+
+        function build(isMobile) {
+            const wrap = document.createElement('div');
+            wrap.dataset.authWidget = '1';
+            if (me) {
+                wrap.innerHTML = '<span class="auth-user">' + esc(me.username) + '</span>' +
+                    (me.role === 'admin' ? ' <a class="auth-admin" href="' + ssoBase + '/admin">后台</a>' : '') +
+                    ' <button type="button" class="auth-logout">登出</button>';
+                const lb = wrap.querySelector('.auth-logout');
+                if (lb) lb.addEventListener('click', async () => {
+                    try { await fetch('/api/logout', { method: 'POST', credentials: 'include' }); } catch (_) {}
+                    location.reload();
+                });
+            } else {
+                const cls = isMobile
+                    ? 'block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg'
+                    : 'text-gray-700 hover:text-primary font-medium transition-colors';
+                wrap.innerHTML = '<a href="' + ssoBase + '/login" class="' + cls + '">登录</a>';
+            }
+            return wrap;
+        }
+
+        let me = null;
+        (async () => {
+            try {
+                const r = await fetch('/api/me', { credentials: 'include' });
+                if (r.ok) me = await r.json();
+            } catch (_) {}
+            if (mountDesktop) mountDesktop.appendChild(build(false));
+            if (mountMobile) {
+                const m = build(true);
+                m.classList.add('border-t', 'border-gray-100', 'mt-2', 'pt-2');
+                mountMobile.appendChild(m);
+            }
+        })();
+    }
 
     /* ---------- 全站唯一滚动监听（passive + rAF 节流） ----------
        原先「导航栏阴影」与「返回顶部」各挂一个 scroll 监听，每帧读两次 scrollY、
