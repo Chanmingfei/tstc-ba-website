@@ -9,4 +9,7 @@ export const ALLOWED_ORIGINS = [
   'https://www.tstc.pp.ua',
   'https://sso.tstc.pp.ua',
 ];
-export const PBKDF2_ITERATIONS = 120000;
+// PBKDF2 迭代次数。注意：Cloudflare Workers 的 WebCrypto 对 PBKDF2 有硬上限，
+// 超过 100000 会直接抛错 "iteration counts above 100000 are not supported"，
+// 导致注册 500、登录 verifyPassword 内部抛错被 catch 成 false（表现为密码永远错误）。
+export const PBKDF2_ITERATIONS = 100000;

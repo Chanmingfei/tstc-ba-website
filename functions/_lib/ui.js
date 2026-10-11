@@ -9,7 +9,7 @@ export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redi
   return `<!DOCTYPE html><html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${title} · 唐山师范学院吧</title>
+<title>${title} · 唐山师范学院吧统一认证系统</title>
 <style>
   :root {
     --primary: #0465bc; --secondary: #2575fc; --tint: #0a6cd6;
@@ -41,12 +41,20 @@ export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redi
   }
   .brand { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 18px; }
   .logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 12px; }
+  /* 校徽与吧徽均为「边界泛洪去底」的透明 PNG，统一不加白底，保持观感一致 */
   .bar-logo {
-    width: 68px; height: 68px; border-radius: 50%; object-fit: cover;
-    background: #fff; padding: 4px; border: 2px solid rgba(255,255,255,.9);
-    box-shadow: 0 6px 18px -8px rgba(0,0,0,.30);
+    width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,.18));
   }
-  .school-badge { height: 46px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.12)); }
+  .school-badge { height: 40px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.14)); }
+  .sys-name {
+    font-size: 13px; font-weight: 600; color: var(--tint); letter-spacing: .6px;
+    margin-bottom: 10px; padding-bottom: 8px;
+  }
+  .sys-name::after {
+    content: ''; display: block; width: 44px; height: 2px; margin: 8px auto 0;
+    border-radius: 2px; background: linear-gradient(90deg, var(--primary), var(--secondary)); opacity: .55;
+  }
   h1 { font-size: 20px; margin: 2px 0 2px; color: var(--text-strong); letter-spacing: .5px; }
   .sub { font-size: 13px; color: var(--text-muted); margin: 0; }
   label { display: block; font-size: 13px; color: var(--text); margin: 14px 0 6px; }
@@ -84,7 +92,7 @@ export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redi
     h1 { color: #fff; } .sub, .foot, a.home { color: #aab4c2; }
     input { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); color: #fff; }
     input::placeholder { color: #7e8a9a; }
-    .bar-logo { background: rgba(255,255,255,.08); }
+    .sys-name { color: #7fb0ff; }
   }
 </style>
 </head><body>
@@ -94,6 +102,7 @@ export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redi
         <img class="bar-logo" src="${BAR_LOGO}" alt="唐山师范学院吧">
         <img class="school-badge" src="${SCHOOL_BADGE}" alt="唐山师范学院">
       </div>
+      <div class="sys-name">唐山师范学院吧统一认证系统</div>
       <h1>${title}</h1>
       <p class="sub">${subtitle}</p>
     </div>

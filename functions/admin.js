@@ -9,7 +9,7 @@ export async function onRequest(context) {
   return html(`<!DOCTYPE html><html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>管理后台 · 唐山师范学院吧</title>
+<title>管理后台 · 唐山师范学院吧统一认证系统</title>
 <style>
   :root {
     --primary:#0465bc; --secondary:#2575fc; --tint:#0a6cd6; --accent:#4c94ff;
@@ -35,8 +35,9 @@ export async function onRequest(context) {
     box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.9), inset -2px 2px 1px -1px hsla(0,0%,100%,.9), 0 16px 40px -20px rgba(0,0,0,.28);
   }
   .brand { display:flex; align-items:center; gap:12px; font-weight:700; font-size:17px; color:var(--text-strong); }
-  .brand .bar-logo { width:46px; height:46px; border-radius:50%; object-fit:cover; background:#fff; padding:3px; border:2px solid rgba(255,255,255,.9); box-shadow:0 4px 12px -6px rgba(0,0,0,.35); }
-  .brand .school-badge { height:32px; width:auto; filter:drop-shadow(0 2px 5px rgba(0,0,0,.12)); }
+  /* 校徽/吧徽均为透明 PNG，统一不加白底 */
+  .brand .bar-logo { width:44px; height:44px; border-radius:50%; object-fit:cover; filter:drop-shadow(0 3px 8px rgba(0,0,0,.18)); }
+  .brand .school-badge { height:30px; width:auto; filter:drop-shadow(0 2px 5px rgba(0,0,0,.14)); }
   .brand .b-title { display:flex; flex-direction:column; line-height:1.15; }
   .brand .b-title small { font-weight:500; font-size:12px; color:var(--text-muted); }
   .topbar .actions { display:flex; gap:8px; }
@@ -93,7 +94,7 @@ export async function onRequest(context) {
     <span class="brand">
       <img class="bar-logo" src="/assets/images/bar-logo.png" alt="唐山师范学院吧">
       <img class="school-badge" src="/assets/img/school-badge.png" alt="唐山师范学院">
-      <span class="b-title">唐山师范学院吧<small>管理后台</small></span>
+      <span class="b-title">唐山师范学院吧统一认证系统<small>管理后台</small></span>
     </span>
     <span class="actions">
       <a href="https://${MAIN_HOST}">返回主站</a>
