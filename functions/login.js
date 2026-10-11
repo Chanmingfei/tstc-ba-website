@@ -1,7 +1,7 @@
 // 登录页：仅 sso.tstc.pp.ua 渲染，主站访问 302 回 sso
-import { html, redirect } from '../_lib/http.js';
-import { SSO_HOST } from '../_lib/config.js';
-import { authShell } from '../_lib/ui.js';
+import { html, redirect } from './_lib/http.js';
+import { SSO_HOST } from './_lib/config.js';
+import { authShell } from './_lib/ui.js';
 
 export async function onRequest(context) {
   const { request } = context;
