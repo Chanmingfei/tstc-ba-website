@@ -87,15 +87,17 @@ async function login(request, env) {
   if (!(await verifyPassword(password, row.pass))) return json({ error: '用户名或密码错误' }, 401);
 
   const token = await createSession(env, row);
+  // 注意 json(data, status, headers)：Set-Cookie 是第三个参数，写成第二个会被当成 status → 响应构造非法。
   return json(
     { ok: true, username: row.username, role: row.role },
+    200,
     { 'Set-Cookie': sessionCookie(token) }
   );
 }
 
 async function logout(request, env) {
   await destroySession(env, request);
-  return json({ ok: true }, { 'Set-Cookie': clearCookie() });
+  return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });
 }
 
 async function me(request, env) {
