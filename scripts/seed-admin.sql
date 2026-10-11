@@ -1,1 +1,1 @@
-INSERT OR REPLACE INTO users (id, username, pass, role, status, created_at) VALUES (1, 'admin', 'pbkdf2$100000$ed80c41b00ccfe21a0312525b9d4c720$133c8f22648d9150520bcde33bd4998f39f72b70c0cd05f0fc2daa5859c6b6e5', 'admin', 'active', 1791737540005);
+INSERT OR REPLACE INTO users (id, username, pass, role, status, created_at) VALUES (1, 'admin', 'pbkdf2$100000$035b3683cae5d6fe2c5e3c3c91548fde$b0b53177b24eeaae9c6cc40f861d6b6e2cf6981953b9901973f2679e61facedc', 'admin', 'active', 1791739772409);

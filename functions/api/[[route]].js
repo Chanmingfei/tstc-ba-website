@@ -40,6 +40,11 @@ export async function onRequest(context) {
     if (head === 'login' && method === 'POST') return await login(request, env);
     if (head === 'logout' && method === 'POST') return await logout(request, env);
     if (head === 'me' && method === 'GET') return await me(request, env);
+    if (head === 'account') {
+      if (method === 'GET') return await accountProfile(request, env);
+      if (method === 'POST' && segments[1] === 'password') return await changePassword(request, env);
+      return json({ error: 'Not Found' }, 404);
+    }
     if (head === 'articles' && method === 'GET')
       return segments[1] ? await getArticle(env, segments[1]) : await listArticles(request, env);
     if (head === 'comments') {
@@ -104,6 +109,33 @@ async function me(request, env) {
   const s = await getActiveSession(request, env);
   if (!s) return json({ error: '未登录' }, 401);
   return json({ username: s.username, role: s.role });
+}
+
+// ---------- 账号管理（个人资料 / 修改密码）----------
+async function accountProfile(request, env) {
+  const s = await getActiveSession(request, env);
+  if (!s) return json({ error: '未登录' }, 401);
+  const row = await env.DB.prepare('SELECT username, role, created_at FROM users WHERE id = ?').bind(s.userId).first();
+  if (!row) return json({ error: '用户不存在' }, 404);
+  return json({ username: row.username, role: row.role, created_at: row.created_at });
+}
+
+async function changePassword(request, env) {
+  const rl = await rateLimit(env, 'rl:pwd:' + clientIp(request), 5, 60);
+  if (!rl.ok) return json({ error: '操作过于频繁，请稍后再试' }, 429);
+  const s = await getActiveSession(request, env);
+  if (!s) return json({ error: '请先登录' }, 401);
+  const { oldPassword, newPassword } = await request.json().catch(() => ({}));
+  if (!oldPassword || !newPassword) return json({ error: '请填写当前密码与新密码' }, 400);
+  if (String(newPassword).length < 6) return json({ error: '新密码至少 6 位' }, 400);
+
+  const row = await env.DB.prepare('SELECT id, pass FROM users WHERE id = ?').bind(s.userId).first();
+  if (!row) return json({ error: '用户不存在' }, 404);
+  if (!(await verifyPassword(String(oldPassword), row.pass))) return json({ error: '当前密码错误' }, 400);
+
+  await env.DB.prepare('UPDATE users SET pass = ? WHERE id = ?')
+    .bind(await hashPassword(String(newPassword)), s.userId).run();
+  return json({ ok: true });
 }
 
 // ---------- 文章列表（M3 落地）----------

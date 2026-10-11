@@ -1,26 +1,13 @@
 // 玻璃风认证页外壳（登录/注册）：复用主站设计令牌，磨砂白卡 + 校徽（左）/吧徽（右）
-import { MAIN_HOST, SSO_HOST } from './config.js';
+import { MAIN_HOST } from './config.js';
 
 const BAR_LOGO = '/assets/images/bar-logo.png';
-const SCHOOL_BADGE = '/assets/img/school-badge.png';
-
-// 只允许回跳到本站域名或相对路径，避免开放重定向
-function safeRedirect(target) {
-  const fallback = `https://${MAIN_HOST}`;
-  if (!target) return fallback;
-  try {
-    if (target.startsWith('/') && !target.startsWith('//')) return target;
-    const u = new URL(target);
-    const host = u.host.toLowerCase();
-    if (host === MAIN_HOST || host === SSO_HOST || host === `www.${MAIN_HOST}`) return u.toString();
-  } catch {
-    /* 非法则回落主站 */
-  }
-  return fallback;
-}
+// v2：按参考色块 #880002 重着色并保留全部笔画细节；换新文件名以避开 CDN/浏览器缓存
+const SCHOOL_BADGE = '/assets/img/school-badge-v2.png';
 
 export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redirectTo }) {
-  const go = safeRedirect(redirectTo);
+  // 登录后统一回主站（管理员自行输入网址打开后台），不做按角色跳转
+  const go = redirectTo || `https://${MAIN_HOST}`;
   return `<!DOCTYPE html><html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -13,7 +13,7 @@
 import { redirect } from './_lib/http.js';
 import { SSO_HOST, MAIN_HOST } from './_lib/config.js';
 
-const SSO_ALLOW = new Set(['/login', '/register', '/admin']);
+const SSO_ALLOW = new Set(['/login', '/register', '/admin', '/account']);
 
 export async function onRequest(context) {
   const { request, next } = context;
@@ -22,6 +22,8 @@ export async function onRequest(context) {
   if (host === SSO_HOST) {
     const url = new URL(request.url);
     const path = url.pathname;
+    // 直接打开 sso 根域 → 进入账号管理页
+    if (path === '/') return redirect(`https://${SSO_HOST}/account`);
     if (!SSO_ALLOW.has(path) && !path.startsWith('/api')) {
       return redirect(`https://${MAIN_HOST}${path}${url.search}`);
     }

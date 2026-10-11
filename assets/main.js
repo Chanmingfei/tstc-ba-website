@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!document.getElementById('authWidgetStyle')) {
             const st = document.createElement('style');
             st.id = 'authWidgetStyle';
-            st.textContent = '.auth-user{font-weight:600;color:var(--text-strong,#111827)}' +
+            st.textContent = '.auth-user{font-weight:600;color:var(--text-strong,#111827);text-decoration:none}' +
+                '.auth-user:hover{color:var(--primary,#0465bc);text-decoration:underline}' +
                 '.auth-admin{margin-left:8px;color:var(--primary,#4f46e5);text-decoration:none}' +
                 '.auth-logout{margin-left:8px;color:#ef4444;background:none;border:0;cursor:pointer;font-size:14px}' +
                 '#mainNav .auth-logout:hover{text-decoration:underline}';
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const wrap = document.createElement('div');
             wrap.dataset.authWidget = '1';
             if (me) {
-                wrap.innerHTML = '<span class="auth-user">' + esc(me.username) + '</span>' +
+                wrap.innerHTML = '<a class="auth-user" href="' + ssoBase + '/account" title="账号管理（可修改密码）">' + esc(me.username) + '</a>' +
                     (me.role === 'admin' ? ' <a class="auth-admin" href="' + ssoBase + '/admin">后台</a>' : '') +
                     ' <button type="button" class="auth-logout">登出</button>';
                 const lb = wrap.querySelector('.auth-logout');
