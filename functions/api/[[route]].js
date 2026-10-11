@@ -28,7 +28,10 @@ export async function onRequest(context) {
   if (method !== 'GET' && method !== 'HEAD' && !originOk(request))
     return json({ error: 'Origin 不被允许' }, 403);
 
-  const route = (params.route || '').replace(/^\/+|\/+$/g, '');
+  // 注意：Pages Functions 双括号 catch-all（[[route]]）在运行时把参数作为「数组」传入，
+  // 而非字符串（旧版/Node mock 行为不同），必须用 join 归一化，否则 .replace 抛 TypeError → 全站 API 1101。
+  const routeRaw = params?.route;
+  const route = (Array.isArray(routeRaw) ? routeRaw.join('/') : String(routeRaw ?? '')).replace(/^\/+|\/+$/g, '');
   const segments = route.split('/').filter(Boolean);
   const head = segments[0] || '';
 

@@ -6,7 +6,9 @@ export async function onRequest(context) {
   const { request, env } = context;
   if (request.method !== 'GET') return env.ASSETS.fetch(request);
 
-  const slug = String(context.params.slug || '').replace(/\.html$/, '');
+  // 双括号 catch-all 在运行时把参数作为「数组」传入，需 join 归一化（否则 SSR 失效回退静态）。
+  const slugRaw = context.params.slug;
+  const slug = (Array.isArray(slugRaw) ? slugRaw.join('/') : String(slugRaw ?? '')).replace(/\.html$/, '');
   if (!/^post-\d+(-en)?$/.test(slug)) return env.ASSETS.fetch(request);
 
   let article = null;

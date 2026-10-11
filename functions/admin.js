@@ -11,28 +11,59 @@ export async function onRequest(context) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>管理后台 · 唐山师范学院吧</title>
 <style>
+  :root {
+    --primary:#0465bc; --secondary:#2575fc; --tint:#0a6cd6; --accent:#4c94ff;
+    --text:#1f2937; --text-strong:#111827; --text-muted:#6b7280;
+    --hairline:rgba(60,60,67,.13); --r-sm:12px; --r-lg:18px; --r-full:999px;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; min-height:100vh; font-family: system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background: linear-gradient(135deg,#1e3a8a,#7c3aed 55%,#db2777); color:#1f2937; }
-  .wrap { max-width: 1040px; margin: 0 auto; padding: 28px 18px 60px; }
-  .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
-  .brand { color:#fff; font-weight:700; font-size:18px; }
-  .topbar a, .topbar button { color:#fff; text-decoration:none; font-size:13px; background:rgba(255,255,255,.18); border:0; padding:8px 14px; border-radius:10px; cursor:pointer; }
-  .topbar a:hover, .topbar button:hover { background:rgba(255,255,255,.3); }
-  .card { background:rgba(255,255,255,.92); backdrop-filter:blur(18px); border-radius:18px; padding:18px; box-shadow:0 16px 40px rgba(0,0,0,.22); }
+  body {
+    margin:0; min-height:100vh; font-family: Inter, system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1300px 700px at 50% 28%, rgba(10,108,214,.10), transparent 58%),
+      radial-gradient(1200px 600px at 82% -6%, rgba(10,108,214,.10), transparent 55%),
+      radial-gradient(1000px 520px at -4% 8%, rgba(124,58,237,.07), transparent 52%),
+      linear-gradient(180deg, #fff, #edf2fa 42%, #e3edf8);
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 24px 18px 60px; }
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;
+    padding:12px 16px; border-radius:var(--r-lg);
+    background:rgba(255,255,255,.55); -webkit-backdrop-filter:blur(22px) saturate(190%); backdrop-filter:blur(22px) saturate(190%);
+    border:1px solid rgba(255,255,255,.7);
+    box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.9), inset -2px 2px 1px -1px hsla(0,0%,100%,.9), 0 16px 40px -20px rgba(0,0,0,.28);
+  }
+  .brand { display:flex; align-items:center; gap:12px; font-weight:700; font-size:17px; color:var(--text-strong); }
+  .brand .bar-logo { width:46px; height:46px; border-radius:50%; object-fit:cover; background:#fff; padding:3px; border:2px solid rgba(255,255,255,.9); box-shadow:0 4px 12px -6px rgba(0,0,0,.35); }
+  .brand .school-badge { height:32px; width:auto; filter:drop-shadow(0 2px 5px rgba(0,0,0,.12)); }
+  .brand .b-title { display:flex; flex-direction:column; line-height:1.15; }
+  .brand .b-title small { font-weight:500; font-size:12px; color:var(--text-muted); }
+  .topbar .actions { display:flex; gap:8px; }
+  .topbar a, .topbar button {
+    color:var(--tint); text-decoration:none; font-size:13px; background:rgba(10,108,214,.10); border:1px solid rgba(10,108,214,.18);
+    padding:8px 14px; border-radius:var(--r-full); cursor:pointer; transition:background .15s ease, filter .15s ease;
+  }
+  .topbar a:hover, .topbar button:hover { background:rgba(10,108,214,.18); }
+  .card {
+    background:rgba(255,255,255,.55); -webkit-backdrop-filter:blur(22px) saturate(190%); backdrop-filter:blur(22px) saturate(190%);
+    border:1px solid rgba(255,255,255,.7); border-radius:var(--r-lg); padding:18px;
+    box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.9), inset -2px 2px 1px -1px hsla(0,0%,100%,.9), 0 16px 40px -22px rgba(0,0,0,.26);
+  }
   .tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
-  .tab { padding:9px 16px; border-radius:12px; border:0; cursor:pointer; font-size:14px; background:rgba(255,255,255,.18); color:#fff; }
-  .tab.active { background:#fff; color:#4f46e5; font-weight:600; }
-  .btn { border:0; border-radius:9px; padding:6px 11px; font-size:13px; cursor:pointer; background:#4f46e5; color:#fff; }
-  .btn.ghost { background:#eef2ff; color:#4f46e5; }
+  .tab { padding:9px 16px; border-radius:var(--r-full); border:0; cursor:pointer; font-size:14px; background:rgba(255,255,255,.5); color:var(--text-muted); border:1px solid var(--hairline); }
+  .tab.active { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; border-color:transparent; font-weight:600; }
+  .btn { border:0; border-radius:9px; padding:6px 11px; font-size:13px; cursor:pointer; background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; }
+  .btn.ghost { background:rgba(10,108,214,.10); color:var(--tint); }
   .btn.danger { background:#fee2e2; color:#dc2626; }
   .btn.warn { background:#fef3c7; color:#b45309; }
   table { width:100%; border-collapse:collapse; font-size:13px; }
-  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid #eee; vertical-align:top; }
-  th { color:#6b7280; font-weight:600; }
-  .panel { background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px; padding:16px; margin-bottom:16px; }
+  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid rgba(60,60,67,.08); vertical-align:top; }
+  th { color:var(--text-muted); font-weight:600; }
+  .panel { background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.7); border-radius:14px; padding:16px; margin-bottom:16px; }
   .panel label { display:block; font-size:12px; color:#374151; margin:10px 0 4px; }
-  .panel input, .panel textarea { width:100%; padding:9px 11px; border:1px solid #d1d5db; border-radius:10px; font-size:14px; font-family:inherit; outline:none; }
-  .panel input:focus, .panel textarea:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.15); }
+  .panel input, .panel textarea { width:100%; padding:9px 11px; border:1px solid var(--hairline); border-radius:10px; font-size:14px; font-family:inherit; outline:none; background:rgba(255,255,255,.7); color:var(--text-strong); }
+  .panel input:focus, .panel textarea:focus { border-color:var(--tint); box-shadow:0 0 0 3px rgba(10,108,214,.16); }
   .panel textarea { min-height:160px; resize:vertical; }
   .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .muted { color:#9ca3af; }
@@ -42,15 +73,29 @@ export async function onRequest(context) {
   .pill.visible { background:#dcfce7; color:#16a34a; }
   .pill.deleted { background:#f3f4f6; color:#9ca3af; }
   .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-  .stat { background:rgba(255,255,255,.92); border-radius:16px; padding:18px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.18); }
-  .stat b { display:block; font-size:26px; color:#4f46e5; }
+  .stat { background:rgba(255,255,255,.55); -webkit-backdrop-filter:blur(22px) saturate(190%); backdrop-filter:blur(22px) saturate(190%); border:1px solid rgba(255,255,255,.7); border-radius:16px; padding:18px; text-align:center; box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.9), inset -2px 2px 1px -1px hsla(0,0%,100%,.9), 0 10px 30px -20px rgba(0,0,0,.24); }
+  .stat b { display:block; font-size:26px; color:var(--tint); }
   .err { color:#dc2626; font-size:13px; min-height:18px; }
+  @media (prefers-color-scheme: dark) {
+    body { color:#e7ecf3; background: radial-gradient(1300px 700px at 50% 26%, rgba(37,117,252,.16), transparent 58%), radial-gradient(1000px 520px at -4% 8%, rgba(124,58,237,.14), transparent 52%), linear-gradient(180deg, #0c253d, #143352); }
+    .topbar, .card, .panel, .tab, .stat { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.16); color:#e7ecf3; box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.16), inset -2px 2px 1px -1px hsla(0,0%,100%,.16), 0 16px 40px -22px rgba(0,0,0,.6); }
+    .brand { color:#fff; } .brand .b-title small { color:#aab4c2; }
+    .tab { color:#aab4c2; }
+    th, td { border-bottom-color:rgba(255,255,255,.10); }
+    .panel input, .panel textarea { background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.18); color:#fff; }
+    .topbar a, .topbar button { background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.18); color:#cfe0ff; }
+    .muted { color:#8a93a3; }
+  }
 </style>
 </head><body>
 <div class="wrap">
   <div class="topbar">
-    <span class="brand">唐山师范学院吧 · 管理后台</span>
-    <span>
+    <span class="brand">
+      <img class="bar-logo" src="/assets/images/bar-logo.png" alt="唐山师范学院吧">
+      <img class="school-badge" src="/assets/img/school-badge.png" alt="唐山师范学院">
+      <span class="b-title">唐山师范学院吧<small>管理后台</small></span>
+    </span>
+    <span class="actions">
       <a href="https://${MAIN_HOST}">返回主站</a>
       <button id="logout">退出登录</button>
     </span>

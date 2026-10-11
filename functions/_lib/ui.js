@@ -1,5 +1,8 @@
-// 玻璃风认证页外壳（登录/注册），自包含样式，复用品牌渐变背景
+// 玻璃风认证页外壳（登录/注册）：复用主站设计令牌，磨砂白卡 + 校徽/吧徽
 import { MAIN_HOST } from './config.js';
+
+const BAR_LOGO = '/assets/images/bar-logo.png';
+const SCHOOL_BADGE = '/assets/img/school-badge.png';
 
 export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redirectTo }) {
   const go = redirectTo || `https://${MAIN_HOST}`;
@@ -8,25 +11,92 @@ export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redi
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${title} · 唐山师范学院吧</title>
 <style>
+  :root {
+    --primary: #0465bc; --secondary: #2575fc; --tint: #0a6cd6;
+    --text: #1f2937; --text-strong: #111827; --text-muted: #6b7280;
+    --hairline: rgba(60,60,67,.13); --r-sm: 12px; --r-lg: 20px;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family: system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background: linear-gradient(135deg,#1e3a8a,#7c3aed 55%,#db2777); color:#1f2937; padding:16px; }
-  .card { width:min(92vw,380px); padding:28px 26px; border-radius:20px; background:rgba(255,255,255,.82); backdrop-filter:blur(22px) saturate(190%); -webkit-backdrop-filter:blur(22px) saturate(190%); border:1px solid rgba(255,255,255,.7); box-shadow:0 20px 50px rgba(0,0,0,.25); }
-  h1 { font-size:20px; margin:0 0 4px; color:#111827; }
-  .sub { font-size:13px; color:#6b7280; margin:0 0 18px; }
-  label { display:block; font-size:13px; color:#374151; margin:12px 0 6px; }
-  input { width:100%; padding:11px 13px; border:1px solid #d1d5db; border-radius:12px; font-size:14px; outline:none; }
-  input:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.15); }
-  button.primary { width:100%; margin-top:18px; padding:12px; border:0; border-radius:12px; background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
-  button.primary:hover { filter:brightness(1.05); }
-  .msg { min-height:18px; font-size:13px; margin-top:12px; color:#dc2626; }
-  .foot { margin-top:16px; font-size:13px; text-align:center; color:#6b7280; }
-  .foot a { color:#4f46e5; text-decoration:none; }
-  a.home { display:block; text-align:center; margin-top:10px; font-size:12px; color:#9ca3af; text-decoration:none; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 16px; font-family: Inter, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1300px 700px at 50% 28%, rgba(10,108,214,.10), transparent 58%),
+      radial-gradient(1200px 600px at 82% -6%, rgba(10,108,214,.10), transparent 55%),
+      radial-gradient(1000px 520px at -4% 8%, rgba(124,58,237,.07), transparent 52%),
+      linear-gradient(180deg, #fff, #edf2fa 42%, #e3edf8);
+    -webkit-font-smoothing: antialiased;
+  }
+  .card {
+    width: min(92vw, 420px); padding: 30px 28px 26px; border-radius: var(--r-lg);
+    background: rgba(255,255,255,.55);
+    -webkit-backdrop-filter: blur(22px) saturate(190%); backdrop-filter: blur(22px) saturate(190%);
+    border: 1px solid rgba(255,255,255,.7);
+    box-shadow:
+      inset 2px -2px 1px -1px hsla(0,0%,100%,.9),
+      inset -2px 2px 1px -1px hsla(0,0%,100%,.9),
+      0 28px 64px -24px rgba(0,0,0,.30), 0 8px 24px -16px rgba(0,0,0,.14);
+  }
+  .brand { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 18px; }
+  .logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 12px; }
+  .bar-logo {
+    width: 68px; height: 68px; border-radius: 50%; object-fit: cover;
+    background: #fff; padding: 4px; border: 2px solid rgba(255,255,255,.9);
+    box-shadow: 0 6px 18px -8px rgba(0,0,0,.30);
+  }
+  .school-badge { height: 46px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.12)); }
+  h1 { font-size: 20px; margin: 2px 0 2px; color: var(--text-strong); letter-spacing: .5px; }
+  .sub { font-size: 13px; color: var(--text-muted); margin: 0; }
+  label { display: block; font-size: 13px; color: var(--text); margin: 14px 0 6px; }
+  input {
+    width: 100%; padding: 12px 14px; font-size: 14px; color: var(--text-strong);
+    background: rgba(255,255,255,.62); border: 1px solid var(--hairline); border-radius: var(--r-sm);
+    outline: none; transition: border-color .18s ease, box-shadow .18s ease; font-family: inherit;
+  }
+  input::placeholder { color: #9aa3af; }
+  input:focus { border-color: var(--tint); box-shadow: 0 0 0 3px rgba(10,108,214,.16); }
+  button.primary {
+    width: 100%; margin-top: 20px; padding: 13px; border: 0; border-radius: var(--r-sm);
+    background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 10px 24px -10px rgba(4,101,188,.6); transition: filter .15s ease, transform .12s ease;
+  }
+  button.primary:hover { filter: brightness(1.05); }
+  button.primary:active { transform: translateY(1px); }
+  .msg { min-height: 18px; font-size: 13px; margin-top: 12px; color: #dc2626; text-align: center; }
+  .foot { margin-top: 16px; font-size: 13px; text-align: center; color: var(--text-muted); }
+  .foot a { color: var(--tint); text-decoration: none; }
+  a.home { display: block; text-align: center; margin-top: 10px; font-size: 12px; color: #9ca3af; text-decoration: none; }
+  @media (prefers-color-scheme: dark) {
+    body {
+      color: #e7ecf3;
+      background:
+        radial-gradient(1300px 700px at 50% 26%, rgba(37,117,252,.16), transparent 58%),
+        radial-gradient(1000px 520px at -4% 8%, rgba(124,58,237,.14), transparent 52%),
+        linear-gradient(180deg, #0c253d, #143352);
+    }
+    .card {
+      background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); color: #e7ecf3;
+      box-shadow: inset 2px -2px 1px -1px hsla(0,0%,100%,.18), inset -2px 2px 1px -1px hsla(0,0%,100%,.18), 0 28px 64px -24px rgba(0,0,0,.6);
+    }
+    h1 { color: #fff; } .sub, .foot, a.home { color: #aab4c2; }
+    input { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); color: #fff; }
+    input::placeholder { color: #7e8a9a; }
+    .bar-logo { background: rgba(255,255,255,.08); }
+  }
 </style>
 </head><body>
   <div class="card">
-    <h1>${title}</h1>
-    <p class="sub">${subtitle}</p>
+    <div class="brand">
+      <div class="logo-row">
+        <img class="bar-logo" src="${BAR_LOGO}" alt="唐山师范学院吧">
+        <img class="school-badge" src="${SCHOOL_BADGE}" alt="唐山师范学院">
+      </div>
+      <h1>${title}</h1>
+      <p class="sub">${subtitle}</p>
+    </div>
     <form id="f">
       ${formHtml}
       <button class="primary" type="submit">${title}</button>
