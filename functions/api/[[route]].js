@@ -138,9 +138,113 @@ async function deleteComment(request, env, id) {
   return json({ ok: true });
 }
 
-// ---------- 管理后台（M5 落地，先占位）----------
+// ---------- 管理后台（M5）----------
 async function adminDispatch(request, env, segments) {
   const s = await getSession(request, env);
   if (!s || s.role !== 'admin') return json({ error: '无权限' }, 403);
-  return json({ ok: true, user: s.username });
+  const method = request.method;
+  const sub = segments[1] || '';
+  const id = segments[2];
+
+  // 概览统计
+  if (sub === 'stats' && method === 'GET') {
+    const users = await env.DB.prepare('SELECT COUNT(*) c FROM users').first();
+    const articles = await env.DB.prepare('SELECT COUNT(*) c FROM articles').first();
+    const comments = await env.DB.prepare('SELECT COUNT(*) c FROM comments').first();
+    const visible = await env.DB.prepare("SELECT COUNT(*) c FROM comments WHERE status='visible'").first();
+    return json({ stats: { users: users.c, articles: articles.c, comments: comments.c, commentsVisible: visible.c } });
+  }
+
+  // 用户管理
+  if (sub === 'users') {
+    if (method === 'GET') {
+      const rows = await env.DB.prepare('SELECT id, username, role, status, created_at FROM users ORDER BY id').all();
+      return json({ users: rows.results || [] });
+    }
+    if (method === 'POST' && !id) {
+      const { username, password, role } = await request.json().catch(() => ({}));
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(username || '')) return json({ error: '用户名需 3-20 位字母/数字/下划线' }, 400);
+      if (String(password || '').length < 6) return json({ error: '密码至少 6 位' }, 400);
+      const exist = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
+      if (exist) return json({ error: '用户名已存在' }, 409);
+      await env.DB.prepare('INSERT INTO users (username, pass, role, status, created_at) VALUES (?, ?, ?, ?, ?)')
+        .bind(username, await hashPassword(password), role === 'admin' ? 'admin' : 'user', 'active', Date.now()).run();
+      return json({ ok: true });
+    }
+    if (id && /^\d+$/.test(id)) {
+      if (method === 'DELETE') {
+        await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(id).run();
+        return json({ ok: true });
+      }
+      const act = segments[3];
+      if (method === 'POST' && act === 'ban') {
+        await env.DB.prepare("UPDATE users SET status = 'banned' WHERE id = ?").bind(id).run();
+        return json({ ok: true });
+      }
+      if (method === 'POST' && act === 'unban') {
+        await env.DB.prepare("UPDATE users SET status = 'active' WHERE id = ?").bind(id).run();
+        return json({ ok: true });
+      }
+      if (method === 'POST' && act === 'reset') {
+        const { password } = await request.json().catch(() => ({}));
+        if (String(password || '').length < 6) return json({ error: '密码至少 6 位' }, 400);
+        await env.DB.prepare('UPDATE users SET pass = ? WHERE id = ?').bind(await hashPassword(password), id).run();
+        return json({ ok: true });
+      }
+    }
+    return json({ error: 'Not Found' }, 404);
+  }
+
+  // 文章管理
+  if (sub === 'articles') {
+    if (method === 'GET' && !id) {
+      const rows = await env.DB.prepare('SELECT slug, lang, title, date, category, author, excerpt, cover FROM articles ORDER BY date DESC').all();
+      return json({ articles: rows.results || [] });
+    }
+    if (method === 'POST' && !id) {
+      const { slug, lang, title, date, category, author, excerpt, content } = await request.json().catch(() => ({}));
+      if (!/^post-\d+(-en)?$/.test(slug || '')) return json({ error: 'slug 格式需为 post-N 或 post-N-en' }, 400);
+      if (!title || !content) return json({ error: '标题与正文必填' }, 400);
+      const now = Date.now();
+      await env.DB.prepare(
+        'INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(slug, lang || 'zh', title, date || '', category || '', author || '', excerpt || '', '', content, now, now).run();
+      return json({ ok: true });
+    }
+    if (id && method === 'GET') {
+      const row = await env.DB.prepare('SELECT * FROM articles WHERE slug = ?').bind(id).first();
+      if (!row) return json({ error: '文章不存在' }, 404);
+      return json({ article: row });
+    }
+    if (id && method === 'PUT') {
+      const f = await request.json().catch(() => ({}));
+      const cols = ['title', 'date', 'category', 'author', 'excerpt', 'content', 'lang'];
+      const sets = []; const binds = [];
+      for (const col of cols) { if (f[col] !== undefined) { sets.push(col + ' = ?'); binds.push(f[col]); } }
+      if (!sets.length) return json({ error: '无更新字段' }, 400);
+      sets.push('updated_at = ?'); binds.push(Date.now()); binds.push(id);
+      await env.DB.prepare('UPDATE articles SET ' + sets.join(', ') + ' WHERE slug = ?').bind(...binds).run();
+      return json({ ok: true });
+    }
+    if (id && method === 'DELETE') {
+      await env.DB.prepare('DELETE FROM articles WHERE slug = ?').bind(id).run();
+      return json({ ok: true });
+    }
+    return json({ error: 'Not Found' }, 404);
+  }
+
+  // 评论管理（含已删，便于审核）
+  if (sub === 'comments') {
+    if (method === 'GET') {
+      const rows = await env.DB.prepare('SELECT id, thread, user_id, username, content, created_at, status FROM comments ORDER BY created_at DESC').all();
+      return json({ comments: rows.results || [] });
+    }
+    if (method === 'DELETE' && id && /^\d+$/.test(id)) {
+      await env.DB.prepare("UPDATE comments SET status = 'deleted' WHERE id = ?").bind(id).run();
+      return json({ ok: true });
+    }
+    return json({ error: 'Not Found' }, 404);
+  }
+
+  return json({ error: 'Not Found' }, 404);
 }
