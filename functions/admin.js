@@ -92,8 +92,8 @@ export async function onRequest(context) {
 <div class="wrap">
   <div class="topbar">
     <span class="brand">
-      <img class="bar-logo" src="/assets/images/bar-logo.png" alt="唐山师范学院吧">
       <img class="school-badge" src="/assets/img/school-badge.png" alt="唐山师范学院">
+      <img class="bar-logo" src="/assets/images/bar-logo.png" alt="唐山师范学院吧">
       <span class="b-title">唐山师范学院吧统一认证系统<small>管理后台</small></span>
     </span>
     <span class="actions">
@@ -285,7 +285,7 @@ function loadComments() {
 // 鉴权入口
 api('/api/me').then(function (r) {
   if (!r.ok || r.d.role !== 'admin') {
-    document.getElementById('gate').innerHTML = '<div class="card" style="color:#fff;text-align:center">无权限：仅管理员可访问。<a href="/login" style="color:#fff">前往登录</a></div>';
+    document.getElementById('gate').innerHTML = '<div class="card" style="color:#fff;text-align:center">无权限：仅管理员可访问。<a href="/login?redirect=%2Fadmin" style="color:#fff">前往登录</a></div>';
     return;
   }
   document.getElementById('app').style.display = 'block';

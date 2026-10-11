@@ -1,11 +1,26 @@
-// 玻璃风认证页外壳（登录/注册）：复用主站设计令牌，磨砂白卡 + 校徽/吧徽
-import { MAIN_HOST } from './config.js';
+// 玻璃风认证页外壳（登录/注册）：复用主站设计令牌，磨砂白卡 + 校徽（左）/吧徽（右）
+import { MAIN_HOST, SSO_HOST } from './config.js';
 
 const BAR_LOGO = '/assets/images/bar-logo.png';
 const SCHOOL_BADGE = '/assets/img/school-badge.png';
 
+// 只允许回跳到本站域名或相对路径，避免开放重定向
+function safeRedirect(target) {
+  const fallback = `https://${MAIN_HOST}`;
+  if (!target) return fallback;
+  try {
+    if (target.startsWith('/') && !target.startsWith('//')) return target;
+    const u = new URL(target);
+    const host = u.host.toLowerCase();
+    if (host === MAIN_HOST || host === SSO_HOST || host === `www.${MAIN_HOST}`) return u.toString();
+  } catch {
+    /* 非法则回落主站 */
+  }
+  return fallback;
+}
+
 export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redirectTo }) {
-  const go = redirectTo || `https://${MAIN_HOST}`;
+  const go = safeRedirect(redirectTo);
   return `<!DOCTYPE html><html lang="zh-CN"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,10 +58,10 @@ export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redi
   .logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 12px; }
   /* 校徽与吧徽均为「边界泛洪去底」的透明 PNG，统一不加白底，保持观感一致 */
   .bar-logo {
-    width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+    width: 62px; height: 62px; border-radius: 50%; object-fit: cover;
     filter: drop-shadow(0 4px 10px rgba(0,0,0,.18));
   }
-  .school-badge { height: 40px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.14)); }
+  .school-badge { height: 44px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.16)); }
   .sys-name {
     font-size: 13px; font-weight: 600; color: var(--tint); letter-spacing: .6px;
     margin-bottom: 10px; padding-bottom: 8px;
@@ -99,8 +114,8 @@ export function authShell({ title, subtitle, apiPath, formHtml, footerHtml, redi
   <div class="card">
     <div class="brand">
       <div class="logo-row">
-        <img class="bar-logo" src="${BAR_LOGO}" alt="唐山师范学院吧">
         <img class="school-badge" src="${SCHOOL_BADGE}" alt="唐山师范学院">
+        <img class="bar-logo" src="${BAR_LOGO}" alt="唐山师范学院吧">
       </div>
       <div class="sys-name">唐山师范学院吧统一认证系统</div>
       <h1>${title}</h1>

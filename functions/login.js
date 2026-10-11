@@ -7,6 +7,9 @@ export async function onRequest(context) {
   const { request } = context;
   if (request.headers.get('host') !== SSO_HOST) return redirect(`https://${SSO_HOST}/login`);
 
+  // 支持 ?redirect=：从后台/某页过来登录后回到原处（例如 /login?redirect=/admin）
+  const redirectTo = new URL(request.url).searchParams.get('redirect') || undefined;
+
   const formHtml = `
     <label for="username">用户名</label>
     <input id="username" name="username" autocomplete="username" required>
@@ -14,5 +17,5 @@ export async function onRequest(context) {
     <input id="password" name="password" type="password" autocomplete="current-password" required>`;
   const footerHtml = '还没有账号？<a href="/register">立即注册</a>';
 
-  return html(authShell({ title: '登录', subtitle: '唐山师范学院吧账号', apiPath: 'login', formHtml, footerHtml }));
+  return html(authShell({ title: '登录', subtitle: '唐山师范学院吧统一认证系统', apiPath: 'login', formHtml, footerHtml, redirectTo }));
 }

@@ -13,6 +13,7 @@ export async function onRequest(context) {
     <label for="password">密码（至少 6 位）</label>
     <input id="password" name="password" type="password" autocomplete="new-password" required>`;
   const footerHtml = '已有账号？<a href="/login">去登录</a>';
+  const redirectTo = new URL(request.url).searchParams.get('redirect') || '/login';
 
-  return html(authShell({ title: '注册', subtitle: '创建唐山师范学院吧账号', apiPath: 'register', formHtml, footerHtml, redirectTo: '/login' }));
+  return html(authShell({ title: '注册', subtitle: '创建唐山师范学院吧统一认证系统账号', apiPath: 'register', formHtml, footerHtml, redirectTo }));
 }
