@@ -23,7 +23,6 @@ export async function onRequest(context) {
         <div class="msg" id="msg"></div>
       </form>
       <div class="links">
-        <a href="https://${MAIN_HOST}">← 返回主站</a>
         <button id="logout" type="button" style="color:#ef4444">退出登录</button>
       </div>
     </div>`;
