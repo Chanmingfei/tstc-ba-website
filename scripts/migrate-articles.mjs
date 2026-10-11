@@ -50,10 +50,10 @@ for (const f of files) {
 const cols = ['slug', 'lang', 'title', 'date', 'category', 'author', 'excerpt', 'cover', 'content', 'created_at', 'updated_at'];
 const sql =
   `-- 由 scripts/migrate-articles.mjs 生成，迁移 ${rows.length} 篇文章到 D1 articles 表\n` +
-  `-- 执行：wrangler d1 execute tstc-ba-website --remote --file=scripts/seed-articles.sql\n` +
-  `BEGIN;\n` +
+  `-- 执行：wrangler d1 execute tstc-ba-db --remote --file=scripts/seed-articles.sql\n` +
+  `-- 注意：D1 不支持 SQL BEGIN/COMMIT 事务，逐条 INSERT OR REPLACE。\n` +
   rows.map((r) => `INSERT OR REPLACE INTO articles (${cols.join(', ')}) VALUES (${cols.map((c) => r[c]).join(', ')});`).join('\n') +
-  `\nCOMMIT;\n`;
+  `\n`;
 
 const outPath = join(ROOT, 'scripts', 'seed-articles.sql');
 writeFileSync(outPath, sql, 'utf-8');
@@ -62,9 +62,9 @@ console.log(`已生成 ${outPath}（${rows.length} 篇，跳过 ${skipped} 篇�
 if (process.argv.includes('--execute')) {
   const { execSync } = await import('node:child_process');
   try {
-    execSync('npx wrangler d1 execute tstc-ba-website --local --file=scripts/seed-articles.sql', { cwd: ROOT, stdio: 'inherit' });
-    console.log('本地 D1 写入完成（--local）。远程请用 --remote 并去掉 --execute 的本地参数。');
+    execSync('npx wrangler d1 execute tstc-ba-db --remote --file=scripts/seed-articles.sql', { cwd: ROOT, stdio: 'inherit' });
+    console.log('远程 D1 写入完成（--remote）。');
   } catch (e) {
-    console.error('本地写入失败（可能未登录 wrangler 或本地 DB 未初始化）。请手动执行 wrangler 命令。');
+    console.error('写入失败（可能未登录 wrangler 或 DB 不存在）。请手动执行 wrangler 命令。');
   }
 }

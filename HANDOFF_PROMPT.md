@@ -411,3 +411,14 @@ inset 0 0 2px rgba(0,0,0,.8)
 - **Functions 文件相对导入路径写错即构建失败**：wrangler 打包 Functions 时解析 ESM 导入，路径错了报 `Could not resolve "../_lib/xxx"`。规则：**根目录 `functions/*.js` 引用 `_lib` 用 `./_lib/`；子目录 `functions/api/*.js`、`functions/news/*.js` 用 `../_lib/`**。`login.js`/`register.js` 曾错写成 `../_lib/` → 已修复（`859e53a`）。
 - 本地 `node --check` 只校验语法、**不解析导入路径**，发现不了这类问题。验证导入正确性用：遍历 `functions/**/*.js`、解析 `./`/`../` 说明符是否文件存在（本仓已有此检查思路），或 `node --input-type=module -e "await import('./functions/login.js')"` 实测加载整条依赖链。
 - Pages Functions 的 D1/KV 绑定**不写在 wrangler.toml 的 `[d1_database]` 里也能构建**——它们在 Cloudflare 控制台配置；wrangler.toml 仅声明 `pages_build_output_dir` 与 `compatibility_date`。绑定缺失只影响运行时（500），不影响构建。
+
+### 15.10 部署绑定与首次管理员（已落地）
+
+- `wrangler.toml` 已写入真实绑定（2026-08 创建）：
+  - D1 `DB`：`tstc-ba-db`（id `838d7895-5343-45bc-b0ba-50672b1fc631`）
+  - KV `SESSIONS`：`tstc-ba-sessions`（id `dd9cd42173e34cd984bdcda7788d1cd2`）
+  - KV `RATELIMIT`：`tstc-ba-ratelimit`（id `082be1e9618348c98004231608747f6e`）
+- `schema.sql` 已在远程 D1 建表（users/articles/comments + 索引）；`scripts/seed-articles.sql` 已写入 34 篇文章（17 zh + 17 en）。
+- **初始管理员**：`scripts/seed-admin.sql` 已写入 `users` 一条 `admin/admin`（role=admin, active），密码为 PBKDF2-SHA256（与 `auth.js` 同算法，登录可校验）。**首次登录后务必在后台或 D1 重置密码**（明文不在仓库，仅生成时一次性输出）。
+- **必做（用户侧）**：在 Cloudflare Pages 项目添加自定义域 `sso.tstc.pp.ua`（需 `tstc.pp.ua` 的 DNS 控制权，添加 TXT/CNAME 验证），否则 SSO 父域 Cookie（`.tstc.pp.ua`）与后台子域无法生效，`/admin`、`/login`、`/register` 仅在该子域渲染。
+- 站点主域 `tstc.pp.ua` 与 `sso.tstc.pp.ua` 共享父域 Cookie 实现单点登录（无 CORS 跨域问题）。

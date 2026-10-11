@@ -1,6 +1,6 @@
 -- 由 scripts/migrate-articles.mjs 生成，迁移 34 篇文章到 D1 articles 表
--- 执行：wrangler d1 execute tstc-ba-website --remote --file=scripts/seed-articles.sql
-BEGIN;
+-- 执行：wrangler d1 execute tstc-ba-db --remote --file=scripts/seed-articles.sql
+-- 注意：D1 不支持 SQL BEGIN/COMMIT 事务，逐条 INSERT OR REPLACE。
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-1-en', 'en', 'TSNU Bar 2025 Spring Semester Work Summary', '2025-07-02', 'Summary', 'TSNU Bar Mod Team', 'As this semester draws to a close, what has the Mod Team accomplished in content development, event organization, and community moderation? Here is our sincere semester report card.', '', '                <p>As the semester comes to a close, the Mod Team would like to offer a plain and honest summary to report our work to every bar member and hear your thoughts. The bar is no one''s "private plot"—it is our shared public space.</p>
 
                 <h2>I. Content Development</h2>
@@ -27,7 +27,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 </ol>
 
                 <p>Thank you for your company this semester. Next semester, we will continue to build the bar into a trustworthy corner of campus life.</p>
-            ', 1791732251477, 1791732251477);
+            ', 1791734984581, 1791734984581);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-1', 'zh', '唐山师范学院吧 2025 年上学期工作总结', '2025-07-02', '总结', '唐山师范学院吧务组', '回顾这一学期，吧务组在内容建设、活动组织与秩序维护上做了哪些事？一起看看这份真诚的学期答卷。', '', '                <p>学期走到尾声，吧务组想用一份朴实的总结，和每一位吧友汇报这段时间的所作所为，也听听你的想法。贴吧不是谁的「自留地」，而是我们共同的公共空间。</p>
 
                 <h2>一、内容建设</h2>
@@ -54,7 +54,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 </ol>
 
                 <p>谢谢你这一学期的陪伴。下学期，我们继续把贴吧经营成值得信赖的校园角落。</p>
-            ', 1791732251477, 1791732251477);
+            ', 1791734984581, 1791734984581);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-10-en', 'en', 'Freshman Guide (5): Transportation & Travel', '2026-07-22', 'Guide', 'TSNU Bar Mod Team', 'TSNU transportation guide: routes from Tangshan Railway Station / North Station / West Station / airport to campus, commuting between the two campuses, nearby commercial areas, bus fares and payment methods, cycling reminders, and travel pitfalls to avoid — useful for both check-in and daily travel.', '', '                <p>Tangshan Normal University has two campuses — Daxuedao Campus and Xueyuan Road Campus — and daily commuting and shopping trips differ considerably between them. Tangshan has no metro yet, but the city bus network is extensive, and both campuses are well served by public buses, making travel fairly convenient.</p>
                 <p>This article compiles routes from the stations to campus, travel between campuses, and trips to shopping areas. Read it together with the earlier dining and shopping guide to help Freshmen quickly get the hang of getting around.</p>
 
@@ -130,7 +130,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ Freshman Group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ Freshman Group</figcaption>
                 </figure>
-            ', 1791732251477, 1791732251477);
+            ', 1791734984582, 1791734984582);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-10', 'zh', '新生指南（五）-交通出行相关', '2026-07-22', '指南', '唐山师范学院吧务组', '唐山师范学院交通出行指南：整理唐山站/北站/西站/机场到校路线、两校区往返通勤、周边商圈、公交票价与支付方式、骑行提醒及出行避雷重点，新生报到与日常出行均可参考。', '', '                <p>唐山师范学院分为大学道校区、学院路校区，日常通勤、外出购物的出行差异较大。唐山暂无地铁，但市区公交线路十分发达，两所校区周边公交配套完善，出行较为便利。</p>
                 <p>本篇整理车站到校、校区互访、前往商圈的路线，搭配前面的食堂商超攻略一起查看，方便新生快速摸清出行门路。</p>
 
@@ -206,7 +206,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251478, 1791732251478);
+            ', 1791734984582, 1791734984582);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-11-en', 'en', 'Freshman Guide (6): How to Pick Up Packages at Daxuedao Campus', '2026-07-23', 'Guide', 'TSNU Bar Mod Team', 'A complete guide to picking up packages at Tangshan Normal University''s Daxuedao Campus: the precise receiving address, off-campus station locations, the three stations (Cainiao, Tuxi, and SF Express) and their courier brands and pickup procedures, plus storage, shipping, and return instructions—helping Freshmen mail luggage easily before reporting in and collect packages quickly after arriving on campus.', '', '                <p>All packages at Daxuedao Campus are collected at off-campus stations. The three stations run independent systems with completely different pickup procedures. If Freshmen don''t sort this out in advance, it''s easy to end up in the awkward situation of "the package arrived but you don''t know how to get it." This guide lays out the receiving address, station locations, corresponding courier brands, and pickup procedures all at once—mail your bedding, clothing, and other bulky luggage before reporting in, and you can pick it up right after arriving on campus.</p>
 
                 <h2>I. Precise Campus Receiving Address</h2>
@@ -297,7 +297,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ new-student group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ new-student group</figcaption>
                 </figure>
-            ', 1791732251478, 1791732251478);
+            ', 1791734984582, 1791734984582);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-11', 'zh', '新生指南（六）-大学道校区如何取快递', '2026-07-23', '指南', '唐山师范学院吧务组', '唐山师范学院大学道校区快递取件完整攻略：精准收货地址、校外驿站位置、菜鸟/兔喜/顺丰三大驿站对应快递与取件流程、存放与寄件退货说明，帮助新生报到前轻松寄行李、到校后快速取件。', '', '                <p>大学道校区快递全部在校外驿站领取，三个站点系统互不通用、取件流程也完全不同。新生如果不提前分清，很容易出现「快递到了却不知道怎么拿」的尴尬。本篇把收货地址、驿站位置、对应快递品牌和取件流程一次性整理清楚，报到前把被褥、衣物等大件行李寄过来，到校就能直接取。</p>
 
                 <h2>一、校区精准收货地址</h2>
@@ -388,7 +388,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251479, 1791732251479);
+            ', 1791734984583, 1791734984583);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-12-en', 'en', 'Freshman Guide (7): How to Find Classrooms at Daxuedao Campus', '2026-07-24', 'Guide', 'TSNU Bar Mod Team', 'A guide to finding classrooms at Tangshan Normal University''s Daxuedao Campus: the North and South Courtyard teaching buildings, each building''s function and corresponding majors, classroom numbering rules, and practical wayfinding tips—helping Freshmen locate their scheduled classrooms quickly after the semester starts and avoid getting lost or arriving late.', '', '                <p>Few things are more stressful on your first day of class than staring at a room number on your schedule and not knowing which building it''s in. Daxuedao Campus is split into a North Courtyard and a South Courtyard, each with its own teaching buildings and room-numbering rules. This guide organizes the main teaching buildings, numbering conventions, and practical wayfinding tips so you can check it anytime after the semester starts and avoid getting lost or arriving late.</p>
                 <p class="bg-gray-50 border-l-4 border-primary px-4 py-3 rounded-r-lg my-4">All images in this article can be previewed or saved by long-pressing or right-clicking.</p>
 
@@ -450,7 +450,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ new-student group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ new-student group</figcaption>
                 </figure>
-            ', 1791732251480, 1791732251480);
+            ', 1791734984584, 1791734984584);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-12', 'zh', '新生指南（七）-大学道校区如何找教室', '2026-07-24', '指南', '唐山师范学院吧务组', '唐山师范学院大学道校区教学楼宇与找课攻略：区分南北院主要教学楼、介绍各楼栋功能与对应专业、教室编号规则及通用找课技巧，帮助新生入学后快速定位课表教室，避免上课迷路。', '', '                <p>入学后第一次上课，最怕的就是按着课表上的教室编号却找不到楼。大学道校区南北院教学楼分布差异大，不同院系的课程集中在不同区域，教室编号规则也不尽相同。本篇把南北院主要教学楼宇、编号规则和找课技巧整理清楚，开学后随时翻阅，避免上课迷路迟到。</p>
                 <p class="bg-gray-50 border-l-4 border-primary px-4 py-3 rounded-r-lg my-4">文章中所有图片均可以通过长按或右键的方式预览或保存。</p>
 
@@ -512,7 +512,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251480, 1791732251480);
+            ', 1791734984584, 1791734984584);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-13-en', 'en', 'Freshman Guide (8): Public Bathhouses and Campus Card', '2026-07-26', 'Guide', 'TSNU Bar Mod Team', 'A guide to public bathhouses and Campus Card use at Tangshan Normal University: locations and shower rules, pricing, and the full Campus Card recharge, loss reporting, and replacement process.', '', '                <p>Military training is physically intense and you will sweat a lot every day. Showering and using the Campus Card are two of the first practical problems Freshmen run into. This guide brings together the locations of all campus bathhouses, shower rules, and the full process for recharging, reporting the loss of, and replacing your Campus Card so you can avoid unnecessary trips.</p>
 
                 <h2>I. Bathhouse Locations and Basic Information</h2>
@@ -687,7 +687,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ new-student group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ new-student group</figcaption>
                 </figure>
-            ', 1791732251480, 1791732251480);
+            ', 1791734984585, 1791734984585);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-13', 'zh', '新生指南（八）-公共浴室和校园一卡通', '2026-07-26', '指南', '唐山师范学院吧务组', '唐山师范学院新生指南第八篇：公共浴室位置与校园一卡通使用全攻略，涵盖洗浴规则、收费标准、一卡通充值/挂失/补办流程及军训洗浴注意事项。', '', '                <p>军训训练强度大，日常出汗多，洗澡和校园卡使用是新生最先遇到的实际问题。本篇把全校公共浴室位置、洗浴规则、校园一卡通充值、挂失与补办流程一次整理清楚，帮助大家少跑弯路。</p>
 
                 <h2>一、全校浴室位置与基本情况</h2>
@@ -863,7 +863,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251480, 1791732251480);
+            ', 1791734984585, 1791734984585);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-14-en', 'en', 'Freshman Guide (9): Reporting Day', '2026-07-31', 'Guide', 'TSNU Bar Mod Team', 'The ninth part of the Tangshan Normal University Freshman Guide: a step-by-step walkthrough for reporting day, covering required documents, packing tips, check-in procedures, dorm move-in, plus North and South campus maps and on-site photos.', '', '<p>Your first day on campus is often the most hectic — unfamiliar surroundings, unclear procedures, and a lot of walking back and forth. To help you check in smoothly, we''ve put together this practical, TSNU-specific guide covering what to bring, how to get to your dorm, and what to watch out for. Just follow the steps below.</p>
 
                 <figure class="text-center my-6 md:max-w-xl mx-auto">
@@ -952,7 +952,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ welcome group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ welcome group</figcaption>
                 </figure>
-            ', 1791732251481, 1791732251481);
+            ', 1791734984585, 1791734984585);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-14', 'zh', '新生指南（九）-报到当天', '2026-07-31', '指南', '唐山师范学院吧务组', '唐山师范学院新生指南第九篇：报到当天全流程攻略，从必备材料、行李建议到入校报到、入住宿舍，附南北院校区地图与现场照片，帮你从容完成开学第一步。', '', '<p>踏入校园的第一天，往往是新生最手忙脚乱的时候——环境陌生、流程不熟，容易跑冤枉路。为了让你报到更顺心、省力，我们整理了这份贴合本校实际的报到全流程和注意事项，照着走就行。</p>
 
                 <figure class="text-center my-6 md:max-w-xl mx-auto">
@@ -1041,7 +1041,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251481, 1791732251481);
+            ', 1791734984585, 1791734984585);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-15-en', 'en', 'Freshman Guide (10): Library & Study Spaces', '2026-08-01', 'Guide', 'TSNU Bar Mod Team', 'The tenth part of the Tangshan Normal University Freshman Guide: a complete guide to the library floors, opening hours, entry methods, seat booking, borrowing books, plus rules for self-study classrooms and tips on choosing the right study spot.', '', '                <p>This guide covers everything you need to know about using the library and finding study spaces on campus. We will start with the library, then explain how to use empty classrooms and lecture halls, and finish with tips on choosing the right place for different study needs.</p>
 
                 <figure class="text-center my-6 md:max-w-xl mx-auto">
@@ -1207,7 +1207,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ welcome group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ welcome group</figcaption>
                 </figure>
-                ', 1791732251481, 1791732251481);
+                ', 1791734984586, 1791734984586);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-15', 'zh', '新生指南（十）- 图书馆与自习室入门', '2026-08-01', '指南', '唐山师范学院吧务组', '唐山师范学院新生指南第十篇：图书馆楼层分布、开放时间、入馆方式、座位预约、图书借还全攻略，以及校内空闲教室自习规则与场地选择建议，帮你快速找到最适合的自习去处。', '', '                <p>本篇把图书馆和校内自习场地的用法一次性整理清楚，配合前面几篇新生指南，帮你从“能进门”到“会用座、会借书、会选场地”。文章略长，但全是实用信息，建议收藏。</p>
 
                 <figure class="text-center my-6 md:max-w-xl mx-auto">
@@ -1373,7 +1373,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-                ', 1791732251481, 1791732251481);
+                ', 1791734984586, 1791734984586);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-16-en', 'en', 'Freshman Guide (11) – Clubs &amp; Organizations from the Bar Owner', '2026-08-04', 'Guide', 'TSNU Bar Mod Team', 'The Bar Owner shares advice on clubs and organizations: Dao Meng Space credit rules, student organization roles, recruitment channels, and the complete official club directory to help freshmen decide what to join.', '', '<p>Besides adjusting to courses and dorm life, every freshman faces a common question: Should I join a club? How many? The student union or an interest club? This guide breaks down the logic behind choosing clubs and student organizations, the credit rules, and the actual joining process. Read it alongside the guides on Campus Card, Public Bathhouses, and the Library for a fuller picture of campus life.</p>
 
 <p class="text-sm text-gray-500 italic">Disclaimer: This guide is based on the Bar Owner''s personal experience plus official name lists. It is for reference only and does not represent the university''s official position. Corrections and additions are welcome in the comments.</p>
@@ -1628,7 +1628,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ new-student group</figcaption>
 </figure>
 
-            ', 1791732251482, 1791732251482);
+            ', 1791734984586, 1791734984586);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-16', 'zh', '新生指南（十一）-吧主谈社团组织', '2026-08-04', '指南', '唐山师范学院吧务组', '吧主谈社团组织：从到梦空间学分规则、学生组织职能、招新加入方式到全校官方社团名录，帮新生理清要不要加社团、加几个、怎么选。', '', '<p>大一除了适应课程和宿舍生活，还要面对一个「必答题」：到底要不要加社团？加几个？选学生会还是兴趣社？本篇把社团/学生组织的选择逻辑、学分规则和实际加入流程一次性整理清楚。建议配合《校园卡》《公共浴室》《图书馆》等指南一起阅读，更快摸清校园生活全貌。</p>
 
 <p class="text-sm text-gray-500 italic">声明：本指南为吧主个人经验总结 + 官方名单整理，仅供新生参考，不代表学校官方立场。如有不准确之处，欢迎在评论区纠正、补充。</p>
@@ -1883,7 +1883,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
 </figure>
 
-            ', 1791732251482, 1791732251482);
+            ', 1791734984587, 1791734984587);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-17-en', 'en', 'Freshman Guide (12) – Essential Software Collection', '2026-08-05', 'Guide', 'TSNU Bar Mod Team', 'Just starting college and wondering which apps to install? From class study tools, college English, campus credits, and official utilities to AI aids and daily-life apps — here''s the complete practical list in one place.', '', '<p>In high school, bringing a phone onto campus usually meant getting caught red-handed by the dean. But in college? Try getting through a single day without one — it''s basically impossible.</p>
 
 <p>So what must-have apps should you install on your phone before freshman year even starts? We''ve rounded up the complete practical list for you!</p>
@@ -1983,7 +1983,7 @@ Most college students love to eat and have hearty appetites; any spare money goe
     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ freshman-group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ freshman group</figcaption>
 </figure>
-            ', 1791732251483, 1791732251483);
+            ', 1791734984587, 1791734984587);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-17', 'zh', '新生指南（十二）-新生必备软件合集', '2026-08-05', '指南', '唐山师范学院吧务组', '刚踏入大学生活，手机里到底要提前装哪些刚需软件？从上课学习、英语作业、校园学分、官方工具到 AI 辅助与生活娱乐，全套实用清单一次性整理清楚。', '', '<p>高中带手机进校园，大概率会被主任当场逮住；但上了大学，没有手机真的寸步难行。</p>
 
 <p>刚踏入大学生活，手机里到底要提前装哪些刚需软件？给大家整理好了全套实用清单！</p>
@@ -2083,7 +2083,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
 </figure>
-            ', 1791732251483, 1791732251483);
+            ', 1791734984587, 1791734984587);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-2-en', 'en', 'Bar Mod Team 2026 Recruitment Announcement', '2026-07-13', 'Announcement', 'TSNU Bar Mod Team', 'To better serve our fellow bar members and maintain order in the bar, the TSNU Bar Mod Team is now publicly recruiting from across the school. We welcome enthusiastic, responsible, and dedicated students to join us.', '', '                <p>Hello everyone! The TSNU Bar serves as an online space for students across the school to connect and help one another, and we are committed to providing timely, useful campus information and a warm community atmosphere. To better serve our fellow bar members and maintain order in the bar, the Mod Team is now publicly recruiting from across the school. We welcome enthusiastic, responsible, and dedicated students to join us.</p>
 
                 <h2>I. Open Positions</h2>
@@ -2114,7 +2114,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 <p>Joining the Mod Team is more than just taking on a "role"—it''s gaining a group of like-minded friends and a campus experience of being needed and trusted. We provide official proof of work, regular skills training, and countless nights spent making the bar better together.</p>
 
                 <p>If you also want to leave a little light in the campus that belongs to you, then come join us. We''re at the TSNU Bar, waiting for you.</p>
-            ', 1791732251483, 1791732251483);
+            ', 1791734984588, 1791734984588);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-2', 'zh', '吧务组 2026 年招新公告', '2026-07-13', '公告', '唐山师范学院吧务组', '为更好地服务广大吧友、维护贴吧秩序，唐山师范学院吧务组现面向全校同学公开招新，欢迎热心、负责的你加入我们。', '', '                <p>各位同学，大家好！唐山师范学院吧作为全校同学交流互助的网络空间，一直致力于为大家提供及时、有用的校园信息与温暖的社区氛围。为更好地服务广大吧友、维护贴吧秩序，吧务组现面向全校同学公开招新，欢迎热心、负责、乐于奉献的你加入我们。</p>
 
                 <h2>一、招新岗位</h2>
@@ -2145,7 +2145,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 <p>加入吧务组，不只是多了一份「职务」，更是收获一群志同道合的朋友、一段被需要与被信任的校园经历。我们提供官方工作证明、定期的技能培训，以及无数个一起把贴吧变得更好的夜晚。</p>
 
                 <p>如果你也想在属于自己的校园里留下一点光，那就来吧。我们在唐山师范学院吧，等你。</p>
-            ', 1791732251483, 1791732251483);
+            ', 1791734984588, 1791734984588);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-3-en', 'en', 'Welcome Season: A Campus Life Guide Every Freshman Must Read', '2026-07-14', 'Guide', 'TSNU Bar Mod Team', 'For the incoming Class of 2026! From check-in procedures to dorm life, from dining options to getting around campus, this one guide eases all your back-to-school anxiety.', '', '                <p>Class of 2026, welcome to Tangshan Normal University! Moving from high school to university, it is perfectly normal to feel both nervous and excited when facing an unfamiliar campus, dorm, and classmates. This guide bundles the most useful things for the start of term into one article—save it first and read it slowly on check-in day.</p>
 
                 <h2>I. How to Get Around on Check-in Day</h2>
@@ -2179,7 +2179,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="Tangshan Normal University Bar QQ New Student Group QR Code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ Welcome Group</figcaption>
                 </figure>
-            ', 1791732251484, 1791732251484);
+            ', 1791734984588, 1791734984588);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-3', 'zh', '迎新季：新生必看的校园生活指南', '2026-07-14', '指南', '唐山师范学院吧务组', '即将步入校园的 2026 级新生看过来！从报到流程到宿舍生活，从食堂美食到周边出行，一篇搞定你的开学焦虑。', '', '                <p>2026 级的学弟学妹们，欢迎来到唐山师范学院！从高中走进大学，面对陌生的校园、宿舍和同窗，紧张和期待都再正常不过。这份指南把开学最常用的事揉进了一篇里，建议先收藏，报到当天慢慢看。</p>
 
                 <h2>一、报到当天怎么走</h2>
@@ -2213,7 +2213,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251484, 1791732251484);
+            ', 1791734984588, 1791734984588);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-4-en', 'en', 'A Friendly Reminder on Posting Etiquette in the Bar', '2026-07-14', 'Notice', 'TSNU Bar Mod Team', 'To foster a civilized and friendly environment for communication, please observe the basic rules of the Bar and help us protect our shared online campus home.', '', '                <p>Dear fellow bar members, the TSNU Bar is our shared online space. So that every student can communicate here with peace of mind and speak freely, the Mod Team has put together a small reminder about posting etiquette. We kindly ask that you keep it in mind when posting and commenting.</p>
 
                 <h2>I. Be Gentle with One Another</h2>
@@ -2236,7 +2236,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 <p>All actions by the Mod Team follow the principles of transparency and prudence. If you believe a post was deleted by mistake, you are welcome to explain the situation through the "Feedback" section on the homepage or via the moderator mailbox, and we will carefully review and respond.</p>
 
                 <p>May our Bar remain bright, warm, and trustworthy.</p>
-            ', 1791732251484, 1791732251484);
+            ', 1791734984589, 1791734984589);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-4', 'zh', '关于规范贴吧发言秩序的温馨提示', '2026-07-14', '通知', '唐山师范学院吧务组', '为营造文明、友善的交流环境，请各位吧友遵守贴吧基本规范，共同维护属于我们的校园网络家园。', '', '                <p>亲爱的吧友们，唐山师范学院吧是我们共同的网络空间。为了让每一位同学都能在这里安心交流、畅所欲言，吧务组整理了一份发言秩序的小提醒，恳请大家在发帖、评论时多多留意。</p>
 
                 <h2>一、请对彼此温柔一点</h2>
@@ -2259,7 +2259,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 <p>吧务组的操作都遵循公开、审慎的原则。如果你认为某条内容被误删，欢迎通过首页「意见反馈」或吧主信箱说明情况，我们会认真复核并回复。</p>
 
                 <p>愿我们的贴吧，始终明亮、温暖、值得信赖。</p>
-            ', 1791732251484, 1791732251484);
+            ', 1791734984589, 1791734984589);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-5-en', 'en', 'TSNU Bar Network-Wide Anti-Fraud Alert', '2026-07-15', 'Announcement', 'TSNU Bar Mod Team', 'During the admissions season, scams surge. The Mod Team issues a network-wide anti-fraud alert, outlining common scam tactics, official statements, and penalty rules. All members are urged to read carefully and share with others.', '', '                <p>To all TSNU students, incoming Class of 2026, and parents,</p>
                 <p>We are now at a critical stage of admissions inquiries and new-student preparation, when all kinds of campus and admissions scams surge. Recently, this bar has repeatedly found unfamiliar out-of-province IP accounts impersonating our senior students and current students, using the pretext of campus Q&amp;A and enrollment guidance to privately sell goods or charge fees for proxy services. Such fraud seriously disrupts the order of the bar and harms students'' property safety and legitimate rights.</p>
                 <p>To eliminate these fraudulent practices and protect the personal, property, and information security of all members, and to maintain a pure, legitimate, and safe communication environment on the TSNU Bar, the Mod Team hereby issues this network-wide anti-fraud alert, clarifying common scam tactics, prevention rules, and platform management regulations. Please read it carefully, share it with others, and strictly comply.</p>
@@ -2325,7 +2325,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 <p>Anti-fraud is everyone''s responsibility! We hope all TSNU students stay vigilant, keep your eyes open, abandon any fluke mentality, and stay away from all campus cyber scams. Let us jointly maintain a safe, civilized, and clean campus online environment!</p>
 
                 <p><strong>TSNU Bar Mod Team</strong><br>Published: July 15, 2026</p>
-            ', 1791732251484, 1791732251484);
+            ', 1791734984589, 1791734984589);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-5', 'zh', '唐山师范学院吧全网反诈防骗公告', '2026-07-15', '公告', '唐山师范学院吧务组', '招生季诈骗高发，吧务组发布全网反诈防骗公告，梳理常见诈骗套路、官方声明与处罚规定，请全体吧友认真阅读、相互转告。', '', '                <p>各位唐师学子、2026级新生及各位家长：</p>
                 <p>当前正值招生咨询、新生入学筹备关键阶段，各类校园网络诈骗、招生诈骗进入高发期。近期本吧多次发现外省陌生IP用户冒充本校学长学姐、在校生，假借校园答疑、入学指导名义，私下开展物品售卖、收费代办等诈骗行为，严重扰乱贴吧秩序，侵害同学们的财产安全与合法权益。</p>
                 <p>为杜绝各类诈骗乱象，守护全体吧友人身、财产及信息安全，维护唐山师范学院贴吧纯净、正规、安全的交流环境，吧务组特此发布全网反诈防骗公告，明确诈骗套路、防范细则及平台管理规定，请全体人员认真阅读、相互转告、严格遵守。</p>
@@ -2391,7 +2391,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                 <p>反诈防骗，人人有责！希望全体唐师学子提高警惕、擦亮双眼，摒弃侥幸心理，远离各类校园网络诈骗。共同维护安全、文明、纯净的校园网络环境！</p>
 
                 <p><strong>唐山师范学院贴吧吧务组</strong><br>发布日期：2026年7月15日</p>
-            ', 1791732251485, 1791732251485);
+            ', 1791734984589, 1791734984589);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-6-en', 'en', 'Freshman Guide (1) — Is the Campus Phone Card Worth Getting?', '2026-07-16', 'Guide', 'TSNU Bar Mod Team', 'New students are often promoted campus phone cards before and after enrollment. This article objectively explains the official on-campus channels for the campus phone card, the real Unicom card pricing, and dorm WiFi access, and clarifies that the claim ''you can''t access on-campus resources without a card'' is false. Getting a card is entirely voluntary — choose as needed.', '', '                <p>Dear new students:</p>
                 <p>Around enrollment, many people promote campus phone cards. Quite a few new students cannot tell official channels from scams, and are unsure whether getting one is necessary. This article objectively and comprehensively explains all the facts about the campus Unicom card. The school does not require anyone to get a card, so you can decide for yourself based on your situation.</p>
 
@@ -2455,7 +2455,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="Tangshan Normal University Bar QQ new-student group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the Tangshan Normal University Bar QQ new-student group</figcaption>
                 </figure>
-            ', 1791732251485, 1791732251485);
+            ', 1791734984589, 1791734984589);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-6', 'zh', '新生指南（一）-校园卡是否值得办', '2026-07-16', '指南', '唐山师范学院吧务组', '新生入学前后常被推销校园电话卡，本文客观说明校内正规办卡渠道、联通卡真实资费与宿舍WiFi权限，并澄清『不办卡不能访问校内资源』为不实宣传，办卡完全自愿、按需选择。', '', '                <p>各位新同学：</p>
                 <p>入学前后大量人员会推销校园电话卡，不少新生分不清正规渠道与诈骗套路，同时纠结是否有办理必要。本文客观、完整说明校园联通卡相关全部事实，学校无强制办卡要求，大家可结合自身情况自主选择。</p>
 
@@ -2519,7 +2519,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251485, 1791732251485);
+            ', 1791734984590, 1791734984590);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-7-en', 'en', 'Freshman Guide (2) – Campus Dining Halls & Shopping', '2026-07-18', 'Guide', 'TSNU Bar Mod Team', 'An on-the-ground overview of dining halls, on-campus stores, and nearby malls across TSNU''s two campuses: three dining halls at Daxuedao plus Tangbai and Zhengzhaofeng bulk supermarkets, the Xueyuan Road dining hall and Hema Fresh at Aegean Shopping Park, plus general campus living tips.', '', '                <p>The university has two main campuses—Daxuedao and Xueyuan Road—and they differ significantly in dining hall distribution, on-campus stores, and nearby large shopping malls.</p>
                 <p>All information here is based on real on-campus observations. Dining and shopping are covered in one place; for a fuller picture, read it together with the previous article, "Is the Campus Phone Card Worth Getting?"</p>
 
@@ -2593,7 +2593,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ new-student group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ new-student group</figcaption>
                 </figure>
-            ', 1791732251485, 1791732251485);
+            ', 1791734984590, 1791734984590);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-7', 'zh', '新生指南（二）-学校食堂、购物相关', '2026-07-18', '指南', '唐山师范学院吧务组', '唐山师范学院两大校区食堂、校内商超与周边商场实地整理：大学道校区三处食堂与唐百、郑兆丰两大囤货商超，学院路校区食堂与爱琴海盒马鲜生，并附全校区通用生活小贴士。', '', '                <p>学校分为大学道校区、学院路校区两大校区，食堂分布、校内商超、周边大型商场差别较大。</p>
                 <p>本篇全部是在校实测真实信息，就餐、采购一站式整理完毕，搭配上篇《校园卡是否值得办》阅读更全面。</p>
 
@@ -2667,7 +2667,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251486, 1791732251486);
+            ', 1791734984590, 1791734984590);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-8-en', 'en', 'Freshman Guide (3) - What PE Courses Are Available and How to Choose', '2026-07-19', 'Guide', 'TSNU Bar Mod Team', 'TSNU PE course selection works in two modes — offline on-field selection at the playground and online selection via the academic affairs system: a complete guide to the selection process, course venues (underground all-weather gym, open outdoor areas, etc.), and practical tips for choosing courses based on venue conditions and difficulty.', '', '                <p>PE course selection at the start of the semester is one of the things Freshmen care about most. Our school offers two selection modes — offline on-site selection and online system selection — each with its own special rules and procedures.</p>
                 <p>Based on real on-campus experience, below is the complete selection process, course venues, and practical advice to help you prepare in advance.</p>
 
@@ -2730,7 +2730,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ New Student Group QR Code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ new-student group</figcaption>
                 </figure>
-            ', 1791732251486, 1791732251486);
+            ', 1791734984590, 1791734984590);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-8', 'zh', '新生指南（三）-体育课有哪些、怎么选', '2026-07-19', '指南', '唐山师范学院吧务组', '唐山师范学院体育选课分为线下操场抢课与教务系统线上抢课两种模式：整理最全选课流程、各课程上课场地（地下风雨操场、露天室外等）与按场地环境、课程难度选课的实用建议。', '', '                <p>开学体育选课是新生最关心的环节之一。本校体育选课分为线下抢课、线上系统抢课两种模式，规则和流程都比较特殊。</p>
                 <p>下面结合在校真实情况，给大家整理最全的选课流程、上课场地和选课建议，方便提前做好准备。</p>
 
@@ -2793,7 +2793,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251486, 1791732251486);
+            ', 1791734984591, 1791734984591);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-9-en', 'en', 'Freshman Guide (4) - Dormitory Life Information', '2026-07-20', 'Guide', 'TSNU Bar Mod Team', 'TSNU dormitory life guide: a roundup of power supply and access control across both campuses, bed-curtain usage, floor public facilities, the official repair hotline, on-campus bathhouse locations, parcel pickup points, and key warnings about door-to-door sales scams at the start of term—all verified through on-campus research.', '', '                <p>The dormitory is the primary living space throughout your four years of university. This article compiles the real rules on electricity use, access control, facilities, repairs, and bathhouses across both campuses, along with key warnings about the common sales scams that spike at the start of term.</p>
                 <p>Everything here is based on verified on-campus research. Read together with the earlier Freshman Guides, it should help you quickly adapt to dormitory life on campus.</p>
 
@@ -2854,7 +2854,7 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="TSNU Bar QQ welcome group QR code" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">Scan to join the TSNU Bar QQ welcome group</figcaption>
                 </figure>
-            ', 1791732251487, 1791732251487);
+            ', 1791734984592, 1791734984592);
 INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, created_at, updated_at) VALUES ('post-9', 'zh', '新生指南（四）-宿舍生活相关信息', '2026-07-20', '指南', '唐山师范学院吧务组', '唐山师范学院宿舍生活指南：整理两校区供电门禁、床帘使用、楼层公共设施、官方报修电话、校内浴室分布、快递取件点，以及开学季上门推销骗局避雷重点，全部为在校实测干货。', '', '                <p>宿舍是大学四年最主要的生活区域。本篇整理两校区宿舍真实用电、门禁、设施、报修、浴室等规则，以及开学季高发的推销骗局避雷重点。</p>
                 <p>全部为在校实测干货，配合前面几篇新生指南一起看，基本能帮你快速适应校园住宿生活。</p>
 
@@ -2915,5 +2915,4 @@ INSERT OR REPLACE INTO articles (slug, lang, title, date, category, author, exce
                     <img src="../assets/images/qq-group-qr.jpg" alt="唐山师范学院吧QQ迎新群二维码" class="rounded-lg shadow-sm" style="max-width:320px;width:100%;display:block;margin:0 auto" loading="lazy">
                     <figcaption class="text-xs text-gray-500 mt-2">扫码加入唐山师范学院吧 QQ 迎新群</figcaption>
                 </figure>
-            ', 1791732251487, 1791732251487);
-COMMIT;
+            ', 1791734984592, 1791734984592);

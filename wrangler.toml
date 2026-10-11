@@ -3,10 +3,23 @@ pages_build_output_dir = "."
 compatibility_date = "2024-09-23"
 
 # ── Cloudflare Pages Functions 绑定（D1 / KV）──
-# Pages Functions 的 D1 / KV 绑定请在 Cloudflare 控制台为该项目添加：
-#   站点的 「Functions」→「D1 数据库」绑定变量名：DB
-#   站点的 「Functions」→「KV 命名空间」绑定变量名：SESSIONS（会话）、RATELIMIT（限流）
-# 本地用 wrangler pages dev 时可用 `wrangler d1` / `wrangler kv` 或 miniflare 本地绑定。
-#
+# 绑定已在 Cloudflare 控制台为该 Pages 项目创建并写入下方。
 # 部署：wrangler login && wrangler pages deploy
-# 建表：wrangler d1 execute tstc-ba-db --file=./schema.sql
+# 建表：wrangler d1 execute tstc-ba-db --remote --file=./schema.sql
+# 种子：wrangler d1 execute tstc-ba-db --remote --file=./scripts/seed-articles.sql
+
+# D1 数据库：存储 users / articles / comments
+[[d1_databases]]
+binding = "DB"
+database_name = "tstc-ba-db"
+database_id = "838d7895-5343-45bc-b0ba-50672b1fc631"
+
+# KV 命名空间：登录会话
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "dd9cd42173e34cd984bdcda7788d1cd2"
+
+# KV 命名空间：接口限流计数
+[[kv_namespaces]]
+binding = "RATELIMIT"
+id = "082be1e9618348c98004231608747f6e"
