@@ -16,9 +16,14 @@ export async function onRequest(context) {
 
   if (article && article.content) {
     try {
-      const shellRes = await env.ASSETS.fetch(request);
-      const shell = await shellRes.text();
-      const out = renderArticlePage(shell, article);
+      // 直接以 .html 结尾的 URL 请求 ASSETS 会触发 Pages 的 308（跳转到无扩展名路径），
+      // 跳转响应 body 为空 → 渲染出空页。因此取外壳时去掉 .html。
+      const shellUrl = new URL(request.url);
+      shellUrl.pathname = shellUrl.pathname.replace(/\.html$/, '');
+      const shellRes = await env.ASSETS.fetch(new Request(shellUrl.toString(), { method: 'GET' }));
+      const shellText = shellRes.ok ? await shellRes.text() : '';
+      if (!shellText) return env.ASSETS.fetch(request); // 兜底：外壳为空则原样回退静态资源
+      const out = renderArticlePage(shellText, article);
       return new Response(out, {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=60' },
