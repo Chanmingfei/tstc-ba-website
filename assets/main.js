@@ -1389,9 +1389,114 @@ document.addEventListener('DOMContentLoaded', function () {
     addNewsFilters();
 
     /* ---------- 文章详情页增强：面包屑标题 / 阅读时长 / 图片灯箱 / 相关阅读 ---------- */
+    // 文章页评论区（统一认证 SSO）：同 slug 的中英文共用一个 thread（去掉 -en）
+    // 挂载在 .article-content 之后、AUTO_PREV_NEXT 之前，故不会被 SSR 替换或构建脚本覆盖。
+    function initComments() {
+        var content = document.querySelector('.article-content');
+        if (!content) return;
+        var m = location.pathname.match(/\/news\/post-(\d+)(?:-en)?\.html$/);
+        if (!m) return;
+        var thread = 'post-' + m[1];
+        var ssoBase = 'https://sso.tstc.pp.ua';
+
+        var box = document.createElement('section');
+        box.id = 'comments';
+        box.className = 'box mt-10 pt-6 px-5 md:px-8';
+        box.innerHTML =
+            '<h2 class="text-lg font-bold text-gray-800 mb-1"><i class="fa fa-comments mr-2 text-primary"></i>评论 <span id="cmtCount" class="text-sm font-normal text-gray-400">0</span></h2>' +
+            '<div id="cmtList" class="space-y-3 mt-4"></div>' +
+            '<div id="cmtForm" class="mt-5"></div>';
+        content.after(box);
+
+        var listEl = box.querySelector('#cmtList');
+        var formEl = box.querySelector('#cmtForm');
+        var countEl = box.querySelector('#cmtCount');
+
+        function fmtTime(ts) {
+            var d = new Date(typeof ts === 'number' ? ts : Date.parse(ts));
+            if (isNaN(d.getTime())) return '';
+            var p = function (n) { return (n < 10 ? '0' : '') + n; };
+            return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        }
+
+        function render(list, me) {
+            countEl.textContent = list.length;
+            if (!list.length) { listEl.innerHTML = '<p class="text-sm text-gray-400">还没有评论，来抢沙发～</p>'; return; }
+            listEl.innerHTML = list.map(function (c) {
+                var del = (me && me.role === 'admin')
+                    ? '<button type="button" class="cmt-del text-xs text-red-500 hover:underline ml-2" data-id="' + c.id + '">删除</button>' : '';
+                var initial = escapeHtml(((c.username || '?').slice(0, 1) || '?').toUpperCase());
+                return '<div class="cmt-item flex gap-3">' +
+                    '<div class="cmt-avatar w-9 h-9 rounded-full bg-primary/15 text-primary font-bold flex items-center justify-center shrink-0">' + initial + '</div>' +
+                    '<div class="flex-1 min-w-0">' +
+                        '<div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-gray-800 text-sm">' + escapeHtml(c.username) + '</span>' +
+                        '<span class="text-xs text-gray-400">' + fmtTime(c.created_at) + '</span>' + del + '</div>' +
+                        '<p class="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap break-words">' + escapeHtml(c.content) + '</p>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            listEl.querySelectorAll('.cmt-del').forEach(function (b) {
+                b.addEventListener('click', function () { del(b.getAttribute('data-id')); });
+            });
+        }
+
+        function load() {
+            fetch('/api/comments?thread=' + encodeURIComponent(thread), { credentials: 'include' })
+                .then(function (r) { return r.json(); })
+                .then(function (d) { render(d.comments || [], window.__me || null); })
+                .catch(function () { listEl.innerHTML = '<p class="text-sm text-red-500">评论加载失败</p>'; });
+        }
+
+        function drawForm(me) {
+            if (!me) {
+                formEl.innerHTML = '<p class="text-sm text-gray-500">想说点什么？<a class="text-primary hover:underline" href="' + ssoBase + '/login">登录</a> 后参与评论。</p>';
+                return;
+            }
+            formEl.innerHTML =
+                '<textarea id="cmtInput" rows="3" maxlength="1000" placeholder="理性发言，友善交流（最多 1000 字）" class="w-full rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-primary"></textarea>' +
+                '<div class="flex items-center justify-between mt-2">' +
+                    '<span id="cmtMsg" class="text-xs text-red-500"></span>' +
+                    '<button id="cmtSubmit" type="button" class="bg-primary text-white text-sm px-5 py-2 rounded-xl hover:opacity-90 transition">发表评论</button>' +
+                '</div>';
+            formEl.querySelector('#cmtSubmit').addEventListener('click', submit);
+        }
+
+        function submit() {
+            var ta = formEl.querySelector('#cmtInput');
+            var msg = formEl.querySelector('#cmtMsg');
+            var text = (ta.value || '').trim();
+            if (!text) { msg.textContent = '评论内容不能为空'; return; }
+            msg.textContent = '';
+            fetch('/api/comments', {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ thread: thread, content: text })
+            }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+              .then(function (res) {
+                if (res.ok && res.d && res.d.ok) { ta.value = ''; load(); }
+                else { msg.textContent = (res.d && res.d.error) || '发表失败'; }
+              })
+              .catch(function () { msg.textContent = '网络错误'; });
+        }
+
+        function del(id) {
+            if (!confirm('确定删除该评论？')) return;
+            fetch('/api/comments/' + id, { method: 'DELETE', credentials: 'include' })
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+                .then(function (res) { if (res.ok && res.d && res.d.ok) load(); else alert((res.d && res.d.error) || '删除失败'); })
+                .catch(function () { alert('网络错误'); });
+        }
+
+        fetch('/api/me', { credentials: 'include' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (me) { window.__me = me; drawForm(me); load(); })
+            .catch(function () { drawForm(null); load(); });
+    }
+
     (function enhanceArticle() {
         var metaEl = document.getElementById('articleMeta');
         if (!metaEl) return;
+        initComments();
         var meta = {};
         try { meta = JSON.parse(metaEl.textContent); } catch (e) { /* 忽略解析错误 */ }
 

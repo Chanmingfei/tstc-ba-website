@@ -104,10 +104,12 @@ async function getArticle(env, slug) {
 }
 
 // ---------- 评论（M4 落地）----------
+const THREAD_RE = /^post-\d+$/;
+
 async function listComments(request, env) {
   const url = new URL(request.url);
-  const thread = url.searchParams.get('thread');
-  if (!thread) return json({ error: '缺少 thread' }, 400);
+  const thread = url.searchParams.get('thread') || '';
+  if (!THREAD_RE.test(thread)) return json({ error: '非法 thread' }, 400);
   const rows = await env.DB.prepare(
     "SELECT id, username, content, created_at FROM comments WHERE thread = ? AND status = 'visible' ORDER BY created_at ASC"
   ).bind(thread).all();
@@ -118,7 +120,8 @@ async function postComment(request, env) {
   const s = await getSession(request, env);
   if (!s) return json({ error: '请先登录' }, 401);
   const { thread, content } = await request.json().catch(() => ({}));
-  if (!thread || !content || !content.trim()) return json({ error: '评论内容不能为空' }, 400);
+  if (!THREAD_RE.test(thread || '')) return json({ error: '非法 thread' }, 400);
+  if (!content || !content.trim()) return json({ error: '评论内容不能为空' }, 400);
   if (content.length > 1000) return json({ error: '评论过长（上限 1000 字）' }, 400);
   const now = Date.now();
   const info = await env.DB.prepare(
@@ -130,6 +133,7 @@ async function postComment(request, env) {
 async function deleteComment(request, env, id) {
   const s = await getSession(request, env);
   if (!s || s.role !== 'admin') return json({ error: '无权限' }, 403);
+  if (!/^\d+$/.test(id)) return json({ error: '非法 id' }, 400);
   await env.DB.prepare("UPDATE comments SET status = 'deleted' WHERE id = ?").bind(id).run();
   return json({ ok: true });
 }
