@@ -24,7 +24,8 @@ export async function onRequest(context) {
     if (head === 'login' && method === 'POST') return await login(request, env);
     if (head === 'logout' && method === 'POST') return await logout(request, env);
     if (head === 'me' && method === 'GET') return await me(request, env);
-    if (head === 'articles' && method === 'GET') return await listArticles(request, env);
+    if (head === 'articles' && method === 'GET')
+      return segments[1] ? await getArticle(env, segments[1]) : await listArticles(request, env);
     if (head === 'comments') {
       if (method === 'GET') return await listComments(request, env);
       if (method === 'POST') return await postComment(request, env);
@@ -83,16 +84,23 @@ async function me(request, env) {
   return json({ username: s.username, role: s.role });
 }
 
-// ---------- 文章列表（M3 落地，先提供基础实现）----------
+// ---------- 文章列表（M3 落地）----------
 async function listArticles(request, env) {
   const url = new URL(request.url);
   const lang = url.searchParams.get('lang') || 'zh';
   const category = url.searchParams.get('category');
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 50);
-  const sql = `SELECT slug, title, date, category, author, excerpt, cover FROM articles WHERE lang = ?${category ? ' AND category = ?' : ''} ORDER BY date DESC LIMIT ?`;
+  const sql = `SELECT slug, lang, title, date, category, author, excerpt, cover FROM articles WHERE lang = ?${category ? ' AND category = ?' : ''} ORDER BY date DESC LIMIT ?`;
   const bind = category ? [lang, category, limit] : [lang, limit];
   const rows = await env.DB.prepare(sql).bind(...bind).all();
   return json({ articles: rows.results || [] });
+}
+
+// 单篇文章（含正文，供管理后台编辑）
+async function getArticle(env, slug) {
+  const row = await env.DB.prepare('SELECT * FROM articles WHERE slug = ?').bind(slug).first();
+  if (!row) return json({ error: '文章不存在' }, 404);
+  return json({ article: row });
 }
 
 // ---------- 评论（M4 落地）----------
