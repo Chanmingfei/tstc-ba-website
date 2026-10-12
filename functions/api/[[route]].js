@@ -178,12 +178,21 @@ async function getArticle(env, slug) {
 // 等级阈值：达到 3 级（累计 10 条可见评论）方可发文。
 const PUBLISH_LEVEL = 3;
 
+// 封面图 URL 规范化：可为空；非空时须为 http(s) 绝对地址（用户发文仅接受外链封面），
+// 返回字符串（含空串）或 null（非法）。
+function validCover(c) {
+  const v = String(c || '').trim();
+  if (!v) return '';
+  if (v.length > 500 || !/^https?:\/\//i.test(v)) return null;
+  return v;
+}
+
 // 我的文章（仅当前登录用户自己发布的）
 async function listOwnArticles(request, env) {
   const s = await getActiveSession(request, env);
   if (!s) return json({ error: '请先登录' }, 401);
   const rows = await env.DB.prepare(
-    'SELECT slug, lang, title, date, category, author, updated_at FROM articles WHERE user_id = ? ORDER BY date DESC'
+    'SELECT slug, lang, title, date, category, author, cover, updated_at FROM articles WHERE user_id = ? ORDER BY date DESC'
   ).bind(s.userId).all();
   return json({ articles: rows.results || [] });
 }
@@ -220,6 +229,8 @@ async function createUserArticle(request, env) {
     return json({ error: `需达到 ${PUBLISH_LEVEL} 级（累计发满 ${(PUBLISH_LEVEL - 1) * 5} 条评论）才能发布文章` }, 403);
   const { lang, title, category, excerpt, content, cover } = await request.json().catch(() => ({}));
   if (!title || !content) return json({ error: '标题与正文必填' }, 400);
+  const coverVal = validCover(cover);
+  if (coverVal === null) return json({ error: '封面图须为 http(s) 开头的图片链接' }, 400);
   const L = lang === 'en' ? 'en' : 'zh';
   const n = await nextUserArticleId(env);
   // 吧友发文使用独立 slug 体系（ua-N / ua-N-en），链接对应 /user-articles/N，与新闻 post-N 隔离
@@ -231,7 +242,7 @@ async function createUserArticle(request, env) {
   const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   await env.DB.prepare(
     'INSERT INTO articles (slug, lang, title, date, category, author, excerpt, cover, content, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(slug, L, String(title).trim(), dateStr, String(category || '').trim(), s.username, String(excerpt || '').trim(), String(cover || '').trim(), content, s.userId, now, now).run();
+  ).bind(slug, L, String(title).trim(), dateStr, String(category || '').trim(), s.username, String(excerpt || '').trim(), coverVal, content, s.userId, now, now).run();
   return json({ ok: true, slug });
 }
 
@@ -244,10 +255,16 @@ async function updateOwnArticle(request, env, slug) {
   if (s.role !== 'admin' && row.user_id !== s.userId)
     return json({ error: '无权限编辑他人文章' }, 403);
   const f = await request.json().catch(() => ({}));
-  const cols = ['title', 'lang', 'category', 'excerpt', 'content'];
+  const cols = ['title', 'lang', 'category', 'excerpt', 'content', 'cover'];
   const sets = []; const binds = [];
   for (const col of cols) {
     if (f[col] !== undefined) {
+      if (col === 'cover') {
+        const cv = validCover(f.cover);
+        if (cv === null) return json({ error: '封面图须为 http(s) 开头的图片链接' }, 400);
+        sets.push('cover = ?'); binds.push(cv);
+        continue;
+      }
       const v = col === 'lang' ? (f[col] === 'en' ? 'en' : 'zh') : String(f[col] || '').trim();
       sets.push(col + ' = ?'); binds.push(v);
     }

@@ -2003,8 +2003,11 @@ document.addEventListener('DOMContentLoaded', function () {
             grid.className = 'grid grid-cols-1 sm:grid-cols-3 gap-4';
             related.forEach(function (item) {
                 var icon = CATEGORY_ICON[item.category] || 'fa-newspaper';
-                // 文章页位于 news/ 子目录，封面路径需加上 ../ 才能正确指向根目录 assets/
-                var coverPath = item.cover ? (basePath + item.cover) : '';
+                // 文章页位于 news/ 子目录，相对路径封面需加上 ../ 才能正确指向根目录 assets/；
+                // 绝对 URL（http(s)://）与根路径（/ 开头）封面原样使用，避免拼出 ../https://... 死链
+                var coverPath = item.cover
+                    ? ((/^(https?:)?\/\//i.test(item.cover) || item.cover.charAt(0) === '/') ? item.cover : basePath + item.cover)
+                    : '';
                 var cover = coverPath
                     ? '<img src="' + coverPath + '" alt="" loading="lazy" class="w-full h-32 object-cover">'
                     : '<div class="w-full h-32 bg-gradient-primary flex items-center justify-center"><i class="fa ' + icon + ' text-white/80 text-3xl"></i></div>';
