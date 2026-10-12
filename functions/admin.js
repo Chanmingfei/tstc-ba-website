@@ -175,7 +175,19 @@ function loadStats() {
       '<div class="stat"><b>' + s.articles + '</b>文章</div>' +
       '<div class="stat"><b>' + s.comments + '</b>评论</div>' +
       '<div class="stat"><b>' + s.commentsVisible + '</b>可见评论</div></div>' +
+      '<div class="card" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">' +
+      '<div><b>验证码存档</b> <span class="muted">（当前 ' + s.emailCodes + ' 条，保留 7 天后自动清除，发验证码时顺带清理）</span></div>' +
+      '<button class="btn ghost" id="cleanupCodes">立即清理</button></div>' +
+      '<div class="msg" id="cleanupMsg" style="min-height:18px;font-size:13px;margin-top:8px;color:#16a34a"></div></div>' +
       '<div class="card" style="margin-top:16px"><p class="muted">提示：文章正文由 SSR 渲染（news/post-N.html 作为模板）。在此新建/编辑文章会写入 D1；删除文章不会删除静态文件，如需彻底下线请同步处理静态页。</p></div>';
+    document.getElementById('cleanupCodes').onclick = function () {
+      var m = document.getElementById('cleanupMsg');
+      m.textContent = '清理中…';
+      api('/api/admin/cleanup-codes', { method: 'POST' }).then(function (res) {
+        if (res.ok) { m.textContent = '已清理 ' + res.d.removed + ' 条，剩余 ' + res.d.remaining + ' 条'; loadStats(); }
+        else { m.style.color = '#dc2626'; m.textContent = res.d.error || '清理失败'; }
+      });
+    };
   });
 }
 

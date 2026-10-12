@@ -163,19 +163,36 @@ async function changePassword(request, env) {
 // ---------- 邮箱绑定 / 验证码找回密码 ----------
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_TTL = 5 * 60 * 1000; // 验证码 5 分钟有效
+const CODE_KEEP_MS = 7 * 24 * 3600 * 1000; // 验证码记录保留 7 天（审计用），过期顺带清除，防止存档无限增长
 
 function genCode() {
   const n = crypto.getRandomValues(new Uint32Array(1))[0];
   return String(n % 1000000).padStart(6, '0');
 }
 
-// 发送验证码（bind/reset 共用）：落库 email_codes + 发信。返回 { ok, via }。
+// 清理 7 天前的验证码存档（懒清理：email_codes 只在发码时增长，故在发码路径顺带执行；
+// Pages Functions 无 Cron Triggers，此方式零基础设施且完全覆盖增长源）。返回删除条数。
+// 安全边界：本函数是唯一会对 email_codes 执行 DELETE 的路径，目标表硬编码为 email_codes、
+// 条件为 created_at < 7 天前（无任何用户输入拼入 SQL，不存在误删其他表的可能）；
+// 失败仅记日志并放行，绝不影响发码主流程。
+async function cleanupEmailCodes(env) {
+  try {
+    const r = await env.DB.prepare('DELETE FROM email_codes WHERE created_at < ?').bind(Date.now() - CODE_KEEP_MS).run();
+    return r.meta?.changes ?? 0;
+  } catch (e) {
+    console.error('[cleanup] email_codes 清理失败（不影响发码）', e);
+    return 0;
+  }
+}
+
+// 发送验证码（bind/reset 共用）：落库 email_codes + 懒清理 + 发信。返回 { ok, via }。
 async function sendCodeEmail(env, { email, purpose, userId }) {
   const code = genCode();
   const now = Date.now();
   await env.DB.prepare(
     'INSERT INTO email_codes (email, code, purpose, user_id, expires_at, used, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)'
   ).bind(email, code, purpose, userId ?? null, now + CODE_TTL, now).run();
+  await cleanupEmailCodes(env);
   const subject = purpose === 'reset' ? '唐山师范学院吧 · 重置密码验证码' : '唐山师范学院吧 · 邮箱绑定验证码';
   const text =
     `【唐山师范学院吧】您正在${purpose === 'reset' ? '重置账号密码' : '绑定邮箱'}，验证码为：${code}\n` +
@@ -502,7 +519,15 @@ async function adminDispatch(request, env, segments) {
     const articles = await env.DB.prepare('SELECT COUNT(*) c FROM articles').first();
     const comments = await env.DB.prepare('SELECT COUNT(*) c FROM comments').first();
     const visible = await env.DB.prepare("SELECT COUNT(*) c FROM comments WHERE status='visible'").first();
-    return json({ stats: { users: users.c, articles: articles.c, comments: comments.c, commentsVisible: visible.c } });
+    const codes = await env.DB.prepare('SELECT COUNT(*) c FROM email_codes').first();
+    return json({ stats: { users: users.c, articles: articles.c, comments: comments.c, commentsVisible: visible.c, emailCodes: codes.c } });
+  }
+
+  // 手动清理验证码存档（7 天前的 email_codes；平时发码时已懒清理，此处供立即执行/核查）
+  if (sub === 'cleanup-codes' && method === 'POST') {
+    const removed = await cleanupEmailCodes(env);
+    const left = await env.DB.prepare('SELECT COUNT(*) c FROM email_codes').first();
+    return json({ ok: true, removed, remaining: left.c });
   }
 
   // 用户管理
