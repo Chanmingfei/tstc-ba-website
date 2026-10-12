@@ -1477,30 +1477,33 @@ document.addEventListener('DOMContentLoaded', function () {
             return n;
         }
 
-        // 递归渲染楼中楼（树形结构）
-        function renderTree(nodes, depth) {
-            if (!nodes || !nodes.length) return '';
-            return nodes.map(function (node) {
-                var canDel = me && (me.role === 'admin' || me.username === node.username);
-                var del = canDel ? '<button type="button" class="cmt-del text-xs text-red-500 hover:underline ml-2" data-id="' + node.id + '">删除</button>' : '';
-                var replyBtn = me ? '<button type="button" class="cmt-reply text-xs text-primary hover:underline ml-2" data-id="' + node.id + '">回复</button>' : '';
-                var initial = escapeHtml(((node.username || '?').slice(0, 1) || '?').toUpperCase());
-                // 楼中楼回复框（点击「回复」后内联展开）
-                var replyBox = '<div class="cmt-replybox" id="rb-' + node.id + '" style="display:none;margin-top:8px"></div>';
-                var repliesHtml = (node.replies && node.replies.length)
-                    ? '<div class="mt-3 space-y-3 border-l-2 border-gray-100 pl-3">' + renderTree(node.replies, depth + 1) + '</div>'
-                    : '';
-                return '<div class="cmt-node flex gap-3">' +
-                    '<div class="cmt-avatar w-9 h-9 rounded-full bg-primary/15 text-primary font-bold flex items-center justify-center shrink-0">' + initial + '</div>' +
-                    '<div class="flex-1 min-w-0">' +
-                        '<div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-gray-800 text-sm">' + escapeHtml(node.username) + '</span>' +
-                            levelBadge(node.level) +
-                            '<span class="text-xs text-gray-400">' + fmtTime(node.created_at) + '</span>' + replyBtn + del + '</div>' +
-                        '<p class="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap break-words">' + escapeHtml(node.content) + '</p>' +
-                        replyBox + repliesHtml +
-                    '</div>' +
-                '</div>';
-            }).join('');
+        // 渲染单条评论卡片（不递归子节点；楼中楼统一拍平到同一层级，避免多层嵌套撑破排版）
+        function renderNode(node) {
+            var canDel = me && (me.role === 'admin' || me.username === node.username);
+            var del = canDel ? '<button type="button" class="cmt-del text-xs text-red-500 hover:underline ml-2" data-id="' + node.id + '">删除</button>' : '';
+            var replyBtn = me ? '<button type="button" class="cmt-reply text-xs text-primary hover:underline ml-2" data-id="' + node.id + '">回复</button>' : '';
+            var initial = escapeHtml(((node.username || '?').slice(0, 1) || '?').toUpperCase());
+            // 楼中楼回复框（点击「回复」后内联展开）
+            var replyBox = '<div class="cmt-replybox" id="rb-' + node.id + '" style="display:none;margin-top:8px"></div>';
+            return '<div class="cmt-node flex gap-3">' +
+                '<div class="cmt-avatar w-9 h-9 rounded-full bg-primary/15 text-primary font-bold flex items-center justify-center shrink-0">' + initial + '</div>' +
+                '<div class="flex-1 min-w-0">' +
+                    '<div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-gray-800 text-sm">' + escapeHtml(node.username) + '</span>' +
+                        levelBadge(node.level) +
+                        '<span class="text-xs text-gray-400">' + fmtTime(node.created_at) + '</span>' + replyBtn + del + '</div>' +
+                    '<p class="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap break-words">' + escapeHtml(node.content) + '</p>' +
+                    replyBox +
+                '</div>' +
+            '</div>';
+        }
+
+        // 深度优先收集一条评论的全部后代回复（拍平），保持时间先后顺序
+        function collectReplies(nodes, out) {
+            (nodes || []).forEach(function (n) {
+                out.push(n);
+                collectReplies(n.replies, out);
+            });
+            return out;
         }
 
         function render(data) {
@@ -1508,7 +1511,16 @@ document.addEventListener('DOMContentLoaded', function () {
             var total = (data.total != null) ? data.total : countNodes(nodes);
             countEl.textContent = total;
             if (!total) { listEl.innerHTML = '<p class="text-sm text-gray-400">还没有评论，来抢沙发～</p>'; return; }
-            listEl.innerHTML = renderTree(nodes, 0);
+            // 顶层评论 + 其全部楼中楼（无论嵌套多深）统一拍平到同一层级渲染，
+            // 所有回复共用一个左缩进容器，反复回复也不会越套越深撑破排版。
+            listEl.innerHTML = nodes.map(function (node) {
+                var topHtml = renderNode(node);
+                var reps = collectReplies(node.replies, []);
+                var repsHtml = reps.length
+                    ? '<div class="mt-3 space-y-3 border-l-2 border-gray-100 pl-3">' + reps.map(renderNode).join('') + '</div>'
+                    : '';
+                return topHtml + repsHtml;
+            }).join('');
             bindActions();
         }
 
