@@ -1559,7 +1559,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function initComments() {
         var content = document.querySelector('.article-content');
         if (!content) return;
-        var m = location.pathname.match(/\/(?:news\/post|user-articles)\/(\d+)(?:-en)?(?:\.html)?$/);
+        var m = location.pathname.match(/\/(?:news\/post-|user-articles\/)(\d+)(?:-en)?(?:\.html)?$/);
         if (!m) return;
         // 新闻文章 thread=post-N；吧友文章 thread=ua-N（与 slug 体系一致，评论校验 THREAD_RE 同时允许两者）
         var isUserArticle = /\/user-articles\//.test(location.pathname);
