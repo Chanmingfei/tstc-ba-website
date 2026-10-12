@@ -1443,6 +1443,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!m) return;
         var thread = 'post-' + m[1];
         var ssoBase = 'https://sso.tstc.pp.ua';
+        var me = null;
 
         var box = document.createElement('section');
         box.id = 'comments';
@@ -1464,35 +1465,103 @@ document.addEventListener('DOMContentLoaded', function () {
             return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
         }
 
-        function render(list, me) {
-            countEl.textContent = list.length;
-            if (!list.length) { listEl.innerHTML = '<p class="text-sm text-gray-400">还没有评论，来抢沙发～</p>'; return; }
-            listEl.innerHTML = list.map(function (c) {
-                var del = (me && (me.role === 'admin' || me.username === c.username))
-                    ? '<button type="button" class="cmt-del text-xs text-red-500 hover:underline ml-2" data-id="' + c.id + '">删除</button>' : '';
-                var initial = escapeHtml(((c.username || '?').slice(0, 1) || '?').toUpperCase());
-                return '<div class="cmt-item flex gap-3">' +
+        // 等级徽章（Lv.X）
+        function levelBadge(lv) {
+            lv = lv || 1;
+            return '<span class="inline-block align-middle text-[11px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded ml-1">Lv.' + lv + '</span>';
+        }
+
+        function countNodes(nodes) {
+            var n = 0;
+            (nodes || []).forEach(function (x) { n += 1 + countNodes(x.replies); });
+            return n;
+        }
+
+        // 递归渲染楼中楼（树形结构）
+        function renderTree(nodes, depth) {
+            if (!nodes || !nodes.length) return '';
+            return nodes.map(function (node) {
+                var canDel = me && (me.role === 'admin' || me.username === node.username);
+                var del = canDel ? '<button type="button" class="cmt-del text-xs text-red-500 hover:underline ml-2" data-id="' + node.id + '">删除</button>' : '';
+                var replyBtn = me ? '<button type="button" class="cmt-reply text-xs text-primary hover:underline ml-2" data-id="' + node.id + '">回复</button>' : '';
+                var initial = escapeHtml(((node.username || '?').slice(0, 1) || '?').toUpperCase());
+                // 楼中楼回复框（点击「回复」后内联展开）
+                var replyBox = '<div class="cmt-replybox" id="rb-' + node.id + '" style="display:none;margin-top:8px"></div>';
+                var repliesHtml = (node.replies && node.replies.length)
+                    ? '<div class="mt-3 space-y-3 border-l-2 border-gray-100 pl-3">' + renderTree(node.replies, depth + 1) + '</div>'
+                    : '';
+                return '<div class="cmt-node flex gap-3">' +
                     '<div class="cmt-avatar w-9 h-9 rounded-full bg-primary/15 text-primary font-bold flex items-center justify-center shrink-0">' + initial + '</div>' +
                     '<div class="flex-1 min-w-0">' +
-                        '<div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-gray-800 text-sm">' + escapeHtml(c.username) + '</span>' +
-                        '<span class="text-xs text-gray-400">' + fmtTime(c.created_at) + '</span>' + del + '</div>' +
-                        '<p class="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap break-words">' + escapeHtml(c.content) + '</p>' +
+                        '<div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-gray-800 text-sm">' + escapeHtml(node.username) + '</span>' +
+                            levelBadge(node.level) +
+                            '<span class="text-xs text-gray-400">' + fmtTime(node.created_at) + '</span>' + replyBtn + del + '</div>' +
+                        '<p class="text-sm text-gray-700 mt-0.5 whitespace-pre-wrap break-words">' + escapeHtml(node.content) + '</p>' +
+                        replyBox + repliesHtml +
                     '</div>' +
                 '</div>';
             }).join('');
+        }
+
+        function render(data) {
+            var nodes = data.comments || [];
+            var total = (data.total != null) ? data.total : countNodes(nodes);
+            countEl.textContent = total;
+            if (!total) { listEl.innerHTML = '<p class="text-sm text-gray-400">还没有评论，来抢沙发～</p>'; return; }
+            listEl.innerHTML = renderTree(nodes, 0);
+            bindActions();
+        }
+
+        function bindActions() {
             listEl.querySelectorAll('.cmt-del').forEach(function (b) {
                 b.addEventListener('click', function () { del(b.getAttribute('data-id')); });
             });
+            listEl.querySelectorAll('.cmt-reply').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var id = b.getAttribute('data-id');
+                    var rb = document.getElementById('rb-' + id);
+                    if (!rb) return;
+                    if (rb.style.display === 'none') {
+                        var parentName = escapeHtml(b.closest('.cmt-node').querySelector('.font-semibold').textContent);
+                        rb.innerHTML =
+                            '<textarea rows="2" maxlength="1000" placeholder="回复 @' + parentName + '（最多 1000 字）" class="w-full rounded-xl border border-gray-200 p-2 text-sm outline-none focus:border-primary"></textarea>' +
+                            '<div class="flex items-center justify-between mt-2"><span class="cmt-msg text-xs text-red-500"></span>' +
+                            '<span><button type="button" class="cmt-cancel text-xs text-gray-400 hover:underline mr-3">取消</button>' +
+                            '<button type="button" class="cmt-send bg-primary text-white text-xs px-4 py-1.5 rounded-xl hover:opacity-90" data-pid="' + id + '">发送</button></span></div>';
+                        rb.style.display = 'block';
+                        rb.querySelector('.cmt-cancel').onclick = function () { rb.style.display = 'none'; rb.innerHTML = ''; };
+                        rb.querySelector('.cmt-send').onclick = function () { sendReply(id, rb); };
+                    } else { rb.style.display = 'none'; rb.innerHTML = ''; }
+                });
+            });
+        }
+
+        // 发送楼中楼回复
+        function sendReply(pid, rb) {
+            var ta = rb.querySelector('textarea');
+            var msg = rb.querySelector('.cmt-msg');
+            var text = (ta.value || '').trim();
+            if (!text) { msg.textContent = '回复内容不能为空'; return; }
+            msg.textContent = '';
+            fetch('/api/comments', {
+                method: 'POST', credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ thread: thread, content: text, parent_id: pid })
+            }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+              .then(function (res) {
+                if (res.ok && res.d && res.d.ok) { rb.style.display = 'none'; rb.innerHTML = ''; load(); }
+                else { msg.textContent = (res.d && res.d.error) || '发送失败'; }
+              }).catch(function () { msg.textContent = '网络错误'; });
         }
 
         function load() {
             fetch('/api/comments?thread=' + encodeURIComponent(thread), { credentials: 'include' })
                 .then(function (r) { return r.json(); })
-                .then(function (d) { render(d.comments || [], window.__me || null); })
+                .then(function (d) { render(d); })
                 .catch(function () { listEl.innerHTML = '<p class="text-sm text-red-500">评论加载失败</p>'; });
         }
 
-        function drawForm(me) {
+        function drawForm() {
             if (!me) {
                 formEl.innerHTML = '<p class="text-sm text-gray-500">想说点什么？<a class="text-primary hover:underline" href="' + ssoBase + '/login">登录</a> 后参与评论。</p>';
                 return;
@@ -1534,8 +1603,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         fetch('/api/me', { credentials: 'include' })
             .then(function (r) { return r.ok ? r.json() : null; })
-            .then(function (me) { window.__me = me; drawForm(me); load(); })
-            .catch(function () { drawForm(null); load(); });
+            .then(function (u) { me = u; window.__me = u; drawForm(); load(); })
+            .catch(function () { drawForm(); load(); });
     }
 
     (function enhanceArticle() {

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   pass TEXT NOT NULL,                       -- 格式 pbkdf2$<iters>$<saltHex>$<hashHex>
   role TEXT NOT NULL DEFAULT 'user',       -- 'user' | 'admin'
   status TEXT NOT NULL DEFAULT 'active',   -- 'active' | 'banned'
+  level INTEGER NOT NULL DEFAULT 1,        -- 等级：1 + floor(可见评论数 / 5)，删评扣回
   created_at INTEGER NOT NULL
 );
 
@@ -22,6 +23,7 @@ CREATE TABLE IF NOT EXISTS articles (
   excerpt TEXT,
   cover TEXT,
   content TEXT NOT NULL,                   -- 正文 HTML（原 .article-content 内容）
+  user_id INTEGER NOT NULL DEFAULT 0,      -- 归属用户 id（0 = 后台/历史文章）
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
@@ -33,9 +35,12 @@ CREATE TABLE IF NOT EXISTS comments (
   username TEXT NOT NULL,
   content TEXT NOT NULL,
   created_at INTEGER NOT NULL,
-  status TEXT NOT NULL DEFAULT 'visible'   -- 'visible' | 'deleted'
+  status TEXT NOT NULL DEFAULT 'visible',  -- 'visible' | 'deleted'
+  parent_id INTEGER                        -- 楼中楼：回复的上级评论 id；NULL = 顶层评论
 );
 
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
+CREATE INDEX IF NOT EXISTS idx_articles_user ON articles(user_id);
 CREATE INDEX IF NOT EXISTS idx_comments_thread ON comments(thread, created_at);
+CREATE INDEX IF NOT EXISTS idx_comments_parent ON comments(parent_id);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);

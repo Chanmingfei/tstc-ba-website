@@ -8,7 +8,7 @@
 
 这是一个**唐山师范学院吧官网**的静态双语（中文 / 英文）多页站点，预编译 Tailwind、自托管 Font Awesome，部署在 Cloudflare Pages。你负责**发布/更新/删除新闻文章**，并维护"单一数据源 → 自动派生"的构建流程。
 
-> **动态能力（2026 新增）**：站点已升级为"静态外壳 + Cloudflare Pages Functions"混合形态。新增**统一认证 SSO**（`sso.tstc.pp.ua` 单独子域，简单用户名+密码，无邮箱）、**全站登录态**、**每篇文章账号评论（中英文共用同一评论串）**、以及**管理员专属后台**（管理用户/文章/评论）。正文已入库（D1），文章页由 Functions 做 SSR 渲染。详见 [§15](#15-动态站架构统一认证--评论--管理后台)。
+> **动态能力（2026 新增）**：站点已升级为"静态外壳 + Cloudflare Pages Functions"混合形态。新增**统一认证 SSO**（`sso.tstc.pp.ua` 单独子域，简单用户名+密码，无邮箱）、**全站登录态**、**每篇文章账号评论（支持楼中楼回复、中英文共用同一评论串）**、**用户等级系统（每 5 条评论升 1 级）**，以及**管理员专属后台**（管理用户/文章/评论）。普通用户达到 3 级后可在账号页「我的文章」发布/编辑/删除自己的文章（日期固定为发文当天）。正文已入库（D1），文章页由 Functions 做 SSR 渲染。详见 [§15](#15-动态站架构统一认证--评论--管理后台)。
 
 ---
 
@@ -225,7 +225,7 @@ npm run build
 | `functions/` | **Cloudflare Pages Functions**：认证 API、文章 SSR、管理后台、评论。详见 §15 |
 | `functions/[[path]].js` / `functions/news/[[slug]].js` | 文章 SSR 拦截器（仅 `news/post-N.html`） |
 | `functions/api/[[route]].js` | 统一 API 路由（register/login/logout/me/articles/comments/admin） |
-| `functions/_lib/` | 基础设施：`config.js` `http.js` `auth.js`（PBKDF2+KV 会话）`article.js` `limit.js` |
+| `functions/_lib/` | 基础设施：`config.js` `http.js` `auth.js`（PBKDF2+KV 会话）`article.js` `limit.js` `level.js`（等级重算） |
 | `functions/login.js` / `register.js` / `account.js` / `admin.js` | sso 子域专属页面（host 路由，主站访问 302 回 sso） |
 | `functions/package.json` | `{ "type": "module" }`（Functions 用 ESM） |
 | `wrangler.toml` | Pages Functions 配置 + D1/KV 绑定说明 |
@@ -395,24 +395,42 @@ inset 0 0 2px rgba(0,0,0,.8)
 - 无邮箱验证（用户决定）；忘记密码由管理员在后台「重置密码」。
 - **封禁**：`getActiveSession` 不仅校验会话，还查 `users.status`，被封禁（banned）会话视为失效 → `/api/me` 401、后台 403。
 
+### 15.3b 用户等级系统（每 5 条评论升 1 级）
+
+- 经验值 = 该用户「可见」评论数（含楼中楼回复）；等级 = `1 + floor(经验值 / 5)`（见 `functions/_lib/level.js` 的 `recalcLevel`/`getUserLevel`）。`users` 表有 `level` 字段。
+- **发评 / 回复 / 删评后实时 `recalcLevel` 重算并落库**：评论被删（软删 `status='deleted'`）后经验值减少、等级自动扣回——天然实现「扣回经验值」且不会越权。
+- 达到 **3 级（累计 10 条可见评论）** 解锁发文权限（见 §15.9）。账号管理页展示等级、经验值与升级进度条。
+- 存量库迁移：`scripts/migrate-levels.sql`（`ALTER` 加 `users.level` / `comments.parent_id` / `articles.user_id`，并按可见评论重算存量等级），已对线上库执行。全新库直接用 `schema.sql` 即可。
+
 ### 15.4 文章 SSR（正文进数据库）
 
 - `functions/news/[[slug]].js` 仅拦截 `/news/post-N.html` 与 `/news/post-N-en.html`；D1 有正文时读取**静态外壳**（`env.ASSETS.fetch`）并替换动态区域（标题/分类/日期/作者/正文/`#articleMeta`/面包屑），无正文则原样回退静态资源。
 - 替换锚点：`renderArticlePage`（`functions/_lib/article.js`）用正则替换 `.article-content` 与其紧随的 `<!-- AUTO_PREV_NEXT_START -->` 之间的内容；`AUTO_PREV_NEXT` 标记与构建脚本注入的上下篇导航**不可破坏**。
 - 静态 `news/post-N.html` 仍是设计模板与回退；改版式改静态文件，改正文改 D1。
 
-### 15.5 评论（每篇可评，中英文共用一串）
+### 15.5 评论（每篇可评，中英文共用一串，支持楼中楼回复）
 
-- 接口：`GET/POST /api/comments`（发表需登录）、`DELETE /api/comments/:id`（仅管理员，软删 status='deleted'）。
+- 接口：`GET/POST /api/comments`（发表需登录，可带 `parent_id` 做楼中楼回复）、`DELETE /api/comments/:id`（**管理员或作者本人**可删，软删 `status='deleted'`；删他人评论 403）。
+- `GET /api/comments?thread=` 返回**树形** `{ comments: 树, total }`（`comments` 为嵌套 `replies`），`total` 含楼中楼回复；`parent_id` 必须指向同 thread 内一条可见评论，否则报错。父评论被删时其子回复自动上浮为顶层。
 - thread = `post-N`（去掉 `-en`），所以 `post-1.html` 与 `post-1-en.html` 共享同一评论串。
-- 前端 `initComments` 挂载在 `.article-content` 之后、`AUTO_PREV_NEXT` 之前（不被 SSR 覆盖）。评论内容**前端 `escapeHtml` 转义**，防止 XSS（已无头验证恶意 `<img onerror>` 被转义为文本）。
+- 每条评论返回 `level`（关联 `users.level`），前端展示 `Lv.X` 徽章。
+- 前端 `initComments` 挂载在 `.article-content` 之后、`AUTO_PREV_NEXT` 之前（不被 SSR 覆盖），递归渲染楼中楼、内联「回复」框，评论内容**前端 `escapeHtml` 转义**防 XSS。
 
 ### 15.6 管理后台（仅管理员）
 
 - 入口 `https://sso.tstc.pp.ua/admin`，`functions/admin.js` 玻璃风 SPA（**已适配移动端**：顶栏堆叠、统计 2/1 列、表格横滚、表单单列、输入框 16px）；发布文章「语言」为下拉选择（zh / en）；非管理员显示「无权限」。
-- **账号管理页** `https://sso.tstc.pp.ua/account`（`functions/account.js`）：展示资料（用户名 / 角色 / 注册时间）并支持改密（`POST /api/account/password`，需旧密码 + 两次一致）；主站已登录用户点击顶栏「用户名」即直达此页。
+- **账号管理页** `https://sso.tstc.pp.ua/account`（`functions/account.js`）：展示资料（用户名 / 角色 / 等级 / 经验值 / 注册时间）与升级进度条，支持改密（`POST /api/account/password`，需旧密码 + 两次一致）；达到 3 级解锁「我的文章」标签（见 §15.9）。主站已登录用户点击顶栏「用户名」即直达此页。
 - 接口 `functions/api/[[route]].js` 的 `adminDispatch`：`/api/admin/{users,articles,comments,stats}` 增删改查 + 用户封禁/解封/重置密码 + 评论软删。
 - 文章正文编辑写 D1（SSR 生效）；删除文章只删库记录，不删静态文件（如需彻底下线要同步处理静态页）。
+
+### 15.9 普通用户发文（Lv3+，仅自己的文章）
+
+- 入口：账号管理页「我的文章」标签（`canPublish()` = `role==='admin'` 或 `level>=3`）。
+- 接口（与管理员后台隔离，均按 `user_id` 校验归属）：
+  - `GET /api/articles/mine`：列出当前用户自己的文章。
+  - `POST /api/articles`：发布。**等级 < 3 返回 403**；成功时 `slug` 由 `nextArticleId` 自动生成（`post-N` / `post-N-en`）、`author` 强制为当前登录用户、`date` 强制为发文当天系统日期（不可被客户端覆盖）。
+  - `PUT /api/articles/:slug` / `DELETE /api/articles/:slug`：**仅作者本人**（管理员走 `/api/admin/articles`）；`PUT` 忽略客户端 `date`，保持原文不可改。
+- `articles` 表有 `user_id` 字段：用户发布的文章写入真实归属。
 
 ### 15.7 安全加固（M6）
 
