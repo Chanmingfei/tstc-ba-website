@@ -82,6 +82,30 @@ export async function destroySession(env, req) {
   if (token) await env.SESSIONS.delete(token);
 }
 
+// 吊销某用户全部会话（重置密码 / 强制下线用）：遍历 KV 删除匹配 userId 的会话 key。
+// 站点会话量小，且仅在敏感操作时触发，list 遍历成本可接受；异常不抛出（不影响主流程）。
+export async function revokeUserSessions(env, userId) {
+  try {
+    let cursor;
+    do {
+      const list = await env.SESSIONS.list({ cursor, limit: 100 });
+      const hits = [];
+      for (const k of list.keys) {
+        const raw = await env.SESSIONS.get(k.name);
+        if (!raw) continue;
+        try {
+          const s = JSON.parse(raw);
+          if (s && s.userId === userId) hits.push(k.name);
+        } catch { /* 忽略损坏条目 */ }
+      }
+      if (hits.length) await Promise.all(hits.map((name) => env.SESSIONS.delete(name)));
+      cursor = list.list_complete ? undefined : list.cursor;
+    } while (cursor);
+  } catch (e) {
+    console.error('[auth] revokeUserSessions 失败', e);
+  }
+}
+
 export function sessionCookie(token) {
   return `${COOKIE_NAME}=${token}; Domain=${COOKIE_DOMAIN}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL}`;
 }

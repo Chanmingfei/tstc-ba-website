@@ -7,12 +7,14 @@ import {
   getActiveSession,
   createSession,
   destroySession,
+  revokeUserSessions,
   sessionCookie,
   clearCookie,
 } from '../_lib/auth.js';
 import { ALLOWED_ORIGINS } from '../_lib/config.js';
 import { rateLimit, clientIp } from '../_lib/limit.js';
 import { recalcLevel, getUserLevel } from '../_lib/level.js';
+import { sendEmail } from '../_lib/mailer.js';
 
 // 变更型请求（POST/PUT/DELETE）校验 Origin：仅允许同源或白名单来源，抵御跨站伪造。
 // 同源请求浏览器不携带 Origin 或携带同域 Origin；跨站伪造请求将被拒绝。
@@ -44,6 +46,14 @@ export async function onRequest(context) {
     if (head === 'account') {
       if (method === 'GET') return await accountProfile(request, env);
       if (method === 'POST' && segments[1] === 'password') return await changePassword(request, env);
+      if (method === 'POST' && segments[1] === 'email' && segments[2] === 'code') return await sendBindCode(request, env);
+      if (method === 'PUT' && segments[1] === 'email') return await bindEmail(request, env);
+      if (method === 'DELETE' && segments[1] === 'email') return await unbindEmail(request, env);
+      return json({ error: 'Not Found' }, 404);
+    }
+    if (head === 'password-reset') {
+      if (method === 'POST' && segments[1] === 'code') return await sendResetCode(request, env);
+      if (method === 'POST' && segments[1] === 'confirm') return await confirmReset(request, env);
       return json({ error: 'Not Found' }, 404);
     }
     if (head === 'articles') {
@@ -123,10 +133,13 @@ async function me(request, env) {
 async function accountProfile(request, env) {
   const s = await getActiveSession(request, env);
   if (!s) return json({ error: '未登录' }, 401);
-  const row = await env.DB.prepare('SELECT username, role, created_at FROM users WHERE id = ?').bind(s.userId).first();
+  const row = await env.DB.prepare('SELECT username, role, created_at, email, email_verified FROM users WHERE id = ?').bind(s.userId).first();
   if (!row) return json({ error: '用户不存在' }, 404);
   const lv = await getUserLevel(env, s.userId);
-  return json({ username: row.username, role: row.role, created_at: row.created_at, level: lv.level, xp: lv.xp });
+  return json({
+    username: row.username, role: row.role, created_at: row.created_at, level: lv.level, xp: lv.xp,
+    email: row.email || '', email_verified: !!row.email_verified,
+  });
 }
 
 async function changePassword(request, env) {
@@ -144,6 +157,116 @@ async function changePassword(request, env) {
 
   await env.DB.prepare('UPDATE users SET pass = ? WHERE id = ?')
     .bind(await hashPassword(String(newPassword)), s.userId).run();
+  return json({ ok: true });
+}
+
+// ---------- 邮箱绑定 / 验证码找回密码 ----------
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CODE_TTL = 5 * 60 * 1000; // 验证码 5 分钟有效
+
+function genCode() {
+  const n = crypto.getRandomValues(new Uint32Array(1))[0];
+  return String(n % 1000000).padStart(6, '0');
+}
+
+// 发送验证码（bind/reset 共用）：落库 email_codes + 发信。返回 { ok, via }。
+async function sendCodeEmail(env, { email, purpose, userId }) {
+  const code = genCode();
+  const now = Date.now();
+  await env.DB.prepare(
+    'INSERT INTO email_codes (email, code, purpose, user_id, expires_at, used, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)'
+  ).bind(email, code, purpose, userId ?? null, now + CODE_TTL, now).run();
+  const subject = purpose === 'reset' ? '唐山师范学院吧 · 重置密码验证码' : '唐山师范学院吧 · 邮箱绑定验证码';
+  const text =
+    `【唐山师范学院吧】您正在${purpose === 'reset' ? '重置账号密码' : '绑定邮箱'}，验证码为：${code}\n` +
+    '验证码 5 分钟内有效，请勿转发给他人。如非本人操作，请忽略本邮件。';
+  const m = await sendEmail(env, { to: email, subject, text });
+  return { ok: true, via: m.via };
+}
+
+// 校验并消费验证码（一次性）：成功标记 used，失败返回 { error }。
+async function consumeCode(env, { email, purpose, code }) {
+  const row = await env.DB.prepare(
+    'SELECT id, code, expires_at, used FROM email_codes WHERE email = ? AND purpose = ? ORDER BY id DESC LIMIT 1'
+  ).bind(email, purpose).first();
+  if (!row) return { error: '请先获取验证码' };
+  if (row.used) return { error: '验证码已使用，请重新获取' };
+  if (row.expires_at < Date.now()) return { error: '验证码已过期，请重新获取' };
+  if (row.code !== String(code || '').trim()) return { error: '验证码不正确' };
+  await env.DB.prepare('UPDATE email_codes SET used = 1 WHERE id = ?').bind(row.id).run();
+  return { ok: true };
+}
+
+// 发送绑定/换绑邮箱验证码（需登录；限流：同一用户 60 秒 1 次、每日 10 次）
+async function sendBindCode(request, env) {
+  const s = await getActiveSession(request, env);
+  if (!s) return json({ error: '请先登录' }, 401);
+  const rl = await rateLimit(env, 'rl:emailcode:' + s.userId, 1, 60);
+  if (!rl.ok) return json({ error: '发送过于频繁，请稍后再试' }, 429);
+  const rlDay = await rateLimit(env, 'rl:emailcode:day:' + s.userId, 10, 86400);
+  if (!rlDay.ok) return json({ error: '今日验证码发送次数已达上限' }, 429);
+  const { email } = await request.json().catch(() => ({}));
+  const e = String(email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(e) || e.length > 100) return json({ error: '邮箱格式不正确' }, 400);
+  const taken = await env.DB.prepare('SELECT id FROM users WHERE email = ? AND id != ?').bind(e, s.userId).first();
+  if (taken) return json({ error: '该邮箱已被其他账号绑定' }, 409);
+  const r = await sendCodeEmail(env, { email: e, purpose: 'bind', userId: s.userId });
+  return json({ ok: true, via: r.via });
+}
+
+// 确认绑定/换绑邮箱（需登录 + 验证码）
+async function bindEmail(request, env) {
+  const s = await getActiveSession(request, env);
+  if (!s) return json({ error: '请先登录' }, 401);
+  const { email, code } = await request.json().catch(() => ({}));
+  const e = String(email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(e)) return json({ error: '邮箱格式不正确' }, 400);
+  const chk = await consumeCode(env, { email: e, purpose: 'bind', code });
+  if (chk.error) return json({ error: chk.error }, 400);
+  const taken = await env.DB.prepare('SELECT id FROM users WHERE email = ? AND id != ?').bind(e, s.userId).first();
+  if (taken) return json({ error: '该邮箱已被其他账号绑定' }, 409);
+  await env.DB.prepare('UPDATE users SET email = ?, email_verified = 1 WHERE id = ?').bind(e, s.userId).run();
+  return json({ ok: true });
+}
+
+// 解绑邮箱（需登录）：解绑后将无法通过邮箱找回密码
+async function unbindEmail(request, env) {
+  const s = await getActiveSession(request, env);
+  if (!s) return json({ error: '请先登录' }, 401);
+  await env.DB.prepare('UPDATE users SET email = NULL, email_verified = 0 WHERE id = ?').bind(s.userId).run();
+  return json({ ok: true });
+}
+
+// 忘记密码 · 发送重置验证码（无需登录；防枚举：无论邮箱是否绑定均返回相同提示；
+// 限流：同一 IP 每小时 5 次）
+async function sendResetCode(request, env) {
+  const rl = await rateLimit(env, 'rl:reset:' + clientIp(request), 5, 3600);
+  if (!rl.ok) return json({ error: '操作过于频繁，请稍后再试' }, 429);
+  const { email } = await request.json().catch(() => ({}));
+  const e = String(email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(e)) return json({ error: '邮箱格式不正确' }, 400);
+  const row = await env.DB.prepare('SELECT id, status FROM users WHERE email = ?').bind(e).first();
+  if (row && row.status === 'active') {
+    await sendCodeEmail(env, { email: e, purpose: 'reset', userId: row.id });
+  }
+  return json({ ok: true });
+}
+
+// 忘记密码 · 确认重置（无需登录）：校验码 + 改密 + 吊销该用户全部会话（全部设备下线）
+async function confirmReset(request, env) {
+  const rl = await rateLimit(env, 'rl:reset:' + clientIp(request), 10, 3600);
+  if (!rl.ok) return json({ error: '操作过于频繁，请稍后再试' }, 429);
+  const { email, code, password } = await request.json().catch(() => ({}));
+  const e = String(email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(e)) return json({ error: '邮箱格式不正确' }, 400);
+  if (!password || String(password).length < 6) return json({ error: '新密码至少 6 位' }, 400);
+  const row = await env.DB.prepare('SELECT id, status FROM users WHERE email = ?').bind(e).first();
+  if (!row || row.status !== 'active') return json({ error: '邮箱或验证码不正确' }, 400);
+  const chk = await consumeCode(env, { email: e, purpose: 'reset', code });
+  if (chk.error) return json({ error: chk.error }, 400);
+  await env.DB.prepare('UPDATE users SET pass = ? WHERE id = ?')
+    .bind(await hashPassword(String(password)), row.id).run();
+  await revokeUserSessions(env, row.id);
   return json({ ok: true });
 }
 

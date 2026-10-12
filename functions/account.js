@@ -74,6 +74,11 @@ export async function onRequest(context) {
       view.innerHTML =
         '<div class="kv" id="profileCard"></div>' +
         '<div class="card" style="margin-top:16px">' +
+          '<b>绑定邮箱</b>' +
+          '<p class="muted" style="margin:6px 0 0;font-size:12px">绑定邮箱后，忘记密码时可通过邮箱验证码重置密码。</p>' +
+          '<div id="emailBody" style="margin-top:10px"></div>' +
+        '</div>' +
+        '<div class="card" style="margin-top:16px">' +
           '<b>修改密码</b>' +
           '<form id="pwForm" style="margin-top:12px">' +
             '<label for="oldPassword">当前密码</label>' +
@@ -87,6 +92,7 @@ export async function onRequest(context) {
           '</form>' +
         '</div>';
       document.getElementById('profileCard').innerHTML = profileHtml();
+      renderEmail();
       document.getElementById('pwForm').addEventListener('submit', function (e) {
         e.preventDefault();
         var msg = document.getElementById('msg');
@@ -116,11 +122,104 @@ export async function onRequest(context) {
         : '距发文权限还差 ' + remaining + ' 条评论（满 10 条即达 3 级）。';
       return '<div class="kv-row"><span>用户名</span><span>' + esc(u.username) + '</span></div>' +
         '<div class="kv-row"><span>角色</span><span>' + roleText + '</span></div>' +
+        '<div class="kv-row"><span>邮箱</span><span>' +
+          (u.email ? esc(u.email) + (u.email_verified ? ' <span style="color:#16a34a">已验证</span>' : ' <span style="color:#d97706">未验证</span>') : '未绑定') +
+        '</span></div>' +
         '<div class="kv-row"><span>等级</span><span>Lv.' + (u.level || 1) + '</span></div>' +
         '<div class="kv-row"><span>经验值</span><span>' + xp + ' 条评论</span></div>' +
         '<div class="lvbar"><i style="width:' + pct + '%"></i></div>' +
         '<div class="kv-hint">' + tip + '</div>' +
         '<div class="kv-row"><span>注册时间</span><span>' + fmt(u.created_at) + '</span></div>';
+    }
+
+    // ---------- 邮箱绑定（验证码确认）----------
+    function reloadProfile() {
+      api('/api/account').then(function (r) {
+        if (!r.ok) return;
+        currentUser = r.d;
+        var pc = document.getElementById('profileCard');
+        if (pc) pc.innerHTML = profileHtml();
+        renderEmail();
+      });
+    }
+
+    function renderEmail() {
+      var body = document.getElementById('emailBody');
+      if (!body) return;
+      var u = currentUser || {};
+      if (u.email) {
+        body.innerHTML =
+          '<div class="kv-row"><span>当前邮箱</span><span>' + esc(u.email) +
+            (u.email_verified ? ' <span style="color:#16a34a">已验证</span>' : ' <span style="color:#d97706">未验证</span>') + '</span></div>' +
+          '<div style="margin-top:10px;display:flex;gap:10px">' +
+            '<button class="btn ghost" id="ebChange">更换邮箱</button>' +
+            '<button class="btn danger" id="ebUnbind">解绑</button>' +
+          '</div>';
+        document.getElementById('ebChange').onclick = function () { showBindForm(u.email); };
+        document.getElementById('ebUnbind').onclick = function () {
+          if (!confirm('解绑后将无法通过邮箱找回密码，确定解绑 ' + u.email + ' ？')) return;
+          api('/api/account/email', { method: 'DELETE' }).then(function (res) {
+            if (res.ok) reloadProfile(); else alert(res.d.error || '解绑失败');
+          });
+        };
+      } else {
+        body.innerHTML =
+          '<p class="muted" style="font-size:13px">尚未绑定邮箱。绑定后，忘记密码时可通过邮箱验证码重置密码。</p>' +
+          '<div style="margin-top:8px"><button class="btn" id="ebBind">绑定邮箱</button></div>';
+        document.getElementById('ebBind').onclick = function () { showBindForm(''); };
+      }
+    }
+
+    function showBindForm(oldEmail) {
+      var body = document.getElementById('emailBody');
+      body.innerHTML =
+        '<label>邮箱地址</label><input id="eb_email" type="email" placeholder="you@example.com" value="' + esc(oldEmail || '') + '">' +
+        '<div style="display:flex;gap:10px;margin-top:10px;align-items:stretch">' +
+          '<input id="eb_code" placeholder="6 位验证码" maxlength="6" inputmode="numeric" style="flex:1">' +
+          '<button class="btn ghost" id="eb_send" type="button" style="white-space:nowrap">发送验证码</button>' +
+        '</div>' +
+        '<div style="margin-top:12px"><button class="btn" id="eb_confirm" type="button">确认绑定</button> ' +
+          '<button class="btn ghost" id="eb_cancel" type="button">取消</button> <span class="err" id="ebErr"></span></div>' +
+        '<p class="muted" style="margin-top:8px;font-size:12px">验证码 5 分钟内有效，请勿转发给他人。</p>';
+      var sending = false;
+      document.getElementById('eb_send').onclick = function () {
+        var err = document.getElementById('ebErr');
+        var email = document.getElementById('eb_email').value.trim();
+        if (!email) { err.style.color = ''; err.textContent = '请先填写邮箱地址'; return; }
+        if (sending) return;
+        sending = true;
+        err.textContent = '';
+        api('/api/account/email/code', { method: 'POST', body: JSON.stringify({ email: email }) }).then(function (res) {
+          sending = false;
+          if (res.ok) {
+            var btn = document.getElementById('eb_send');
+            var left = 60;
+            btn.disabled = true; btn.textContent = left + 's 后重发';
+            var timer = setInterval(function () {
+              left -= 1;
+              var b = document.getElementById('eb_send');
+              if (!b) { clearInterval(timer); return; }
+              if (left <= 0) { clearInterval(timer); b.disabled = false; b.textContent = '重新发送'; }
+              else b.textContent = left + 's 后重发';
+            }, 1000);
+            err.style.color = '#16a34a';
+            err.textContent = '验证码已发送，5 分钟内有效' +
+              (res.d.via === 'dev' ? '（当前为开发模式：邮件未真实发送，请联系站长从服务端日志获取验证码）' : '');
+          } else { err.style.color = ''; err.textContent = res.d.error || '发送失败'; }
+        });
+      };
+      document.getElementById('eb_cancel').onclick = renderEmail;
+      document.getElementById('eb_confirm').onclick = function () {
+        var err = document.getElementById('ebErr');
+        err.style.color = '';
+        var email = document.getElementById('eb_email').value.trim();
+        var code = document.getElementById('eb_code').value.trim();
+        if (!email || !code) { err.textContent = '请填写邮箱与验证码'; return; }
+        api('/api/account/email', { method: 'PUT', body: JSON.stringify({ email: email, code: code }) }).then(function (res) {
+          if (res.ok) { alert('邮箱绑定成功'); reloadProfile(); }
+          else err.textContent = res.d.error || '绑定失败';
+        });
+      };
     }
 
     // ---------- 我的文章（Lv3+）----------
