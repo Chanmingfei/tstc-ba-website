@@ -197,7 +197,7 @@ async function createUserArticle(request, env) {
   if (!s) return json({ error: '请先登录' }, 401);
   const lv = await getUserLevel(env, s.userId);
   if (s.role !== 'admin' && lv.level < PUBLISH_LEVEL)
-    return json({ error: `需达到 ${PUBLISH_LEVEL} 级（累计发满 ${PUBLISH_LEVEL * 5} 条评论）才能发布文章` }, 403);
+    return json({ error: `需达到 ${PUBLISH_LEVEL} 级（累计发满 ${(PUBLISH_LEVEL - 1) * 5} 条评论）才能发布文章` }, 403);
   const { lang, title, category, excerpt, content, cover } = await request.json().catch(() => ({}));
   if (!title || !content) return json({ error: '标题与正文必填' }, 400);
   const L = lang === 'en' ? 'en' : 'zh';
