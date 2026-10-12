@@ -8,6 +8,17 @@ compatibility_date = "2024-09-23"
 # 建表：wrangler d1 execute tstc-ba-db --remote --file=./schema.sql
 # 种子：wrangler d1 execute tstc-ba-db --remote --file=./scripts/seed-articles.sql
 
+# ── 发信配置（明文部分）──
+# 说明：Pages 会从仓库的 wrangler.toml 重建 production 部署配置，
+# 因此非敏感的发信参数必须写在这里，仅 API/控制台设置的明文变量会被构建覆盖。
+# 密钥 MAIL_SMTP_PASS 由 Pages Secret 提供（不在仓库中）。
+[vars]
+MAIL_SMTP_HOST = "smtp.qiye.163.com"
+MAIL_SMTP_PORT = "465"
+MAIL_SMTP_SECURE = "on"
+MAIL_SMTP_USER = "noreply@tstc.pp.ua"
+MAIL_FROM = "noreply@tstc.pp.ua"
+
 # D1 数据库：存储 users / articles / comments
 [[d1_databases]]
 binding = "DB"
