@@ -2,6 +2,18 @@
 
 本文件记录唐山师范学院吧官网近期全部重大更新（按日期归档）。
 
+## 2026-10-12（安全）· 验证码存档定期清理 + 清理安全性加固
+
+### 新增
+- **验证码存档懒清理（`cleanupEmailCodes`）**：`email_codes` 表随发码持续增长，为防止存档无限堆积占用 D1 存储，在每次发码（`sendCodeEmail`）时顺带删除 7 天前的历史记录（`DELETE FROM email_codes WHERE created_at < ?`）。因该表只在发码时增长，懒清理对增长源 100% 覆盖，且无需 Cron Trigger（Cloudflare Pages Functions 不支持 Cron，此为零基础设施方案）。
+- **管理端点 `POST /api/admin/cleanup-codes`**：管理后台「概览统计」新增验证码存档卡片（当前条数 + 7 天保留说明 + 「立即清理」按钮），可随时手动触发一次全量清理；非管理员调用返回 403。
+
+### 安全加固（专项确认：只清验证码存档，不伤其他数据）
+- **全量代码审计**：Functions 全部代码仅 4 条 `DELETE` 语句，其中 3 条为既有功能（删评论、删用户、删文章），清理功能新增的 `DELETE` **表名 `email_codes` 硬编码、无条件拼接用户输入**，仅 `created_at < ?` 一个时间阈值参数。
+- **清理函数 try/catch 包裹**：即使 D1 异常也只记日志、返回 0，绝不影响发码主流程（验证码功能可用性优先）。
+- **13 项安全单测（`scripts/test-cleanup-safety.mjs`，全部通过）**：mock DB/KV 捕获全部 SQL 并断言——清理仅产生 1 条 `DELETE FROM email_codes`、阈值约为 7 天前、绝不触碰 `users`/`articles`/`comments` 表、懒清理发生在 INSERT 之后。
+- **线上验证（已通过）**：构造 8 天前模拟记录发码触发懒清理——模拟记录被删、真实用户记录保留；`articles=39`、`comments=53`、`users=6` 与清理前完全一致；非管理员调清理端点 403。
+
 ## 2026-10-12（功能）· 邮箱绑定 + 验证码找回密码
 
 ### 新增
