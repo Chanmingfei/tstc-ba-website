@@ -1752,8 +1752,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var home = isEn ? 'Home' : '首页';
             var news = isUserArticle ? (isEn ? 'User Articles' : '吧友文章') : (isEn ? 'News' : '新闻动态');
             var homeLink = basePath + (isEn ? 'index-en.html' : 'index.html');
-            // 吧友文章页面包屑指向 /user-articles 栏目；新闻页指向 news
-            var newsLink = isUserArticle ? (basePath + 'user-articles') : (basePath + (isEn ? 'news-en.html' : 'news.html'));
+            // 吧友文章详情页固定位于 /user-articles/N，其面包屑栏目链接必须用绝对路径 /user-articles；
+            // 若用相对路径 user-articles，在 /user-articles/19 下会解析成 /user-articles/user-articles（错）。
+            var newsLink = isUserArticle ? '/user-articles' : (basePath + (isEn ? 'news-en.html' : 'news.html'));
             crumb.innerHTML =
                 '<a href="' + homeLink + '" class="hover:underline">' + home + '</a>' +
                 '<span class="mx-2">/</span>' +
