@@ -1468,7 +1468,7 @@ document.addEventListener('DOMContentLoaded', function () {
             countEl.textContent = list.length;
             if (!list.length) { listEl.innerHTML = '<p class="text-sm text-gray-400">还没有评论，来抢沙发～</p>'; return; }
             listEl.innerHTML = list.map(function (c) {
-                var del = (me && me.role === 'admin')
+                var del = (me && (me.role === 'admin' || me.username === c.username))
                     ? '<button type="button" class="cmt-del text-xs text-red-500 hover:underline ml-2" data-id="' + c.id + '">删除</button>' : '';
                 var initial = escapeHtml(((c.username || '?').slice(0, 1) || '?').toUpperCase());
                 return '<div class="cmt-item flex gap-3">' +

@@ -188,8 +188,14 @@ async function postComment(request, env) {
 
 async function deleteComment(request, env, id) {
   const s = await getSession(request, env);
-  if (!s || s.role !== 'admin') return json({ error: '无权限' }, 403);
+  if (!s) return json({ error: '请先登录' }, 401);
   if (!/^\d+$/.test(id)) return json({ error: '非法 id' }, 400);
+  const row = await env.DB.prepare('SELECT user_id FROM comments WHERE id = ?').bind(id).first();
+  if (!row) return json({ error: '评论不存在' }, 404);
+  // 管理员可删任意评论；普通用户仅可删自己的评论（按 user_id 校验，防止越权删他人评论）
+  if (s.role !== 'admin' && String(row.user_id) !== String(s.userId)) {
+    return json({ error: '无权限删除他人评论' }, 403);
+  }
   await env.DB.prepare("UPDATE comments SET status = 'deleted' WHERE id = ?").bind(id).run();
   return json({ ok: true });
 }
