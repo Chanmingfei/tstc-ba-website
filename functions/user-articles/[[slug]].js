@@ -44,6 +44,17 @@ export async function onRequest(context) {
         '<a href="../news.html" class="hover:underline">新闻动态</a>',
         '<a href="/user-articles" class="hover:underline">吧友文章</a>'
       );
+      // 去掉新闻外壳的「上一篇/下一篇」区块：其 post-N.html 为裸相对链接，在 /user-articles/N 下
+      // 会解析成 /user-articles/post-N.html 而 404，且指向新闻与吧友文章无关。改为返回列表。
+      out = out.replace(
+        /<!--\s*AUTO_PREV_NEXT_START\s*-->[\s\S]*?<!--\s*AUTO_PREV_NEXT_END\s*-->/i,
+        '<a href="/user-articles" class="inline-flex items-center text-secondary hover:text-primary font-medium transition-colors"><i class="fa fa-arrow-left mr-2"></i>返回「吧友文章」列表</a>'
+      );
+      // 文章尾部「返回新闻列表」→「返回吧友文章列表」
+      out = out.replace(
+        /<a href="\.\.\/news\.html" class="text-secondary hover:text-primary font-medium transition-colors">[\s\S]*?返回新闻列表[\s\S]*?<\/a>/,
+        '<a href="/user-articles" class="text-secondary hover:text-primary font-medium transition-colors"><i class="fa fa-arrow-left mr-1"></i>返回「吧友文章」列表</a>'
+      );
       return new Response(out, {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=60' },

@@ -7,7 +7,10 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     /* ---------- 基础路径（区分首页与 news/ 子目录） ---------- */
-    const basePath = (location.pathname.indexOf('/news/') !== -1) ? '../' : '';
+    // 二级详情页需以 ../ 回退根目录：新闻 /news/post-N 与吧友文章 /user-articles/N 都是二级路径。
+    // 早期只判断了 /news/，导致 /user-articles/N 详情页里由 JS 生成的面包屑首页、相关阅读等
+    // 相对链接拼成 index.html / news/xxx.html，被解析到 /user-articles/index.html 而 404。
+    const basePath = (location.pathname.indexOf('/news/') !== -1 || /\/user-articles\/\d/.test(location.pathname)) ? '../' : '';
 
     /* ---------- 当前语言 & 语言切换按钮 ----------
        注意：Cloudflare Pages 开启了「纯净 URL」，会把 /xxx-en.html 重定向到 /xxx-en
