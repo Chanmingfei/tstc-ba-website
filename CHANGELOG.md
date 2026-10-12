@@ -2,6 +2,20 @@
 
 本文件记录唐山师范学院吧官网近期全部重大更新（按日期归档）。
 
+## 2026-10-12（功能）· 免费发件方案：自有邮箱 SMTP 直连通道
+
+### 新增
+- **新增 SMTP 直连发信通道（`functions/_lib/smtp.js`，mailer 第 0 级通道）**：使用自己的邮箱（QQ / 163 / Gmail 等）+ SMTP 授权码直连发信，零注册、零费用、无域名验证要求，任意收件人均可送达。基于 workerd 原生 `cloudflare:sockets` 实现，完整 SMTP 协议（EHLO 多行应答 / AUTH LOGIN / MAIL FROM / RCPT TO / DATA / QUIT），中文主题与正文均按 RFC 2045 base64 编码，20 秒应答超时保护。
+- **配置项（Pages 环境变量）**：`MAIL_SMTP_HOST`（如 smtp.qq.com）、`MAIL_SMTP_PORT`（默认 465）、`MAIL_SMTP_SECURE`（on=隐式 TLS / starttls=587）、`MAIL_SMTP_USER`（登录邮箱，须与发件人一致）、`MAIL_SMTP_PASS`（授权码，非登录密码）、`MAIL_FROM`（可选，默认同 USER）。
+- **通道优先级**：SMTP → Webhook → Resend → 开发模式（均未配置时仅写日志）；验证码在任何通道下都不随 HTTP 响应返回。
+
+### 变更
+- **Resend 通道降级为备选**：实测 Resend API 拒绝验证 `pp.ua` 免费公共域名及其子域（`tstc.pp.ua` 在黑名单内，返回 422 "We don't allow free public domains"），域名验证路径不可行，故主推 SMTP 方案；如未来启用自有独立域名，仍可通过 `RESEND_API_KEY` 切换回 Resend。
+
+### 测试
+- **16 项 SMTP 单测（`scripts/test-smtp.mjs`，全部通过）**：本地模拟 SMTP 服务端（node:net + web streams 适配），覆盖正常发送全流程（命令序列、AUTH LOGIN base64、MAIL FROM/RCPT TO/DATA/QUIT、From/To/Date/Message-ID/MIME 头、Subject encoded-word 中文解码、正文 base64 解码）、认证失败抛异常、配置不完整不连接、starttls 模式；修复了 `writer.close()` Promise 拒绝未处理导致进程崩溃的问题。
+- 既有 13 项清理安全测试回归通过，mailer 改造无影响。
+
 ## 2026-10-12（安全）· 验证码存档定期清理 + 清理安全性加固
 
 ### 新增

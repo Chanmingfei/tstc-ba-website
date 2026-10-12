@@ -1,0 +1,137 @@
+// SMTP 通道单测：本地起模拟 SMTP 服务端，验证 sendViaSmtp 的完整协议行为。
+// 运行：node scripts/test-smtp.mjs
+import net from 'node:net';
+import { Duplex } from 'node:stream';
+import { once } from 'node:events';
+import { sendViaSmtp } from '../functions/_lib/smtp.js';
+
+// ── 模拟 SMTP 服务端 ─────────────────────────────────────────────
+const received = [];   // 捕获服务端收到的全部原始行
+let dataPayload = '';  // DATA 阶段内容
+let rejectAuth = false;
+
+function startServer() {
+  return new Promise((resolve) => {
+    const server = net.createServer((sock) => {
+      let inData = false;
+      let buf = '';
+      const reply = (s) => sock.write(s + '\r\n');
+      reply('220 mock.smtp.local ESMTP ready');
+      sock.on('data', (chunk) => {
+        buf += chunk.toString('utf8');
+        if (inData) {
+          if (buf.includes('\r\n.\r\n')) {
+            dataPayload = buf;
+            received.push('<DATA>');
+            buf = '';
+            inData = false;
+            reply('250 2.0.0 Ok: queued as MOCK123');
+          }
+          return;
+        }
+        let idx;
+        while ((idx = buf.indexOf('\r\n')) >= 0) {
+          const line = buf.slice(0, idx);
+          buf = buf.slice(idx + 2);
+          received.push(line);
+          const cmd = line.split(' ')[0].toUpperCase();
+          if (cmd === 'EHLO') reply('250-mock.smtp.local\r\n250-AUTH LOGIN\r\n250 SMTP ready'); // 多行应答
+          else if (cmd === 'AUTH') reply('334 ' + Buffer.from('Username:').toString('base64'));
+          else if (line === Buffer.from('smtpuser@qq.com').toString('base64')) reply('334 ' + Buffer.from('Password:').toString('base64'));
+          else if (rejectAuth) reply('535 5.7.8 Error: authentication failed');
+          else if (line === Buffer.from('wrongpass').toString('base64') && received.some(l => l === 'AUTH LOGIN')) reply('235 2.7.0 Accepted');
+          else if (cmd === 'MAIL') reply('250 2.1.0 Ok');
+          else if (cmd === 'RCPT') reply('250 2.1.5 Ok');
+          else if (cmd === 'DATA') { reply('354 End data with <CR><LF>.<CR><LF>'); inData = true; }
+          else if (cmd === 'QUIT') { reply('221 2.0.0 Bye'); sock.end(); }
+          else reply('250 Ok');
+        }
+      });
+      sock.on('error', () => {});
+    });
+    server.listen(0, '127.0.0.1', () => resolve(server));
+  });
+}
+
+// node:net → web streams 适配（模拟 workerd socket 接口）
+function nodeConnectFactory() {
+  return (host, port) => {
+    const sock = net.connect(port, host);
+    const web = Duplex.toWeb(sock);
+    return { readable: web.readable, writable: web.writable, close: () => sock.destroy() };
+  };
+}
+
+// ── 断言工具 ────────────────────────────────────────────────────
+let pass = 0, fail = 0;
+function check(name, cond, detail = '') {
+  if (cond) { pass++; console.log(`PASS | ${name}`); }
+  else { fail++; console.log(`FAIL | ${name} ${detail}`); }
+}
+
+async function waitConnected(server) {
+  const port = server.address().port;
+  return port;
+}
+
+// ── 主流程 ──────────────────────────────────────────────────────
+const server = await startServer();
+const port = await waitConnected(server);
+
+const env = {
+  MAIL_SMTP_HOST: '127.0.0.1',
+  MAIL_SMTP_PORT: String(port),
+  MAIL_SMTP_USER: 'smtpuser@qq.com',
+  MAIL_SMTP_PASS: 'smtp-auth-code',
+  MAIL_FROM: 'smtpuser@qq.com',
+};
+
+const msg = {
+  to: 'someone@example.com',
+  subject: '唐山师范学院吧 · 邮箱绑定验证码',
+  text: '你的验证码是 123456，5 分钟内有效。\n如非本人操作请忽略。',
+};
+
+console.log('== 用例 1：正常发送 ==');
+received.length = 0; dataPayload = '';
+let r = await sendViaSmtp(env, msg, { connectFn: nodeConnectFactory() });
+check('返回 {ok:true, via:smtp}', r.ok === true && r.via === 'smtp', JSON.stringify(r));
+check('命令序列：EHLO 使用站点域名', received[0] === 'EHLO tstc.pp.ua', received[0]);
+check('命令序列：AUTH LOGIN', received.includes('AUTH LOGIN'));
+check('命令序列：base64 用户名', received.includes(Buffer.from('smtpuser@qq.com').toString('base64')));
+check('命令序列：base64 授权码', received.includes(Buffer.from('smtp-auth-code').toString('base64')));
+check('命令序列：MAIL FROM 与发件人一致', received.some(l => l === `MAIL FROM:<smtpuser@qq.com>`));
+check('命令序列：RCPT TO 收件人', received.some(l => l === `RCPT TO:<someone@example.com>`));
+check('命令序列：DATA 与 QUIT', received.includes('DATA') && received.includes('QUIT'));
+check('DATA 含 From 头', /^From: smtpuser@qq\.com$/m.test(dataPayload));
+check('DATA 含 To 头', /^To: someone@example\.com$/m.test(dataPayload));
+check('DATA 含 Date / Message-ID / MIME 头', /^Date: .+\r$/m.test(dataPayload) && /^Message-ID: <.+@tstc\.pp\.ua>$/m.test(dataPayload) && /^Content-Transfer-Encoding: base64$/m.test(dataPayload));
+check('DATA Subject 为 UTF-8 encoded-word 且可解码回中文',
+  /^Subject: =\?UTF-8\?B\?(.+)\?=$/m.test(dataPayload) &&
+  Buffer.from(RegExp.$1, 'base64').toString('utf8') === msg.subject,
+  dataPayload.split('\r\n').find(l => l.startsWith('Subject')));
+const bodyPart = dataPayload.split('\r\n\r\n')[1].replace(/\r\n\.$/, '');
+check('DATA 正文 base64 可解码回原文（含中文与换行）', Buffer.from(bodyPart.replace(/\r\n/g, ''), 'base64').toString('utf8') === msg.text);
+
+console.log('== 用例 2：认证失败（错误授权码）==');
+received.length = 0; dataPayload = '';
+rejectAuth = true;
+let threw = false;
+try {
+  await sendViaSmtp({ ...env, MAIL_SMTP_PASS: 'wrongpass' }, msg, { connectFn: nodeConnectFactory() });
+} catch (e) { threw = true; }
+check('认证失败抛出异常（由 mailer 捕获转 {ok:false}）', threw);
+rejectAuth = false;
+
+console.log('== 用例 3：配置不完整时不尝试连接 ==');
+r = await sendViaSmtp({ MAIL_SMTP_HOST: 'x' }, msg, { connectFn: () => { throw new Error('不应被调用'); } });
+check('缺少 USER/PASS 返回 ok:false 且不连接', r.ok === false && r.via === 'smtp', JSON.stringify(r));
+
+console.log('== 用例 4：starttls 模式同样走通（适配层忽略 TLS）==');
+received.length = 0; dataPayload = '';
+r = await sendViaSmtp({ ...env, MAIL_SMTP_SECURE: 'starttls', MAIL_SMTP_PORT: String(port) }, msg, { connectFn: nodeConnectFactory() });
+check('starttls 配置正常完成发送', r.ok === true && received.includes('AUTH LOGIN'));
+
+server.close();
+console.log(`\n结果：${pass} 通过，${fail} 失败`);
+process.exit(fail ? 1 : 0);
