@@ -116,7 +116,7 @@ async function logout(request, env) {
 async function me(request, env) {
   const s = await getActiveSession(request, env);
   if (!s) return json({ error: '未登录' }, 401);
-  return json({ username: s.username, role: s.role });
+  return json({ id: s.userId, username: s.username, role: s.role });
 }
 
 // ---------- 账号管理（个人资料 / 修改密码）----------
@@ -361,11 +361,15 @@ async function adminDispatch(request, env, segments) {
     }
     if (id && /^\d+$/.test(id)) {
       if (method === 'DELETE') {
+        // 禁止删除自己的账号，否则会永久锁死后台
+        if (String(id) === String(s.userId)) return json({ error: '不能删除自己的账号' }, 403);
         await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(id).run();
         return json({ ok: true });
       }
       const act = segments[3];
       if (method === 'POST' && act === 'ban') {
+        // 禁止封禁自己的账号，否则会无法登录、无法自助解封
+        if (String(id) === String(s.userId)) return json({ error: '不能封禁自己的账号' }, 403);
         await env.DB.prepare("UPDATE users SET status = 'banned' WHERE id = ?").bind(id).run();
         return json({ ok: true });
       }

@@ -197,7 +197,7 @@ export async function onRequest(context) {
           '<div style="margin-top:10px"><a href="/login" style="color:var(--tint)">前往登录</a></div></div>';
         return null;
       }
-      return r.json();
+      return r.d;
     }).then(function (d) {
       if (!d) return;
       currentUser = d;

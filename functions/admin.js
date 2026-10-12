@@ -144,6 +144,7 @@ export async function onRequest(context) {
 </div>
 <script>
 var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]); }); };
+var myId = null;  // 当前登录管理员 id，用于在其自身行隐藏「封禁/删除」按钮，避免误操作把自己锁死
 function api(path, opts) {
   opts = opts || {};
   return fetch(path, Object.assign({ credentials: 'include', headers: { 'Content-Type': 'application/json' } }, opts))
@@ -186,15 +187,20 @@ function loadUsers() {
       '<button class="btn" id="newUser">+ 新建用户</button></div>' +
       '<table><thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>状态</th><th>注册时间</th><th>操作</th></tr></thead><tbody>';
     rows.forEach(function (u) {
+      var isSelf = String(u.id) === String(myId);  // 当前管理员自身行
       var st = u.status === 'banned' ? '<span class="pill banned">已封禁</span>' : '<span class="pill active">正常</span>';
-      var banBtn = u.status === 'banned'
-        ? '<button class="btn ghost" data-act="unban" data-id="' + u.id + '">解封</button>'
-        : '<button class="btn warn" data-act="ban" data-id="' + u.id + '">封禁</button>';
+      // 自身行不显示「封禁/解封/删除」，仅保留「重置密码」，避免管理员误把自己锁死
+      var banBtn = isSelf ? '<span class="muted">本账号</span>'
+        : (u.status === 'banned'
+          ? '<button class="btn ghost" data-act="unban" data-id="' + u.id + '">解封</button>'
+          : '<button class="btn warn" data-act="ban" data-id="' + u.id + '">封禁</button>');
+      var delBtn = isSelf ? '<span class="muted">—</span>'
+        : '<button class="btn danger" data-act="del" data-id="' + u.id + '">删除</button>';
       html += '<tr><td>' + u.id + '</td><td>' + esc(u.username) + '</td><td>' + esc(u.role) + '</td><td>' + st + '</td><td>' + fmt(u.created_at) + '</td>' +
         '<td style="white-space:nowrap">' +
         '<button class="btn ghost" data-act="reset" data-id="' + u.id + '">重置密码</button> ' +
         banBtn + ' ' +
-        '<button class="btn danger" data-act="del" data-id="' + u.id + '">删除</button></td></tr>';
+        delBtn + '</td></tr>';
     });
     html += '</tbody></table></div>';
     view.innerHTML = html;
@@ -321,6 +327,7 @@ api('/api/me').then(function (r) {
     document.getElementById('gate').innerHTML = '<div class="card" style="color:#fff;text-align:center">无权限：仅管理员可访问。<a href="/login" style="color:#fff">前往登录</a></div>';
     return;
   }
+  myId = r.d.id;  // 记录当前管理员 id
   document.getElementById('app').style.display = 'block';
   show('stats');
 }).catch(function () {
