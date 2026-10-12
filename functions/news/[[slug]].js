@@ -1,6 +1,6 @@
 // 文章 SSR 拦截器：仅匹配 /news/post-N.html 与 /news/post-N-en.html
 // D1 有正文时读取静态外壳并替换动态区域；否则原样回退静态资源。
-import { getArticleBySlug, renderArticlePage } from '../_lib/article.js';
+import { getArticleBySlug, renderArticlePage, getSiblings, renderPrevNext } from '../_lib/article.js';
 
 // 后台新建的文章（如 post-18）在仓库里没有静态页面文件，直接取外壳会 404。
 // 此时借用一篇既有文章页作为设计模板（renderArticlePage 会替换掉标题/元信息/正文），
@@ -57,7 +57,16 @@ export async function onRequest(context) {
         shellText = fbRes.ok ? await fbRes.text() : '';
       }
       if (!shellText) return env.ASSETS.fetch(request); // 兜底：仍取不到则原样回退静态资源
-      const out = renderArticlePage(shellText, article);
+      let out = renderArticlePage(shellText, article);
+      // 动态替换「上一篇/下一篇」：静态外壳里的上下篇是构建时生成的，对后台新建文章会错配
+      // （沿用模板文章的上下篇），按同系列（新闻）日期从 D1 现算，保证正确可达。
+      try {
+        const sib = await getSiblings(env, article);
+        out = out.replace(
+          /<!--\s*AUTO_PREV_NEXT_START\s*-->[\s\S]*?<!--\s*AUTO_PREV_NEXT_END\s*-->/i,
+          renderPrevNext(sib.prev, sib.next, article.lang === 'en')
+        );
+      } catch (_) { /* 保留静态上下篇 */ }
       return new Response(out, {
         status: 200,
         headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=60' },

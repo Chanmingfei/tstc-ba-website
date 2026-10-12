@@ -65,3 +65,60 @@ export function renderArticlePage(shell, a) {
 
   return out;
 }
+
+// 由文章 slug 生成规范访问路径：吧友文章 ua-N → /user-articles/N；新闻 post-N → /news/post-N
+export function articleUrl(slug) {
+  const ua = /^ua-(\d+)(-en)?$/.exec(slug || '');
+  if (ua) return '/user-articles/' + ua[1] + (ua[2] || '');
+  return '/news/' + (slug || '');
+}
+
+// 计算同系列（新闻 user_id=0 或吧友文章 user_id>0）中按日期排序的上一篇/下一篇。
+// 中英版本（-en）视为同一篇，仅返回与当前文章同语言的邻居；
+// 日期倒序（新→旧），同日期按编号倒序。上一篇=更旧、下一篇=更新。
+export async function getSiblings(env, article) {
+  if (!env.DB || !article) return { prev: null, next: null };
+  const isUser = !!(article.user_id && article.user_id !== 0);
+  const scopeCond = isUser ? 'user_id != 0' : 'user_id = 0';
+  let list = [];
+  try {
+    const rows = await env.DB.prepare(
+      `SELECT slug, lang, title, date FROM articles WHERE ${scopeCond}`
+    ).all();
+    list = (rows.results || []).filter((r) => r.lang === article.lang);
+  } catch (_) {
+    return { prev: null, next: null };
+  }
+  const num = (s) => { const m = /(\d+)/.exec(s || ''); return m ? parseInt(m[1], 10) : 0; };
+  const norm = (s) => (s || '').replace(/-en$/, '');
+  list.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : num(b.slug) - num(a.slug)));
+  const cur = norm(article.slug);
+  const idx = list.findIndex((r) => norm(r.slug) === cur);
+  if (idx < 0) return { prev: null, next: null };
+  return { prev: idx < list.length - 1 ? list[idx + 1] : null, next: idx > 0 ? list[idx - 1] : null };
+}
+
+// 动态渲染「上一篇 / 下一篇」导航区块（替代静态外壳里对后台新建/吧友文章会错配或失效的上下篇）。
+// 有邻篇渲染为可点击链接（绝对路径，二级详情页也可达），无则渲染占位说明。
+export function renderPrevNext(prev, next, isEn) {
+  function cell(isPrev, n) {
+    const icon = isPrev
+      ? (isEn ? '<i class="fa fa-arrow-left mr-1"></i> Previous' : '<i class="fa fa-arrow-left mr-1"></i> 上一篇')
+      : (isEn ? 'Next <i class="fa fa-arrow-right ml-1"></i>' : '下一篇 <i class="fa fa-arrow-right ml-1"></i>');
+    const align = isPrev ? '' : ' text-right';
+    if (n) {
+      return '<a href="' + articleUrl(n.slug) + '" class="border border-gray-200 rounded-xl p-4 flex flex-col' + align +
+        ' text-secondary hover:text-primary hover:bg-gray-100 transition-colors font-medium">' +
+        '<span class="text-sm text-gray-500 mb-1">' + icon + '</span>' +
+        '<span class="leading-tight">' + escHtml(n.title) + '</span></a>';
+    }
+    const text = isPrev
+      ? (isEn ? 'First in this series' : '已是本系列第一篇')
+      : (isEn ? 'Latest post' : '已是最新一篇');
+    return '<div class="border border-gray-200 rounded-xl p-4 flex flex-col' + align + '">' +
+      '<span class="text-sm text-gray-500 mb-1">' + icon + '</span>' +
+      '<span class="leading-tight text-gray-500">' + text + '</span></div>';
+  }
+  return '<div class="mt-10 pt-6 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">' +
+    cell(true, prev) + cell(false, next) + '</div>';
+}

@@ -1,7 +1,7 @@
 // 吧友文章（用户 Lv3+ 发文）SSR 拦截器：仅匹配 /user-articles/N 与 /user-articles/N-en
 // 复用新闻文章外壳替换动态区域，并把面包屑「新闻动态」改写为「吧友文章」，
 // slug 体系为 ua-N / ua-N-en，与新闻 post-N 完全隔离。
-import { getArticleBySlug, renderArticlePage } from '../_lib/article.js';
+import { getArticleBySlug, renderArticlePage, getSiblings, renderPrevNext } from '../_lib/article.js';
 
 // 后台新建的文章（如 post-17）在仓库里没有静态页面文件，借用其当设计模板。
 const SHELL_FALLBACK_SLUG = 'post-17';
@@ -44,12 +44,17 @@ export async function onRequest(context) {
         '<a href="../news.html" class="hover:underline">新闻动态</a>',
         '<a href="/user-articles" class="hover:underline">吧友文章</a>'
       );
-      // 去掉新闻外壳的「上一篇/下一篇」区块：其 post-N.html 为裸相对链接，在 /user-articles/N 下
-      // 会解析成 /user-articles/post-N.html 而 404，且指向新闻与吧友文章无关。改为返回列表。
-      out = out.replace(
-        /<!--\s*AUTO_PREV_NEXT_START\s*-->[\s\S]*?<!--\s*AUTO_PREV_NEXT_END\s*-->/i,
-        '<a href="/user-articles" class="inline-flex items-center text-secondary hover:text-primary font-medium transition-colors"><i class="fa fa-arrow-left mr-2"></i>返回「吧友文章」列表</a>'
-      );
+      // 动态渲染「上一篇/下一篇」：按同系列（吧友文章 user_id>0）日期从 D1 现算，
+      // 替代新闻外壳里指向 post-N.html 的错配上下篇（那会在二级路径 404 且与吧友文章无关）。
+      try {
+        const sib = await getSiblings(env, article);
+        out = out.replace(
+          /<!--\s*AUTO_PREV_NEXT_START\s*-->[\s\S]*?<!--\s*AUTO_PREV_NEXT_END\s*-->/i,
+          renderPrevNext(sib.prev, sib.next, article.lang === 'en')
+        );
+      } catch (_) {
+        out = out.replace(/<!--\s*AUTO_PREV_NEXT_START\s*-->[\s\S]*?<!--\s*AUTO_PREV_NEXT_END\s*-->/i, '');
+      }
       // 文章尾部「返回新闻列表」→「返回吧友文章列表」
       out = out.replace(
         /<a href="\.\.\/news\.html" class="text-secondary hover:text-primary font-medium transition-colors">[\s\S]*?返回新闻列表[\s\S]*?<\/a>/,

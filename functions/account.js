@@ -41,8 +41,10 @@ export async function onRequest(context) {
 
     // 吧友文章 slug（ua-N / ua-N-en）→ 规范访问地址 https://主站/user-articles/N；
     // 非 ua- 体系（防御性）回退到 news 路径。
+    // 注意：本段位于反引号模板字符串内，正则的 \d 必须写成 \\d，否则模板串会把 \d 解析成 d，
+    // 导致 /^ua-(d+)$/ 匹配不到 ua-19，误走 news/ua-19.html 回退分支。
     function uaHref(slug) {
-      var m = /^ua-(\d+)(-en)?$/.exec(slug || '');
+      var m = /^ua-(\\d+)(-en)?$/.exec(slug || '');
       if (m) return 'https://${MAIN_HOST}/user-articles/' + m[1] + (m[2] || '');
       return 'https://${MAIN_HOST}/news/' + slug + '.html';
     }
