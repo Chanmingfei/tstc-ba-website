@@ -39,6 +39,14 @@ export async function onRequest(context) {
     var currentUser = null;   // /api/account 返回的全量资料
     var view = document.getElementById('view');
 
+    // 吧友文章 slug（ua-N / ua-N-en）→ 规范访问地址 https://主站/user-articles/N；
+    // 非 ua- 体系（防御性）回退到 news 路径。
+    function uaHref(slug) {
+      var m = /^ua-(\d+)(-en)?$/.exec(slug || '');
+      if (m) return 'https://${MAIN_HOST}/user-articles/' + m[1] + (m[2] || '');
+      return 'https://${MAIN_HOST}/news/' + slug + '.html';
+    }
+
     document.getElementById('logout').onclick = function () {
       fetch('/api/logout', { method: 'POST', credentials: 'include' }).then(function () { location.href = 'https://${MAIN_HOST}'; });
     };
@@ -142,13 +150,13 @@ export async function onRequest(context) {
           html += '<table><thead><tr><th>slug</th><th>语言</th><th>标题</th><th>日期</th><th>分类</th><th>操作</th></tr></thead><tbody>';
           rows.forEach(function (a) {
             html += '<tr><td>' + esc(a.slug) + '</td><td>' + esc(a.lang) + '</td><td>' + esc(a.title) + '</td><td>' + esc(a.date) + '</td><td>' + esc(a.category) + '</td>' +
-              '<td style="white-space:nowrap"><a class="btn ghost" href="https://${MAIN_HOST}/news/' + esc(a.slug) + '.html" target="_blank">查看</a> ' +
+              '<td style="white-space:nowrap"><a class="btn ghost" href="' + uaHref(a.slug) + '" target="_blank">查看</a> ' +
               '<button class="btn ghost" data-edit="' + esc(a.slug) + '">编辑</button> ' +
               '<button class="btn danger" data-del="' + esc(a.slug) + '">删除</button></td></tr>';
           });
           html += '</tbody></table>';
         } else {
-          html += '<p class="muted">还没有发布文章。在此发布后将在主站新闻列表展示。</p>';
+          html += '<p class="muted">还没有发布文章。在此发布后将在主站「吧友文章」栏目展示。</p>';
         }
         html += '</div>';
         view.innerHTML = html;
@@ -183,7 +191,7 @@ export async function onRequest(context) {
         var p = slug ? api('/api/articles/' + slug, { method: 'PUT', body: JSON.stringify(payload) })
                      : api('/api/articles', { method: 'POST', body: JSON.stringify(payload) });
         p.then(function (res) {
-          if (res.ok) { loadArticles(); if (!slug) alert('发布成功！文章将在主站新闻列表展示。'); }
+          if (res.ok) { loadArticles(); if (!slug) alert('发布成功！文章将在主站「吧友文章」栏目展示。'); }
           else err.textContent = res.d.error || '保存失败';
         });
       };

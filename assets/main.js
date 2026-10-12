@@ -1435,7 +1435,15 @@ document.addEventListener('DOMContentLoaded', function () {
     addNewsFilters();
 
     /* ---------- 吧友文章（用户 Lv3+ 发文）专栏：独立于新闻动态，从 D1 读取 user_id != 0 的文章 ---------- */
-    // 与新闻列表同款卡片样式，但额外展示作者（用户名），并链接到统一文章页 news/post-N.html。
+    // 与新闻列表同款卡片样式，但额外展示作者（用户名），链接到独立地址 /user-articles/N。
+
+    // 由吧友文章 slug（ua-N / ua-N-en）解析出规范访问路径 /user-articles/N（含 -en）；
+    // 若不是 ua- 体系（防御性）则回退到 news 路径，保证链接始终可达。
+    function uaPath(slug) {
+        var m = /^ua-(\d+)(-en)?$/.exec(slug || '');
+        return m ? ('user-articles/' + m[1] + (m[2] || '')) : ('news/' + slug + '.html');
+    }
+
     function renderUserArticles(containerId, opts) {
         if (typeof opts === 'number') opts = { limit: opts };
         opts = opts || {};
@@ -1456,7 +1464,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? '<span class="ml-3"><i class="fa fa-user mr-1"></i>' + escapeHtml(item.author) + '</span>'
                 : '';
             return '' +
-                '<a href="news/' + item.slug + '.html" class="news-card bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
+                '<a href="' + uaPath(item.slug) + '" class="news-card bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
                     coverHtml +
                     '<div class="p-6 flex-1 flex flex-col">' +
                         '<div class="flex items-center text-xs text-gray-500 mb-3">' +
@@ -1548,9 +1556,11 @@ document.addEventListener('DOMContentLoaded', function () {
     function initComments() {
         var content = document.querySelector('.article-content');
         if (!content) return;
-        var m = location.pathname.match(/\/news\/post-(\d+)(?:-en)?\.html$/);
+        var m = location.pathname.match(/\/(?:news\/post|user-articles)\/(\d+)(?:-en)?(?:\.html)?$/);
         if (!m) return;
-        var thread = 'post-' + m[1];
+        // 新闻文章 thread=post-N；吧友文章 thread=ua-N（与 slug 体系一致，评论校验 THREAD_RE 同时允许两者）
+        var isUserArticle = /\/user-articles\//.test(location.pathname);
+        var thread = (isUserArticle ? 'ua-' : 'post-') + m[1];
         var ssoBase = 'https://sso.tstc.pp.ua';
         var me = null;
 
@@ -1735,13 +1745,15 @@ document.addEventListener('DOMContentLoaded', function () {
         var meta = {};
         try { meta = JSON.parse(metaEl.textContent); } catch (e) { /* 忽略解析错误 */ }
 
-        // 1) 面包屑：首页 › 新闻动态 › 标题（英文页跳转英文对应页）
+        // 1) 面包屑：首页 › 新闻动态/吧友文章 › 标题（英文页跳转英文对应页）
         var crumb = document.querySelector('header nav[aria-label="breadcrumb"]');
         if (crumb && meta.title) {
+            var isUserArticle = /\/user-articles\//.test(location.pathname);
             var home = isEn ? 'Home' : '首页';
-            var news = isEn ? 'News' : '新闻动态';
+            var news = isUserArticle ? (isEn ? 'User Articles' : '吧友文章') : (isEn ? 'News' : '新闻动态');
             var homeLink = basePath + (isEn ? 'index-en.html' : 'index.html');
-            var newsLink = basePath + (isEn ? 'news-en.html' : 'news.html');
+            // 吧友文章页面包屑指向 /user-articles 栏目；新闻页指向 news
+            var newsLink = isUserArticle ? (basePath + 'user-articles') : (basePath + (isEn ? 'news-en.html' : 'news.html'));
             crumb.innerHTML =
                 '<a href="' + homeLink + '" class="hover:underline">' + home + '</a>' +
                 '<span class="mx-2">/</span>' +

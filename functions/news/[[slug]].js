@@ -19,6 +19,29 @@ export async function onRequest(context) {
   let article = null;
   try { article = await getArticleBySlug(env, slug); } catch (_) { article = null; }
 
+  // 吧友发文已迁移到 /user-articles/N，原 /news/post-N 链接 308 永久重定向到新地址（规范且可达）。
+  if (article && article.user_id) {
+    const mm = /^post-(\d+)(-en)?$/.exec(slug);
+    if (mm) {
+      const target = new URL('/user-articles/' + mm[1] + (mm[2] || ''), request.url);
+      return Response.redirect(target.toString(), 308);
+    }
+  }
+
+  // 迁移后：原 /news/post-N 在 D1 中已不存在（slug 改为 ua-N），若对应 ua-N 吧友文存在也重定向。
+  if (!article) {
+    const mm = /^post-(\d+)(-en)?$/.exec(slug);
+    if (mm) {
+      const uaSlug = 'ua-' + mm[1] + (mm[2] || '');
+      let ua = null;
+      try { ua = await getArticleBySlug(env, uaSlug); } catch (_) { ua = null; }
+      if (ua && ua.user_id) {
+        const target = new URL('/user-articles/' + mm[1] + (mm[2] || ''), request.url);
+        return Response.redirect(target.toString(), 308);
+      }
+    }
+  }
+
   if (article && article.content) {
     try {
       // 直接以 .html 结尾的 URL 请求 ASSETS 会触发 Pages 的 308（跳转到无扩展名路径），

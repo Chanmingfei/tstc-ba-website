@@ -188,12 +188,24 @@ async function listOwnArticles(request, env) {
   return json({ articles: rows.results || [] });
 }
 
-// 计算下一个可用文章编号（避免与已有 post-N 冲突）
+// 计算下一个可用新闻文章编号（管理员发文，post-N 系列）
 async function nextArticleId(env) {
   const rows = await env.DB.prepare("SELECT slug FROM articles WHERE slug GLOB 'post-[0-9]*'").all();
   let max = 0;
   (rows.results || []).forEach((r) => {
     const m = /^post-(\d+)/.exec(r.slug || '');
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  });
+  return max + 1;
+}
+
+// 计算下一个吧友文章（用户 Lv3+ 发文）编号：独立计数，仅统计 ua-[0-9]*，
+// 与新闻 post-N 系列完全隔离，链接统一为 /user-articles/N。
+async function nextUserArticleId(env) {
+  const rows = await env.DB.prepare("SELECT slug FROM articles WHERE slug GLOB 'ua-[0-9]*'").all();
+  let max = 0;
+  (rows.results || []).forEach((r) => {
+    const m = /^ua-(\d+)/.exec(r.slug || '');
     if (m) max = Math.max(max, parseInt(m[1], 10));
   });
   return max + 1;
@@ -209,8 +221,9 @@ async function createUserArticle(request, env) {
   const { lang, title, category, excerpt, content, cover } = await request.json().catch(() => ({}));
   if (!title || !content) return json({ error: '标题与正文必填' }, 400);
   const L = lang === 'en' ? 'en' : 'zh';
-  const n = await nextArticleId(env);
-  const slug = L === 'en' ? `post-${n}-en` : `post-${n}`;
+  const n = await nextUserArticleId(env);
+  // 吧友发文使用独立 slug 体系（ua-N / ua-N-en），链接对应 /user-articles/N，与新闻 post-N 隔离
+  const slug = L === 'en' ? `ua-${n}-en` : `ua-${n}`;
   const now = Date.now();
   // 日期固定为发文时的系统日期（按服务器时区），客户端不可覆盖
   const d = new Date(now);
@@ -259,7 +272,8 @@ async function deleteOwnArticle(request, env, slug) {
 }
 
 // ---------- 评论（M4 落地）----------
-const THREAD_RE = /^post-\d+$/;
+// 评论 thread：新闻文章为 post-N，吧友文章为 ua-N（与 slug 体系一致）
+const THREAD_RE = /^(post|ua)-\d+$/;
 
 async function listComments(request, env) {
   const url = new URL(request.url);
