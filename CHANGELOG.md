@@ -32,6 +32,11 @@
   - 前端：首页「吧友文章」预览区、栏目页卡片、账号页「我的文章」查看链接、文章详情页面包屑均已指向 `/user-articles/N`（由 slug 解析，防御性回退 `news` 路径）。
 - **线上数据迁移（已完成）**：将已发出的吧友发文 `post-19`（user_id=3，作者 cmf123）重写为 `ua-19`，并同步其 13 条评论的 `thread` 由 `post-19` 改为 `ua-19`；现 `/user-articles/19` 正常 SSR、`/news/post-19` 与 `/news/post-19.html` 均 308 跳转至 `/user-articles/19`，管理员 `post-18` 等新闻不受影响。
 
+### 修复（详情页二级路径断链 / 404）
+- **修复吧友文章详情页面包屑「首页」404**：`main.js` 的 `basePath` 原先只把 `/news/` 识别为二级页，`/user-articles/N` 也是二级路径却按根级处理，导致 JS 生成的面包屑「首页」拼成 `index.html`、被解析到 `/user-articles/index.html` 而 404；现把 `/user-articles/N` 一并纳入二级页判断（`../`），面包屑「首页」与「相关阅读」链接恢复可达。
+- **修复详情页「上一篇」404**：新闻外壳的「上一篇/下一篇」区块含裸相对链接 `post-N.html`，在 `/user-articles/N` 下会解析成 `/user-articles/post-N.html` 而 404（且指向新闻、与吧友文章无关）；SSR 时移除该区块，改为「返回吧友文章列表」，文章尾部「返回新闻列表」同步改为「返回吧友文章列表」。
+- **账号页「我的文章 · 查看」按钮**：目标 `https://tstc.pp.ua/user-articles/19` 本身可达（200），此前跳转 404 系落地详情页内部断链所致，随上述修复一并解决。
+
 ## 2026-10-12
 
 ### 重大 · 站点升级为「静态外壳 + Cloudflare Pages Functions」动态站
