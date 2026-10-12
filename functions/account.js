@@ -136,7 +136,7 @@ export async function onRequest(context) {
         '<label>标题</label><input id="f_title" value="' + esc(a.title || '') + '">' +
         '<label>摘要</label><input id="f_excerpt" value="' + esc(a.excerpt || '') + '">' +
         '<label>封面图 URL（可选）</label><input id="f_cover" placeholder="https://example.com/cover.jpg" value="' + esc(a.cover || '') + '">' +
-        '<p class="muted" style="margin:-6px 0 10px;font-size:12px">留空则列表卡片显示默认渐变图标封面；填写后列表卡片与文章页顶部展示该图。须为 http(s):// 开头的外链图片地址。</p>' +
+        '<p class="muted" style="margin:-6px 0 10px;font-size:12px">填写后，文章在「吧友文章」列表与首页预览的卡片中展示该封面图；留空则使用默认渐变图标封面。须为 http(s):// 开头的外链图片地址。</p>' +
         '<label>正文（HTML）</label><textarea id="f_content">' + esc(a.content || '') + '</textarea>' +
         '<div class="row2"><div><label>作者（固定为本人）</label><input id="f_author" value="' + esc(a.author || (currentUser && currentUser.username) || '') + '" readonly></div>' +
         '<div><label>日期（固定为发文日期）</label><input id="f_date" value="' + esc(a.date || '系统自动') + '" readonly></div></div>' +

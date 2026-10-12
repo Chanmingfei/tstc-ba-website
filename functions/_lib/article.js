@@ -27,14 +27,9 @@ export function jsonScript(obj) {
 }
 
 // 用 D1 文章行替换静态外壳中的动态区域；正文为可信管理内容，按原样注入（不转义）。
+// 封面图（cover）仅用于列表卡片展示，不在详情页自动注入；文章内配图由作者在正文 HTML 自行插入。
 export function renderArticlePage(shell, a) {
   let out = shell;
-
-  // 封面图规范化：详情页为二级路径（/news/post-N、/user-articles/N），
-  // 相对路径封面需加 ../ 前缀；http(s)://、// 与 / 开头的原样使用。
-  const coverSrc = a.cover
-    ? (/^(https?:)?\/\//i.test(a.cover) || a.cover.charAt(0) === '/' ? a.cover : '../' + a.cover)
-    : '';
 
   // 1) <title>
   out = out.replace(/<title>[\s\S]*?<\/title>/, `<title>${escHtml(a.title)} - 唐山师范学院吧</title>`);
@@ -46,7 +41,7 @@ export function renderArticlePage(shell, a) {
       `${g1}\n${jsonScript({ title: a.title, date: a.date, category: a.category, author: a.author, excerpt: a.excerpt || '', cover: a.cover || '' })}\n${g2}`
   );
 
-  // 2b) og:image 同步为封面图（仅绝对 URL，保证外站抓取可达）
+  // 2b) og:image 同步为封面图（仅绝对 URL，保证外站抓取可达；隐藏元数据，不在文章内展示）
   if (a.cover && /^https?:\/\//i.test(a.cover)) {
     out = out.replace(
       /(<meta property="og:image" content=")[^"]*(")/,
@@ -71,15 +66,10 @@ export function renderArticlePage(shell, a) {
       `<h1 class="text-[clamp(1.6rem,4vw,2.2rem)] font-bold text-shadow leading-tight">${escHtml(a.title)}</h1>`
   );
 
-  // 5) 封面图（有 cover 时注入正文区顶部，样式与正文插图一致）+ 正文
-  const coverHtml = coverSrc
-    ? `<figure class="text-center my-6 md:max-w-2xl mx-auto">\n` +
-      `    <img src="${escHtml(coverSrc)}" alt="${escHtml(a.title)} 封面图" class="w-full h-auto rounded-lg shadow-sm" style="margin:0" loading="lazy">\n` +
-      `</figure>\n`
-    : '';
+  // 5) 正文（.article-content 内部 → 其闭合 </div> 紧邻 AUTO_PREV_NEXT_START 注释）
   out = out.replace(
     /(<div class="article-content">)[\s\S]*?(<\/div>\s*<!-- AUTO_PREV_NEXT_START -->)/,
-    (m, g1, g2) => `${coverHtml}${g1}\n${a.content || ''}\n${g2}`
+    (m, g1, g2) => `${g1}\n${a.content || ''}\n${g2}`
   );
 
   return out;

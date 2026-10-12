@@ -7,9 +7,9 @@
 ### 新增
 - **吧友发文新增「封面图 URL（可选）」输入项**：账号管理页「我的文章」发布/编辑表单在摘要与正文之间新增封面图输入框（与管理后台同款文案），留空则列表卡片使用默认渐变图标封面。
   - 后端：`createUserArticle` 已有 cover 落库；`updateOwnArticle` 的可更新列新增 `cover`（编辑时可改/可清空）；`listOwnArticles`（我的文章）与单篇读取返回 `cover` 供表单回显；新增 `validCover` 校验——留空合法，非空须为 `http(s)://` 开头的外链图片地址（上限 500 字符），非法输入返回 400 提示。
-  - 渲染：`renderArticlePage` 在有封面时于正文区顶部注入 `<figure>` 大图（样式与正文插图一致），并同步 `og:image` 与 `#articleMeta` 的 `cover` 字段；封面为相对路径时按二级路径自动补 `../`，绝对 URL 与根路径原样使用。
+  - 渲染：封面图仅用于列表卡片展示（`/user-articles` 列表页与首页「吧友文章」预览），不在文章详情页自动注入，文章内配图由作者自行在正文 HTML 中插入；`og:image` 与 `#articleMeta` 仍同步 cover 字段（隐藏元数据，用于分享缩略图与数据消费）。
   - 前端：`/user-articles` 列表页与首页「吧友文章」预览卡片、文章页「相关阅读」均已按封面渲染（无封面回落渐变图标）；「相关阅读」修复了绝对 URL 封面被误拼 `../` 前缀的问题。
-  - 线上验证：为 `ua-19` 临时设置封面后，`/user-articles/19` SSR 正确输出封面图、og:image 与 articleMeta，`scope=user` 列表 API 正确返回 cover，无封面的 `ua-20` 不注入；验证后已还原数据。
+  - 线上验证：为 `ua-19` 临时设置封面后，`/user-articles/19` SSR 的 og:image 与 articleMeta 正确携带 cover（详情页正文不注入封面图），`scope=user` 列表 API 正确返回 cover，无封面的 `ua-20` 不受影响；验证后已还原数据。
 
 ## 2026-10-12（修复）· 新闻动态全部文章评论区丢失
 
