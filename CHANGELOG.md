@@ -17,9 +17,20 @@
 - **用户发文独立栏目**：达到 3 级的吧友发布的文章不再混入「新闻动态」，改为独立栏目「吧友文章」展示，与新闻动态分区互不干扰。
   - 数据层：`articles.user_id = 0` 为管理员新闻、`user_id > 0` 为用户发文；`GET /api/articles` 新增 `scope` 参数（`news`=仅管理员、`user`=仅用户、默认全部）。
   - 首页：新闻动态预览区下方新增「吧友文章」预览区（最新 3 条，卡片含作者），点击「查看全部」进入专栏页。
-  - 新增栏目页 `user-articles.html`：分页列出全部吧友文章，卡片额外展示作者，链接到统一文章页 `news/post-N.html`。
+  - 新增栏目页 `user-articles.html`：分页列出全部吧友文章，卡片额外展示作者，链接到独立地址 `/user-articles/N`（详见下方「需求⑧」）。
   - 顶部导航新增「吧友文章」入口（首页为内锚点跳转、栏目页置为当前页）。
   - 管理员发文不受影响：管理后台 `/api/admin/articles` 仍列出并管理全部文章。
+
+## 2026-10-12（功能）· 吧友发文独立链接 `/user-articles/N`
+
+### 新增
+- **吧友发文使用独立链接体系，不再占用 `/news/post-N`**：吧友文章改为统一地址 `https://tstc.pp.ua/user-articles/N`（N 为文章编号），与新闻动态 `post-N` 完全隔离，链接规范且可达，管理员发文不受影响。
+  - 后端：新增 `nextUserArticleId`（独立统计 `ua-[0-9]*`，与 `post-N` 计数隔离）；`createUserArticle` 生成 slug `ua-N` / `ua-N-en`（原为 `post-N` / `post-N-en`）。
+  - 路由：新增 `functions/user-articles/[[slug]].js`，匹配 `/user-articles/N`（含 `-en`），复用文章外壳 SSR，并把面包屑「新闻动态」改写为「吧友文章」；`ua-` 系列 slug 与 `post-` 系列互不冲突。
+  - 兼容重定向：`functions/news/[[slug]].js` 对 `user_id > 0` 的文章（或迁移后 `post-N` 已不存在但对应 `ua-N` 吧友文存在）返回 **308** 永久重定向到 `/user-articles/N`，旧书签 / 外链仍然可达。
+  - 评论：接口 `THREAD_RE` 由 `^post-\d+$` 扩展为 `^(post|ua)-\d+$`，吧友文章评论串使用 `ua-N` 作为 thread；前端 `initComments` 支持 `/user-articles/N` 路径并生成 `ua-N` thread。
+  - 前端：首页「吧友文章」预览区、栏目页卡片、账号页「我的文章」查看链接、文章详情页面包屑均已指向 `/user-articles/N`（由 slug 解析，防御性回退 `news` 路径）。
+- **线上数据迁移（已完成）**：将已发出的吧友发文 `post-19`（user_id=3，作者 cmf123）重写为 `ua-19`，并同步其 13 条评论的 `thread` 由 `post-19` 改为 `ua-19`；现 `/user-articles/19` 正常 SSR、`/news/post-19` 与 `/news/post-19.html` 均 308 跳转至 `/user-articles/19`，管理员 `post-18` 等新闻不受影响。
 
 ## 2026-10-12
 
