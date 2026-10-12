@@ -152,9 +152,17 @@ async function listArticles(request, env) {
   const url = new URL(request.url);
   const lang = url.searchParams.get('lang') || 'zh';
   const category = url.searchParams.get('category');
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '20', 10) || 20, 50);
-  const sql = `SELECT slug, lang, title, date, category, author, excerpt, cover FROM articles WHERE lang = ?${category ? ' AND category = ?' : ''} ORDER BY date DESC LIMIT ?`;
-  const bind = category ? [lang, category, limit] : [lang, limit];
+  // scope: news=仅管理员发文(user_id=0)，user=仅用户发文(Lv3+, user_id>0)，默认返回全部
+  const scope = (url.searchParams.get('scope') || '').toLowerCase();
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
+  let where = 'lang = ?';
+  const bind = [lang];
+  if (scope === 'news') where += ' AND user_id = 0';
+  else if (scope === 'user') where += ' AND user_id != 0';
+  if (category) { where += ' AND category = ?'; bind.push(category); }
+  where += ' ORDER BY date DESC LIMIT ?';
+  bind.push(limit);
+  const sql = `SELECT slug, lang, title, date, category, author, excerpt, cover FROM articles WHERE ${where}`;
   const rows = await env.DB.prepare(sql).bind(...bind).all();
   return json({ articles: rows.results || [] });
 }

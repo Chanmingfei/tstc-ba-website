@@ -1342,7 +1342,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // 只存在于数据库的文章（后台新建）不在清单里，这里追加进来，保证发布后自动出现在列表。
         function mergeDbArticles(items, done) {
             var lang = isEn ? 'en' : 'zh';
-            fetch('/api/articles?lang=' + lang + '&limit=50')
+            // 仅合并管理员发文（user_id=0），用户发文(Lv3+)由「吧友文章」专栏独立展示，不混入新闻动态
+            fetch('/api/articles?lang=' + lang + '&limit=50&scope=news')
                 .then(function (r) { return r.ok ? r.json() : null; })
                 .then(function (d) {
                     var extra = (d && d.articles) ? d.articles : [];
@@ -1421,8 +1422,8 @@ document.addEventListener('DOMContentLoaded', function () {
         wrap.appendChild(makeChip(allLabel, '', true));
         cats.forEach(function (c) { wrap.appendChild(makeChip(c, c, false)); });
         grid.parentNode.insertBefore(wrap, grid);
-        // 补充后台新增文章带来的新分类
-        fetch('/api/articles?lang=' + (isEn ? 'en' : 'zh') + '&limit=50')
+        // 补充后台新增文章带来的新分类（仅管理员新闻发文，不含吧友文章）
+        fetch('/api/articles?lang=' + (isEn ? 'en' : 'zh') + '&limit=50&scope=news')
             .then(function (r) { return r.ok ? r.json() : null; })
             .then(function (d) { if (d && d.articles) addCats(d.articles); })
             .catch(function () { });
@@ -1432,6 +1433,114 @@ document.addEventListener('DOMContentLoaded', function () {
     renderNewsFromManifest('newsGrid', { pageSize: 6, page: 1 });
     renderNewsFromManifest('newsPreview', 3);
     addNewsFilters();
+
+    /* ---------- 吧友文章（用户 Lv3+ 发文）专栏：独立于新闻动态，从 D1 读取 user_id != 0 的文章 ---------- */
+    // 与新闻列表同款卡片样式，但额外展示作者（用户名），并链接到统一文章页 news/post-N.html。
+    function renderUserArticles(containerId, opts) {
+        if (typeof opts === 'number') opts = { limit: opts };
+        opts = opts || {};
+        var pageSize = opts.pageSize || 0;
+        var page = opts.page || 1;
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        var currentData = [];
+
+        function buildCard(item) {
+            var icon = CATEGORY_ICON[item.category] || 'fa-pen-nib';
+            var readMore = isEn ? 'Read More' : '阅读全文';
+            var coverHtml = item.cover
+                ? '<img src="' + item.cover + '" alt="" loading="lazy" class="w-full h-44 object-cover">'
+                : '<div class="w-full h-44 bg-gradient-primary flex items-center justify-center">' +
+                    '<i class="fa ' + icon + ' text-white/80 text-4xl"></i></div>';
+            var authorHtml = item.author
+                ? '<span class="ml-3"><i class="fa fa-user mr-1"></i>' + escapeHtml(item.author) + '</span>'
+                : '';
+            return '' +
+                '<a href="news/' + item.slug + '.html" class="news-card bg-white rounded-xl shadow-md overflow-hidden card-hover flex flex-col">' +
+                    coverHtml +
+                    '<div class="p-6 flex-1 flex flex-col">' +
+                        '<div class="flex items-center text-xs text-gray-500 mb-3">' +
+                            '<span class="bg-secondary/10 text-secondary px-2.5 py-1 rounded-full font-medium">' + (item.category || (isEn ? 'User' : '吧友')) + '</span>' +
+                            '<span class="ml-3"><i class="fa fa-calendar mr-1"></i>' + (item.date || '') + '</span>' +
+                            authorHtml +
+                        '</div>' +
+                        '<h3 class="text-lg font-semibold text-primary mb-2 leading-snug">' + escapeHtml(item.title) + '</h3>' +
+                        '<p class="text-gray-600 text-sm flex-1 line-clamp-2">' + escapeHtml(item.excerpt || '') + '</p>' +
+                        '<span class="text-secondary text-sm font-medium mt-4">' + readMore + ' <i class="fa fa-arrow-right"></i></span>' +
+                    '</div>' +
+                '</a>';
+        }
+
+        function paintPager(curPage, totalPages) {
+            var parent = container.parentNode;
+            var old = parent.querySelector('.user-pager');
+            if (old) old.remove();
+            if (pageSize <= 0 || totalPages <= 1) return;
+            var pager = document.createElement('div');
+            pager.className = 'user-pager flex items-center justify-center gap-2 mt-10 flex-wrap';
+            function addBtn(label, target, active, disabled, isPill) {
+                var b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'ios-btn' + (isPill ? ' ios-btn--pill' : '') +
+                    (active ? ' is-active' : '') + (disabled ? ' is-disabled' : '');
+                b.innerHTML = isPill ? label : ('<span class="circle-overlay"></span>' + label);
+                if (disabled) { b.disabled = true; }
+                else { b.addEventListener('click', function () { goToPage(target); }); }
+                pager.appendChild(b);
+            }
+            var prevLabel = isEn ? '&laquo; Prev' : '&laquo; 上一页';
+            var nextLabel = isEn ? 'Next &raquo;' : '下一页 &raquo;';
+            addBtn(prevLabel, curPage - 1, false, curPage <= 1, true);
+            for (var i = 1; i <= totalPages; i++) addBtn(String(i), i, i === curPage, false, false);
+            addBtn(nextLabel, curPage + 1, false, curPage >= totalPages, true);
+            parent.appendChild(pager);
+        }
+
+        function paintPage(curPage) {
+            var total = currentData.length;
+            var totalPages = Math.max(1, Math.ceil(total / pageSize));
+            curPage = Math.min(Math.max(1, curPage), totalPages);
+            var shown = pageSize > 0
+                ? currentData.slice((curPage - 1) * pageSize, curPage * pageSize)
+                : (opts.limit > 0 ? currentData.slice(0, opts.limit) : currentData);
+            if (!shown.length) {
+                container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">' +
+                    (isEn ? 'No user articles yet.' : '暂无吧友文章，快来发表第一篇吧～') + '</p>';
+                paintPager(1, 1);
+                return;
+            }
+            container.innerHTML = shown.map(buildCard).join('');
+            paintPager(curPage, totalPages);
+        }
+
+        function goToPage(target) {
+            paintPage(target);
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(function () {
+                    var y = container.getBoundingClientRect().top + window.pageYOffset - 80;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                });
+            }
+        }
+
+        var lang = isEn ? 'en' : 'zh';
+        fetch('/api/articles?scope=user&lang=' + lang + '&limit=200')
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (d) {
+                var items = (d && d.articles) ? d.articles : [];
+                items.sort(function (a, b) { return (a.date < b.date) ? 1 : -1; });
+                currentData = items;
+                paintPage(page);
+            })
+            .catch(function () {
+                container.innerHTML = '<p class="text-gray-500 col-span-full py-12 text-center">' +
+                    (isEn ? 'Failed to load.' : '加载失败，请刷新重试') + '</p>';
+            });
+    }
+
+    // 吧友文章：列表页（分页）与首页预览（最新 3 条），容器不存在时自动跳过（各页按需渲染）
+    renderUserArticles('userArticlesGrid', { pageSize: 6, page: 1 });
+    renderUserArticles('userArticlesPreview', 3);
 
     /* ---------- 文章详情页增强：面包屑标题 / 阅读时长 / 图片灯箱 / 相关阅读 ---------- */
     // 文章页评论区（统一认证 SSO）：同 slug 的中英文共用一个 thread（去掉 -en）
