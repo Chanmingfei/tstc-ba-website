@@ -1,15 +1,16 @@
 
 
-# 唐山师范学院吧 · 官网（静态站 + 新闻动态 + 站内搜索）
+# 唐山师范学院吧 · 官网（静态站 + Cloudflare Pages Functions 动态站）
 
-一个纯静态多页网站，构建时把 Tailwind 预编译为本地 CSS、内联关键样式，并生成一个**全站站内搜索索引**。无任何外部 CDN 依赖，可直接部署到 Cloudflare Pages。
+一个双语（中文 / 英文）多页网站，构建时把 Tailwind 预编译为本地 CSS、内联关键样式、生成全站站内搜索索引；并叠加 **Cloudflare Pages Functions** 提供统一认证 SSO、全站登录态、文章评论与管理后台。无任何外部 CDN 依赖，部署在 Cloudflare Pages。
 
-站点定位：唐山师范学院吧务组官网（非学校官方），提供快速链接、吧务组公示、新闻动态与意见反馈。
+站点定位：唐山师范学院吧务组官网（非学校官方），提供快速链接、吧务组公示、新闻动态、意见反馈，以及账号系统与内容管理后台。
 
 ## 近期更新亮点
 
 完整历史见仓库根目录 `CHANGELOG.md`。近期重点：
 
+- **2026-10-12 站点升级为「静态外壳 + Pages Functions」动态站（重大）**：新增统一认证 SSO（`sso.tstc.pp.ua` 子域，含登录 / 注册 / 账号管理 / 管理后台），父域 Cookie 实现主站与子域单点登录；全站顶栏根据用户登录态动态切换入口；每篇文章开放登录后评论（中英文共用一条评论串，管理员可删）；管理后台（仅管理员）支持用户 / 文章 / 评论管理与概览统计；认证页采用「左图右表单」分栏玻璃布局与「唐山师范学院吧统一认证系统」命名；管理后台适配移动端；登录成功后统一回主站，管理员自行输入网址进后台。
 - **2026-08-05 新生指南（十一）-吧主谈社团组织**：新增中英双语文章，按站内指南格式重新排版、润色，提取并插入百团大战现场图与到梦空间 APP 截图，整理到梦空间学分模块表、院系/校级组织职能、招新流程及全校官方社团名录；评分链接使用 `.glass-link` 液态玻璃卡片，与指南系列风格统一。
 - **2026-08-05 新生指南（十二）-新生必备软件合集**：新增中英双语文章，整理大一新生手机里必备的刚需软件清单，覆盖上课学习、英语三件套、校园学分、官方工具、AI 辅助与生活娱乐六大类共 14 款软件；EasyConnect 使用教程以 `.glass-link` 液态玻璃卡片跳转至学校图书馆公众号图文教程，并附软件图标合集、校园学习 / 外卖场景配图与 QQ 迎新群二维码。
 - **2026-08-04 液态玻璃质感再强化 + 风格统一**：提升玻璃令牌（透明度、高光边框、内发光、阴影、模糊 / 饱和度），为所有玻璃表面统一添加左上镜面高光；首页头部搜索框升级为完整液态玻璃组合（玻璃容器 + 液态玻璃搜索按钮），导航栏增加顶部玻璃高光边线，平台色按钮进一步提亮高光，已玻璃化的按钮 / 卡片 / 弹窗折射感更明显；灯箱图片切换 / 关闭 / 下载按钮改为与夜间顶栏圆钮一致的平铺雾化白玻璃，右下角图片描述卡片改为深色半透玻璃并加文字阴影，确保任何图片背景下都清晰可读；弹窗关闭按钮与顶栏圆型按钮统一为液态玻璃，夜间弹窗面板柔化并消除白色光圈割裂感；修复夜间分享浮标子按钮不透明回归；将新生指南系列中的「食堂 / 商场 / 体育课评分合集」外链卡统一为 `.glass-link` 液态玻璃卡片；进一步下调顶栏背景透明度（日间 .58 / 夜间 .42）提升通透度，夜间模式按钮边缘与光影全面柔化，顶栏圆型按钮夜间默认质感统一为「被选中」的平铺雾化白。
@@ -24,10 +25,17 @@
 
 ## 功能特性
 
+### 动态能力（Cloudflare Pages Functions）
+- **统一认证 SSO**：`sso.tstc.pp.ua` 子域提供登录 / 注册 / 账号管理 / 管理后台。密码采用 PBKDF2-SHA256（WebCrypto 原生，10 万次迭代），会话令牌存 KV、Cookie 设在父域 `.tstc.pp.ua`，主站与子域单点登录，无邮箱验证（忘记密码由管理员后台重置）。
+- **全站登录态**：主站顶栏根据用户是否登录动态切换「登录 / 注册」与「用户名」入口；点击用户名进入账号管理页（查看资料、修改密码），支持一键登出。登录成功后统一回主站，管理员自行输入网址打开后台。
+- **文章评论**：每篇文章底部开放评论，登录后可发表；中英文同一 `slug` 共用一条评论串；管理员可删除评论；前端对评论内容做 HTML 转义防 XSS。
+- **管理后台（仅管理员）**：用户管理（封禁 / 解封 / 重置密码 / 删除）、文章管理（增删改查，正文入库后由 Functions SSR 渲染）、评论管理（软删）、概览统计。后台发布文章「语言」可选 zh / en，新增文章经后台写入即自动出现在主站。已适配移动端（顶栏堆叠、表格横滚、表单单列、输入框 16px）。
+
+### 静态站能力
 - **暗色模式与昼夜滑动开关**：导航栏内置纯 CSS 太阳 / 月亮滑动切换开关，所有表面、卡片、阴影、搜索弹窗均有过渡动画；首次访问自动跟随系统 `prefers-color-scheme`，用户选择后记忆到 `localStorage`；构建脚本将防闪烁脚本注入 `<head>` 首位，避免暗色用户刷新时出现白屏。
 - **站内搜索引擎**：顶栏（桌面端导航、移动端顶栏）及首页头部均可打开搜索，跨全站检索标题与正文，结果弹层带高亮片段与可点击跳转，中英文各自独立检索。
 - **双语站点**：所有页面均有中文版与英文版（文件名加 `-en` 后缀），顶栏自动注入「中文 / English」切换按钮。
-- **新闻动态自动同步**：新增 / 修改 `news/` 下文章即自动更新首页与列表页，无需维护列表文件。现已累计 17 篇（中 / 英各 17 篇）。
+- **新闻动态（正文入库 + SSR）**：文章正文现已全部入库（D1），由 `functions/news/[[slug]].js` 做服务端渲染，覆盖静态模板正文；主站列表同时合并构建清单与 `/api/articles`，后台新增文章即时上线（如 post-18）。静态 `news/post-N.html` 仍为设计模板与回退。
 - **上一篇 / 下一篇导航**：文章末尾按日期自动串联，由构建脚本统一管理。
 - **图片灯箱（Lightbox）**：文章内图片点击放大查看，打开上浮淡入、关闭反向弹出，与首页弹窗风格一致。
 - **文章面包屑 + 相关阅读**：文章顶部显示「首页 › 新闻动态 › 标题」面包屑（英文页正确跳转英文对应页）；文末按同分类优先推荐「相关阅读」，并排除当前文章。
@@ -81,7 +89,11 @@
 
 ## 技术栈
 
-- **纯静态多页**：HTML + 原生 JS，无框架、无后端
+- **纯静态多页**：HTML + 原生 JS，无框架、无后端（外壳层）
+- **Cloudflare Pages Functions**：ESM（`functions/package.json` 含 `{ "type": "module" }`），提供认证 / 文章 SSR / 评论 / 管理后台 API；根级 catch-all 做 host 路由（主站 vs `sso.tstc.pp.ua`）
+- **Cloudflare D1**：SQLite 边缘数据库，存 `users` / `articles` / `comments` 三表（建表见 `schema.sql`）
+- **Cloudflare KV**：`SESSIONS` 存会话令牌、`RATELIMIT` 存限流计数
+- **WebCrypto PBKDF2-SHA256**：密码哈希（10 万次迭代，16B 随机盐，受 Workers 上限约束）
 - **Tailwind CSS v3.4.19**：本地 CLI 预编译（`assets/style.css`），不在浏览器里跑 CDN
 - **Font Awesome 6.7.2**：本地托管于 `assets/fontawesome/`，无外部请求
 - **关键 CSS 内联**：首屏关键样式写入 `assets/critical.css` 并内联进每个页面 `<head>`，全量 `style.css` 异步加载，首屏更快
@@ -95,25 +107,41 @@ news.html / news-en.html                新闻列表页
 about.html / about-en.html              关于我们页面
 dzl.html / dzl-en.html                  自定义「页面不存在」错误页（不进入搜索索引）
 404.html / 404-en.html                  标准 404 错误页（不进入搜索索引）
-news/post-1.html … post-17.html         文章详情页（中文共 17 篇）
-news/post-1-en.html … post-17-en.html   对应英文版（英文共 17 篇）
+news/post-1.html … post-17.html         文章详情页（静态模板；正文已入库，线上由 Functions SSR 覆盖）
+news/post-1-en.html … post-17-en.html   对应英文版（静态模板）
+functions/                              Cloudflare Pages Functions（ESM，见下）
+  [[path]].js           根级 catch-all：host 路由（sso 子域专属页面 / 其余 302 回主站）
+  login.js / register.js / account.js / admin.js   sso 子域专属页面（host 路由）
+  news/[[slug]].js      文章 SSR（取静态外壳 + 替换 D1 正文）
+  api/[[route]].js      统一 API（register/login/logout/me/account/articles/comments/admin）
+  _lib/                  基础设施：config.js / http.js / auth.js / article.js / limit.js / ui.js / auth-layout.js
+  package.json          { "type": "module" }
 build/                                  构建脚本与配置集中目录（不参与线上部署）
   tailwind.config.js      Tailwind 配置（含 safelist，保证动态类不被清除）
   tailwind-input.css      Tailwind 入口样式（被编译为 assets/style.css）
   build-critical-css.py   生成并内联关键 CSS
   generate-manifest.js    构建脚本：编译清单、注入上一篇/下一篇导航、生成搜索索引、内联资源版本
-news-manifest.json / news-manifest-en.json   新闻清单（自动生成）
+schema.sql                              D1 建表语句（users / articles / comments）
+scripts/                                D1 迁移与种子
+  migrate-articles.mjs   解析静态文章页 → 生成 seed-articles.sql
+  seed-articles.sql      34 篇文章入 D1（17 zh + 17 en）
+  seed-admin.sql         初始管理员
+news-manifest.json / news-manifest-en.json   新闻清单（自动生成，作为 SSR 回退与构建期清单）
 assets/style.css          全站共用样式（构建生成）
 assets/critical.css       首屏关键样式（构建生成）
-assets/main.js            全站共用脚本（导航、弹窗、新闻渲染、站内搜索、更新日志）
+assets/main.js            全站共用脚本（登录态 / 评论 / 新闻渲染 / 站内搜索 / 更新日志）
 assets/news-version.js    清单版本号（自动生成，用于缓存击穿）
 assets/search-index.json  全站搜索索引（构建生成，中/英两套，含内容哈希版本）
 assets/fontawesome/       Font Awesome 本地字体与样式
+assets/img/school-badge-v2.png        校徽（#880002 重着色，透明）
+assets/images/bar-logo.png            吧徽（透明）
+assets/images/bg-banner.jpg           认证页左侧品牌大图（主站同款）
+wrangler.toml                         Pages Functions 配置 + D1/KV 绑定
 CHANGELOG.md              按日期归档的全部更新记录
 images/                   README 配图（手动维护）
 ```
 
-> 说明：`news-manifest.json`、`news-manifest-en.json`、`assets/news-version.js`、`assets/style.css`、`assets/critical.css`、`assets/search-index.json` 均由构建脚本自动生成，无需手写，也不要手动修改。
+> 说明：`news-manifest.json`、`news-manifest-en.json`、`assets/news-version.js`、`assets/style.css`、`assets/critical.css`、`assets/search-index.json` 均由构建脚本自动生成，无需手写，也不要手动修改。文章正文以 D1 为准，修改正文请走管理后台或直接改 D1，勿手改静态 `news/*.html` 的 `.article-content`（会被 SSR 覆盖，造成数据源漂移）。
 
 ## 站内搜索（工作原理）
 
@@ -143,8 +171,24 @@ python3 -m http.server 8080
 
 ## 部署到 Cloudflare Pages
 
+### 动态能力前置：绑定 D1 / KV 与自定义子域（首次部署必做）
+
+`functions/` 依赖以下绑定，缺失会导致 `/api/*` 运行时 500（构建本身不受影响）：
+
+1. **D1**：在 Cloudflare 控制台为该 Pages 项目创建 D1 数据库（本仓绑定变量名 `DB`，库名 `tstc-ba-db`），并执行建表与种子：
+   ```bash
+   wrangler d1 execute tstc-ba-db --remote --file=./schema.sql
+   wrangler d1 execute tstc-ba-db --remote --file=./scripts/seed-articles.sql
+   wrangler d1 execute tstc-ba-db --remote --file=./scripts/seed-admin.sql
+   ```
+2. **KV**：创建两个命名空间，分别绑定 `SESSIONS`（会话令牌）与 `RATELIMIT`（限流计数）。
+3. **自定义子域**：为该 Pages 项目添加自定义域 `sso.tstc.pp.ua`（需 `tstc.pp.ua` 的 DNS 控制权，添加 TXT/CNAME 验证）。否则父域 Cookie（`.tstc.pp.ua`）与后台子域不生效，`/admin` `/login` `/register` `/account` 仅在该子域渲染。
+4. `wrangler.toml` 已写入真实绑定（D1 `DB`、KV `SESSIONS` / `RATELIMIT`）与 `pages_build_output_dir = "."` + `compatibility_date`。
+
+### 部署方式
+
 方式一：连接 Git 仓库（推荐，自动同步）
-1. 把这些文件推送到 GitHub 仓库。
+1. 把这些文件推送到 Git 仓库。
 2. Cloudflare Pages 连接该仓库：
    - **构建命令**：填 `npm run build`
    - **输出目录**：填 `.`（根目录）
@@ -158,18 +202,21 @@ python3 -m http.server 8080
 
 > 自定义 404：Cloudflare Pages 会自动把根目录下的 `404.html` 当作 404 页面，任何不存在的路径都会展示它并返回标准 404 状态码（已有页面与静态资源不受影响），无需额外配置。
 
-## 新闻动态（自动同步，无需维护列表）
+## 新闻动态（正文入库 + SSR，后台可发稿）
 
-每篇文章是一个独立 HTML 文件（`news/post-x.html`），文件顶部有一段 `#articleMeta` 元信息（标题 / 日期 / 分类 / 作者 / 摘要）。
-`build/generate-manifest.js` 在构建时扫描 `news/` 目录、提取元信息、生成 `news-manifest.json`（及英文版）；首页与新闻列表页读取该清单自动渲染卡片。
-因此新增 / 修改文章**只需动 `news/` 下的 HTML 文件，不需要改任何列表文件**。
+文章正文现已全部入库（D1 `articles` 表），线上访问由 `functions/news/[[slug]].js` 做服务端渲染：先取静态外壳（`env.ASSETS.fetch` 去掉 `.html`），再替换 D1 中的标题 / 分类 / 日期 / 作者 / 正文等区域；D1 无正文时回退静态资源。首页与新闻列表同时合并构建清单（`news-manifest.json`）与 `/api/articles`，保证后台新增文章即时上线（如 post-18）。
+
+- **发稿首选：管理后台**（仅管理员，`https://sso.tstc.pp.ua/admin`）→ 文章管理 → 新增 / 编辑，正文写 D1、SSR 即时生效，无需改静态文件，也无需重跑构建。
+- **静态 `news/post-N.html` 仍是设计模板与回退**：版式改这里，正文请走后台或 D1，不要手改静态文件的 `.article-content`（会被 SSR 覆盖，造成数据源漂移）。
 
 ### 上一篇 / 下一篇导航（自动生成）
 
 构建脚本会根据文章日期，自动在每篇文章末尾的「返回新闻列表」上方注入上一篇 / 下一篇导航，按日期串联所有 `post-N` 文章（最新一篇的下一篇显示「已是最新」）。
 导航用 `<!-- AUTO_PREV_NEXT_START -->` … `<!-- AUTO_PREV_NEXT_END -->` 标记包裹，**由脚本统一管理，请勿手动修改该区块**；脚本会在每次构建时清除旧块并重写，保证链接始终正确。
 
-### 如何新增一篇新闻
+### 如何新增一篇新闻（模板 / 兜底方式）
+
+> 日常发稿请用管理后台。以下仅用于新建尚未有模板的栏目，或作为 SSR 回退。
 
 1. 复制 `news/post-1.html` 为一个新文件，例如 `news/post-15.html`（同时建议提供英文版 `news/post-15-en.html`）。
 2. **只改两处，其余原样保留**：

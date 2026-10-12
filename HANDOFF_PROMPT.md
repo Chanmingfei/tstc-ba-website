@@ -226,7 +226,7 @@ npm run build
 | `functions/[[path]].js` / `functions/news/[[slug]].js` | 文章 SSR 拦截器（仅 `news/post-N.html`） |
 | `functions/api/[[route]].js` | 统一 API 路由（register/login/logout/me/articles/comments/admin） |
 | `functions/_lib/` | 基础设施：`config.js` `http.js` `auth.js`（PBKDF2+KV 会话）`article.js` `limit.js` |
-| `functions/login.js` / `register.js` / `admin.js` | sso 子域专属页面（host 路由，主站访问 302 回 sso） |
+| `functions/login.js` / `register.js` / `account.js` / `admin.js` | sso 子域专属页面（host 路由，主站访问 302 回 sso） |
 | `functions/package.json` | `{ "type": "module" }`（Functions 用 ESM） |
 | `wrangler.toml` | Pages Functions 配置 + D1/KV 绑定说明 |
 | `schema.sql` | D1 建表语句（users / articles / comments） |
@@ -311,6 +311,26 @@ inset 0 0 2px rgba(0,0,0,.8)
 - `11d307d`：把顶栏/搜索/分享/返回顶部/卡片/弹窗边框先统一为 `--glass-inset`。
 - `3d98c81`：分享按钮、卡片、新闻分页、返回顶部初步玻璃化。
 
+### 11.8 动态站关键提交（2026-10-12 重大升级，详见 `CHANGELOG.md`）
+
+- `b299a9b`：认证页左栏换主站 `bg-banner` 蓝遮罩大图、精简文案、手机端回归原样
+- `6b3a318`：统一认证页改为左图右表单分栏布局 + 后台发布文章可选 en
+- `18e2c1c`：后台新增文章自动出现于主站 + 管理后台移动端自适应
+- `4ed3a97`：新增账号管理页（sso 根域直达 / 主站用户名入口）+ 校徽重着色 + 登录跳主站 + 重设管理员口令
+- `f04135f`：新校徽按色块重着色 #880002 并置于吧徽左侧 + 登录 `?redirect` 回跳
+- `fcd0873`：修复文章页返回空页（SSR 取外壳去 `.html`）
+- `5199280`：修复登录/登出响应 500（json 的 Set-Cookie 误传 status）
+- `4fc3fb4`：修复登录/注册/后台失效（PBKDF2 改为 10 万次）+ 双徽标 + 系统命名
+- `7124c6b`：修复 API 1101（catch-all 参数为数组）+ 认证/后台玻璃风 + 双徽标
+- `dc33f51`：修复 sso 成为主站镜像（根级 catch-all host 路由）
+- `9289658`：落地 D1/KV 绑定与种子数据 + 初始管理员
+- `a4e009b`：M6 安全加固（Origin/CSRF、KV 限流、封禁、输入校验）
+- `08e25c3`：M5 管理后台（用户/文章/评论管理）
+- `fb6b721`：M4 评论系统（API + 前端）
+- `b31be39`：M3 文章动态化（SSR + 迁移 34 篇到 D1）
+- `74ab965`：M2 登录/注册 UI + 全站登录态
+- `67113fc`：M0+M1 统一认证 API（register/login/logout/me）
+
 > 历史（2026-08-03 ~ 08-05）的暗色模式、液态玻璃多轮强化、新增新生指南等详情见 `CHANGELOG.md` 与 `README.md`，本提示词不再重复堆砌。
 
 ---
@@ -345,7 +365,7 @@ inset 0 0 2px rgba(0,0,0,.8)
 
 ## 14. 当前快速上手（新对话第一句可贴）
 
-> 仓库已克隆到 `/workspace/tstc-ba-website`，请接手。背景：唐山师范学院吧官网静态双语站，Cloudflare Pages 部署。当前视觉体系已统一为一套 `.box` 玻璃语言（2026-08-27，`c102ba0`）：`--glass-inset` 多内阴影签名被提取为 token，顶栏 / 搜索按钮 / 分享浮标 / 返回顶部 / 卡片 / 弹窗面板 / 关闭按钮全部共享同一套玻璃签名，日间通透、夜间柔和不发白。此前已落地全站暗色模式 + 昼夜滑动开关、灯箱玻璃化、移动端顶栏单行修复、README 配图重写等。发文章流程见上文第 4/5 节。注意：① 改 `main.js`/`tailwind-input.css` 后必须 `npm run build`；② 新增玻璃组件先看 §12 的暗色自查点；③ 推送只走 `git push origin main`（Gitee），别试 GitHub。
+> 仓库已克隆到 `/workspace/tstc-ba-website`，请接手。背景：唐山师范学院吧官网（静态双语站 + Cloudflare Pages Functions 动态站），Cloudflare Pages 部署。当前视觉体系已统一为一套 `.box` 玻璃语言（2026-08-27，`c102ba0`）：`--glass-inset` 多内阴影签名被提取为 token，顶栏 / 搜索按钮 / 分享浮标 / 返回顶部 / 卡片 / 弹窗面板 / 关闭按钮全部共享同一套玻璃签名，日间通透、夜间柔和不发白。此前已落地全站暗色模式 + 昼夜滑动开关、灯箱玻璃化、移动端顶栏单行修复、README 配图重写等；站点已于 2026-10-12 升级为「静态外壳 + Pages Functions」动态站：统一认证 SSO / 全站登录态 / 文章评论 / 管理后台（详见 §15）。发文章优先用后台（§15.6），模板兜底见第 4 节。注意：① 改 `main.js`/`tailwind-input.css` 后必须 `npm run build`；② 新增玻璃组件先看 §12 的暗色自查点；③ 推送只走 `git push origin main`（Gitee），别试 GitHub。
 
 ---
 
@@ -356,7 +376,7 @@ inset 0 0 2px rgba(0,0,0,.8)
 ### 15.1 架构总览
 
 - **主站**（`tstc.pp.ua`）：静态页面 + 前端运行时注入登录态（`assets/main.js` 的 `initAuthWidget`）、文章评论（`initComments`）、文章正文由 Functions SSR 渲染。
-- **SSO 子域**（`sso.tstc.pp.ua`）：`/login` `/register` `/admin` 三个页面，仅在该主机渲染；主站访问会 302 回 sso（host 路由在 `login.js`/`register.js`/`admin.js` 内）。
+- **SSO 子域**（`sso.tstc.pp.ua`）：`/login` `/register` `/account` `/admin` 四个页面，仅在该主机渲染；主站访问会 302 回 sso（host 路由在 `login.js`/`register.js`/`account.js`/`admin.js` 内）。根域 `/` 直接跳 `/account`。**登录成功统一回主站**（管理员自行输入网址打开后台），不按角色跳转。
 - **Functions 目录**：`functions/`（根）+ `functions/_lib/`（基础设施）+ `functions/api/`（统一 API）+ `functions/news/`（文章 SSR）。`functions/package.json` 含 `{ "type": "module" }`，Functions 用 ESM。
 
 ### 15.2 绑定（D1 / KV，部署前必配）
@@ -370,7 +390,7 @@ inset 0 0 2px rgba(0,0,0,.8)
 
 ### 15.3 认证与会话
 
-- 密码：PBKDF2-SHA256（Workers WebCrypto 原生，12 万次迭代，16B 随机盐），见 `functions/_lib/auth.js`。
+- 密码：PBKDF2-SHA256（Workers WebCrypto 原生，**10 万次迭代**——Cloudflare Workers 对 PBKDF2 有硬上限 `100000`，超过即报 `iteration counts above 100000 are not supported`，导致注册 500 / 登录 `verifyPassword` 抛错被 catch 成 false 表现为密码永远错误；`config.js` 的 `PBKDF2_ITERATIONS = 100000`），16B 随机盐，见 `functions/_lib/auth.js`。
 - 会话：`createSession` 生成 32B 随机令牌存 KV（JSON `{userId,username,role,exp}`，TTL 7 天），`Set-Cookie` 为 `HttpOnly; Secure; SameSite=Lax`。
 - 无邮箱验证（用户决定）；忘记密码由管理员在后台「重置密码」。
 - **封禁**：`getActiveSession` 不仅校验会话，还查 `users.status`，被封禁（banned）会话视为失效 → `/api/me` 401、后台 403。
@@ -389,7 +409,8 @@ inset 0 0 2px rgba(0,0,0,.8)
 
 ### 15.6 管理后台（仅管理员）
 
-- 入口 `https://sso.tstc.pp.ua/admin`，`functions/admin.js` 玻璃风 SPA；非管理员显示「无权限」。
+- 入口 `https://sso.tstc.pp.ua/admin`，`functions/admin.js` 玻璃风 SPA（**已适配移动端**：顶栏堆叠、统计 2/1 列、表格横滚、表单单列、输入框 16px）；发布文章「语言」为下拉选择（zh / en）；非管理员显示「无权限」。
+- **账号管理页** `https://sso.tstc.pp.ua/account`（`functions/account.js`）：展示资料（用户名 / 角色 / 注册时间）并支持改密（`POST /api/account/password`，需旧密码 + 两次一致）；主站已登录用户点击顶栏「用户名」即直达此页。
 - 接口 `functions/api/[[route]].js` 的 `adminDispatch`：`/api/admin/{users,articles,comments,stats}` 增删改查 + 用户封禁/解封/重置密码 + 评论软删。
 - 文章正文编辑写 D1（SSR 生效）；删除文章只删库记录，不删静态文件（如需彻底下线要同步处理静态页）。
 
@@ -419,6 +440,6 @@ inset 0 0 2px rgba(0,0,0,.8)
   - KV `SESSIONS`：`tstc-ba-sessions`（id `dd9cd42173e34cd984bdcda7788d1cd2`）
   - KV `RATELIMIT`：`tstc-ba-ratelimit`（id `082be1e9618348c98004231608747f6e`）
 - `schema.sql` 已在远程 D1 建表（users/articles/comments + 索引）；`scripts/seed-articles.sql` 已写入 34 篇文章（17 zh + 17 en）。
-- **初始管理员**：`scripts/seed-admin.sql` 已写入 `users` 一条 `admin/admin`（role=admin, active），密码为 PBKDF2-SHA256（与 `auth.js` 同算法，登录可校验）。**首次登录后务必在后台或 D1 重置密码**（明文不在仓库，仅生成时一次性输出）。
+- **初始管理员**：`scripts/seed-admin.sql` 已写入 `users` 一条 `admin`（role=admin, active），密码为 PBKDF2-SHA256（与 `auth.js` 同算法，10 万次迭代）。**当前可用口令为生成时一次性设定的强密码，请登录后立即在后台「重置密码」改密（明文不在仓库）**；忘记密码由管理员在后台「重置密码」或直改 D1 `users.pass`。
 - **必做（用户侧）**：在 Cloudflare Pages 项目添加自定义域 `sso.tstc.pp.ua`（需 `tstc.pp.ua` 的 DNS 控制权，添加 TXT/CNAME 验证），否则 SSO 父域 Cookie（`.tstc.pp.ua`）与后台子域无法生效，`/admin`、`/login`、`/register` 仅在该子域渲染。
 - 站点主域 `tstc.pp.ua` 与 `sso.tstc.pp.ua` 共享父域 Cookie 实现单点登录（无 CORS 跨域问题）。
