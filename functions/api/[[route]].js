@@ -560,11 +560,11 @@ async function adminDispatch(request, env, segments) {
     return json({ stats: { users: users.c, articles: articles.c, comments: comments.c, commentsVisible: visible.c, emailCodes: codes.c } });
   }
 
-  // 手动清理验证码存档（7 天前的 email_codes；平时发码时已懒清理，此处供立即执行/核查）
-  if (sub === 'cleanup-codes' && method === 'POST') {
-    const removed = await cleanupEmailCodes(env);
-    const left = await env.DB.prepare('SELECT COUNT(*) c FROM email_codes').first();
-    return json({ ok: true, removed, remaining: left.c });
+  // 手动清空验证码存档（无视日期，全部清除；日常 7 天保留由发码时的懒清理负责）。
+  // 与懒清理分工：懒清理按 7 天阈值在发码路径自动执行，此端点供管理员立即全清。
+  if (sub === 'clear-codes' && method === 'POST') {
+    const r = await env.DB.prepare('DELETE FROM email_codes').run();
+    return json({ ok: true, removed: r.meta?.changes ?? 0 });
   }
 
   // 用户管理
@@ -664,12 +664,20 @@ async function adminDispatch(request, env, segments) {
 
   // 验证码存档列表（仅管理员）：含账号、邮箱、验证码明文、用途、状态、时间。
   // LEFT JOIN users：用户被删后存档仍可查（账号列显示 —）。
-  if (sub === 'codes' && method === 'GET') {
-    const rows = await env.DB.prepare(
-      'SELECT c.id, c.user_id, c.email, c.code, c.purpose, c.used, c.expires_at, c.created_at, u.username ' +
-      'FROM email_codes c LEFT JOIN users u ON u.id = c.user_id ORDER BY c.id DESC LIMIT 200'
-    ).all();
-    return json({ codes: rows.results || [] });
+  if (sub === 'codes') {
+    if (method === 'GET') {
+      const rows = await env.DB.prepare(
+        'SELECT c.id, c.user_id, c.email, c.code, c.purpose, c.used, c.expires_at, c.created_at, u.username ' +
+        'FROM email_codes c LEFT JOIN users u ON u.id = c.user_id ORDER BY c.id DESC LIMIT 200'
+      ).all();
+      return json({ codes: rows.results || [] });
+    }
+    // 单条删除（无视日期）：按 id 精确删除一条存档，供管理后台逐条清理
+    if (method === 'DELETE' && id && /^\d+$/.test(id)) {
+      const r = await env.DB.prepare('DELETE FROM email_codes WHERE id = ?').bind(id).run();
+      return json({ ok: true, removed: r.meta?.changes ?? 0 });
+    }
+    return json({ error: 'Not Found' }, 404);
   }
 
   return json({ error: 'Not Found' }, 404);

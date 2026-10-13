@@ -178,18 +178,10 @@ function loadStats() {
       '<div class="stat"><b>' + s.comments + '</b>评论</div>' +
       '<div class="stat"><b>' + s.commentsVisible + '</b>可见评论</div></div>' +
       '<div class="card" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">' +
-      '<div><b>验证码存档</b> <span class="muted">（当前 ' + s.emailCodes + ' 条，保留 7 天后自动清除，发验证码时顺带清理）</span></div>' +
-      '<button class="btn ghost" id="cleanupCodes">立即清理</button></div>' +
-      '<div class="msg" id="cleanupMsg" style="min-height:18px;font-size:13px;margin-top:8px;color:#16a34a"></div></div>' +
+      '<div><b>验证码存档</b> <span class="muted">（当前 ' + s.emailCodes + ' 条，7 天后自动清除、发验证码时顺带清理；也可在「验证码」标签页逐条删除或全部清除）</span></div>' +
+      '<button class="btn ghost" id="gotoCodes">管理存档</button></div>' +
       '<div class="card" style="margin-top:16px"><p class="muted">提示：文章正文由 SSR 渲染（news/post-N.html 作为模板）。在此新建/编辑文章会写入 D1；删除文章不会删除静态文件，如需彻底下线请同步处理静态页。</p></div>';
-    document.getElementById('cleanupCodes').onclick = function () {
-      var m = document.getElementById('cleanupMsg');
-      m.textContent = '清理中…';
-      api('/api/admin/cleanup-codes', { method: 'POST' }).then(function (res) {
-        if (res.ok) { m.textContent = '已清理 ' + res.d.removed + ' 条，剩余 ' + res.d.remaining + ' 条'; loadStats(); }
-        else { m.style.color = '#dc2626'; m.textContent = res.d.error || '清理失败'; }
-      });
-    };
+    document.getElementById('gotoCodes').onclick = function () { show('codes'); };
   });
 }
 
@@ -336,16 +328,17 @@ function loadComments() {
 }
 
 // 验证码存档：展示每条存档对应的账号、邮箱、验证码明文、用途与状态
+// 支持逐条删除与全部清除（均无视日期；日常 7 天保留由发码时的懒清理负责）
 function loadCodes() {
   api('/api/admin/codes').then(function (r) {
     if (!r.ok) return (view.innerHTML = '<div class="card">加载失败</div>');
     var rows = r.d.codes || [];
     var now = Date.now();
     var html = '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
-      '<b>验证码存档（' + rows.length + ' 条，仅显示最近 200 条；保留 7 天后自动清除）</b>' +
+      '<b>验证码存档（' + rows.length + ' 条，仅显示最近 200 条；7 天后自动清除，也可手动管理）</b>' +
       '<span><button class="btn ghost" id="refreshCodes">刷新</button> ' +
-      '<button class="btn warn" id="cleanupCodes2">立即清理</button></span></div>' +
-      '<table><thead><tr><th>ID</th><th>账号</th><th>邮箱</th><th>验证码</th><th>用途</th><th>状态</th><th>获取时间</th><th>过期时间</th></tr></thead><tbody>';
+      '<button class="btn danger" id="clearCodes">全部清除</button></span></div>' +
+      '<table><thead><tr><th>ID</th><th>账号</th><th>邮箱</th><th>验证码</th><th>用途</th><th>状态</th><th>获取时间</th><th>过期时间</th><th>操作</th></tr></thead><tbody>';
     rows.forEach(function (c) {
       var st = c.used ? '<span class="pill deleted">已使用</span>'
         : (c.expires_at < now ? '<span class="pill banned">已过期</span>' : '<span class="pill active">未使用</span>');
@@ -354,18 +347,27 @@ function loadCodes() {
         '<td>' + (c.username ? esc(c.username) : '<span class="muted">—</span>') + '</td>' +
         '<td>' + esc(c.email) + '</td>' +
         '<td style="font-family:ui-monospace,SFMono-Regular,monospace;font-weight:700;letter-spacing:3px;font-size:14px">' + esc(c.code) + '</td>' +
-        '<td>' + purpose + '</td><td>' + st + '</td><td>' + fmt(c.created_at) + '</td><td>' + fmt(c.expires_at) + '</td></tr>';
+        '<td>' + purpose + '</td><td>' + st + '</td><td>' + fmt(c.created_at) + '</td><td>' + fmt(c.expires_at) + '</td>' +
+        '<td><button class="btn danger" data-del="' + c.id + '">删除</button></td></tr>';
     });
     html += '</tbody></table></div>';
     view.innerHTML = html;
     document.getElementById('refreshCodes').onclick = loadCodes;
-    document.getElementById('cleanupCodes2').onclick = function () {
-      if (!confirm('立即清理 7 天前的验证码存档？')) return;
-      api('/api/admin/cleanup-codes', { method: 'POST' }).then(function (res) {
-        if (res.ok) { alert('已清理 ' + res.d.removed + ' 条，剩余 ' + res.d.remaining + ' 条'); loadCodes(); }
-        else alert(res.d.error || '清理失败');
+    document.getElementById('clearCodes').onclick = function () {
+      if (!confirm('确定要全部清除 ' + rows.length + ' 条验证码存档吗？\n此操作无视日期、不可恢复（日常也会在 7 天后自动清除）。')) return;
+      api('/api/admin/clear-codes', { method: 'POST' }).then(function (res) {
+        if (res.ok) { alert('已全部清除 ' + res.d.removed + ' 条验证码存档'); loadCodes(); }
+        else alert(res.d.error || '清除失败');
       });
     };
+    view.querySelectorAll('button[data-del]').forEach(function (b) {
+      b.onclick = function () {
+        if (!confirm('删除验证码存档 ' + b.dataset.del + '？')) return;
+        api('/api/admin/codes/' + b.dataset.del, { method: 'DELETE' }).then(function (res) {
+          if (res.ok) loadCodes(); else alert(res.d.error || '删除失败');
+        });
+      };
+    });
   });
 }
 
