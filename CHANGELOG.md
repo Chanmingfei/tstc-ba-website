@@ -2,6 +2,27 @@
 
 本文件记录唐山师范学院吧官网近期全部重大更新（按日期归档）。
 
+## 2026-10-13（修复）· SMTP 发信通道双 bug 修复 + 失败不再被掩盖 + 管理后台验证码存档
+
+> 同日先更正确认：10-12 条目中「网易对 Cloudflare Workers 出口 IP 反垃圾导致入队后丢弃」的判断**有误**。真实原因是发信代码自身缺陷——Worker 侧 SMTP 连接从未真正建立，邮件从未进入网易投递队列。修复后网易企业邮箱 SMTP 通道完全正常，**无需切换 QQ 邮箱**。
+
+### 修复（根因：两处 workerd API 使用错误，此前被「假成功」响应掩盖）
+- **`smtp.js`：`connectFn` 未 await**：`defaultConnect` 因动态 `import('cloudflare:sockets')` 而是 async 函数，返回 Promise；`sendViaSmtp` 却将其当同步 socket 使用，`socket.writable` 为 `undefined`，首行即抛 `TypeError: Cannot read properties of undefined (reading 'getWriter')`。此前单测用「预热后同步交出 socket」的注入工厂绕过了该路径，未能暴露。修复：调用处 `await connectFn(...)`，并新增「async connectFn」回归用例（复现生产形状）。
+- **`smtp.js`：`connect()` 参数形态错误**：workerd 的 `connect()` 只接受 `connect(address, options)` 两参，`address` 必须为 `{ hostname, port }` 对象，不存在 `(host, port, options)` 三参重载；传数字作第二参报 `TypeError: Failed to execute 'connect' on 'SocketsModule': parameter 2 is not of type 'SocketOptions'`。修复：改为传地址对象，单测新增形态断言。
+- **顺修**：STARTTLS 模式此前从未真正升级（现按 RFC 3207 发送 STARTTLS 命令 → `startTls()` 升级 → 重建 reader/writer → 重新 EHLO）；`socket.close()` 按文档返回 Promise，补 `.catch()` 防未处理拒绝。
+- **路由掩盖失败问题（`functions/api/[[route]].js`）**：`sendCodeEmail` 此前无论 mailer 成功失败都返回 `{ ok: true, via }`，导致线上 5 次发信全部「假成功」（响应 `via:"smtp"` 但邮件从未发出）。现失败时返回 `{ ok: false, error }`：绑定发码对普通用户返回通用提示（500），对管理员附详细错误便于排查；重置发码保持防枚举同构响应，失败仅记服务端日志。
+
+### 新增（管理后台「验证码」标签页）
+- **`GET /api/admin/codes`**：验证码存档列表接口（仅管理员），`LEFT JOIN users` 带出账号名（用户已删则显示 —），返回 id / user_id / username / email / code / purpose / used / expires_at / created_at，最近 200 条。
+- **管理后台新增「验证码」标签页**（`functions/admin.js`）：表格展示每条存档对应的**账号、邮箱、验证码明文、用途（绑定邮箱/重置密码）、状态（未使用/已使用/已过期）、获取时间、过期时间**，验证码等宽字体加字距显示；附「刷新」与「立即清理」按钮。
+
+### 验证（2026-10-13，全部通过）
+- 单测扩充至 **20 项全过**（`scripts/test-smtp.mjs`）：新增 async connectFn 回归、connect 地址对象形态断言、STARTTLS 命令与升级后重 EHLO、opened 拒绝错误传播。
+- **真实服务器实测**（`scripts/test-smtp-live.mjs`，经 `sendViaSmtp` 生产代码路径 + 真实 TLS + 真实 SMTP 对话）：866ms 返回 `{"ok":true,"via":"smtp"}`，测试邮件送达。
+- **Worker 端到端**：线上触发绑定发码 → 6.4s 返回 `{"ok":true,"via":"smtp"}` → IMAP 核查邮件 3 秒后到达收件箱（主题「唐山师范学院吧 · 邮箱绑定验证码」），正文验证码 `605570` 与 D1 记录（id 26）完全一致 → 消费该码完成绑定（`email_verified=1`）。重置密码发信同样到达（码 `247116`）→ 确认重置成功 → 旧密码 401、新密码 200、旧会话已吊销。
+- 管理后台验证码存档接口线上返回 7 条完整记录（账号/邮箱/验证码/用途/状态），无会话调用 403。
+- 测试数据已清理：删除测试账号 `smtpdiag_1`/`taildiag_1` 及 5 条测试验证码存档；保留用户本人 3 次真实尝试记录。基线恢复：users=6 / articles=39 / comments=53。
+
 ## 2026-10-12（功能）· 免费发件方案：自有邮箱 SMTP 直连通道
 
 ### 新增
@@ -14,7 +35,8 @@
 - **线上已完成配置并实测通过**：发信账号 `noreply@tstc.pp.ua`，SMTP 主机 `smtp.qiye.163.com:465`（隐式 TLS）。
   - 关键教训：Pages 会从仓库的 `wrangler.toml` 重建 production 部署配置，**仅通过 API/控制台设置的明文环境变量会在下次 git 构建后被覆盖**；因此非敏感参数（HOST/PORT/SECURE/USER/FROM）写入 `wrangler.toml` 的 `[vars]` 随版本管理，密码 `MAIL_SMTP_PASS` 使用 Pages Secret 保存（不进仓库）。
   - 端到端实测：注册临时账号 → 登录 → 发绑定码（返回 `via:"smtp"`）→ 确认绑定（`/api/account` 回显 `email` 且 `email_verified=true`）→ 忘记密码发码 → 验码重置 → **旧会话 401（已吊销）**、旧密码登录失败、新密码登录成功；验证后测试数据与验证码存档已全部清除，各表计数回到基线（users=6 / articles=39 / comments=53 / email_codes=0）。
-- **网易企业邮箱投递失败诊断（2026-10-13）**：SMTP 对话完全正常（TLS / EHLO / AUTH LOGIN 235 / MAIL FROM·RCPT TO·DATA 均 250，服务端返回 `250 Ok: queued as <队列号>`），但**邮件入队后被静默丢弃**——经 IMAP 直连发件信箱核查，收件箱仅剩系统欢迎信、垃圾箱 0 封，用户三次绑定尝试（站内 `cmf@`、foxmail、QQ）均未收到任何邮件。判定为网易侧对 Cloudflare Workers 共享出口 IP 的反垃圾策略导致入队后丢弃，本地无解。**处理：切换为 QQ 邮箱 SMTP**（`smtp.qq.com:465`），网易授权码作废。
+- **网易企业邮箱投递失败诊断（2026-10-13，结论已于同日更正，见下方 10-13 条目）**：SMTP 对话完全正常（TLS / EHLO / AUTH LOGIN 235 / MAIL FROM·RCPT TO·DATA 均 250，服务端返回 `250 Ok: queued as <队列号>`），但**邮件入队后被静默丢弃**——经 IMAP 直连发件信箱核查，收件箱仅剩系统欢迎信、垃圾箱 0 封，用户三次绑定尝试（站内 `cmf@`、foxmail、QQ）均未收到任何邮件。
+  - ~~判定为网易侧对 Cloudflare Workers 共享出口 IP 的反垃圾策略导致入队后丢弃，本地无解。切换为 QQ 邮箱 SMTP。~~ **此判定有误，已推翻**：真实原因为发信代码自身缺陷（Worker 侧 SMTP 从未真正发起连接，详见 2026-10-13 条目），与网易服务器、Cloudflare 出口 IP 均无关。**网易企业邮箱 SMTP 通道修复后实测完全正常，无需切换 QQ 邮箱。**
 - **安全修复**：曾将网易授权码硬编码在 `scripts/verify-smtp-auth.mjs` 中并提交（commit `17d3655`），已全部改为从环境变量读取（`MAIL_SMTP_USER`/`MAIL_SMTP_PASS`），仓库现行代码无凭证残留；因 git 历史仍包含该值，对应授权码已建议用户作废重置。新增 `scripts/diag-smtp.mjs`（SMTP 全对话诊断）与 `scripts/diag-imap.mjs`（IMAP 到达核查），凭证均从环境变量读取。
 
 ### 测试
