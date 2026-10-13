@@ -82,6 +82,26 @@ export function articleUrl(slug) {
   return '/news/' + (slug || '');
 }
 
+// 由文章 slug 生成搜索索引条目 url（与构建期静态索引 news/post-N.html 的写法保持一致，
+// 使动态条目能按 url 覆盖静态索引中同名的旧文章条目；吧友文章无静态页，url 为 user-articles/N）。
+export function searchEntryUrl(slug) {
+  const ua = /^ua-(\d+)(-en)?$/.exec(slug || '');
+  if (ua) return 'user-articles/' + ua[1] + (ua[2] || '');
+  return 'news/' + (slug || '') + '.html';
+}
+
+// 正文 HTML → 纯文本（供搜索索引使用）：剔除 style/script 与标签、解码常见实体、压缩空白。
+// 与构建期 generate-manifest.js 的 extractSearchText 保持一致的处理口径。
+export function htmlToText(html) {
+  let h = String(html || '');
+  h = h.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ');
+  h = h.replace(/<[^>]+>/g, ' ');
+  h = h.replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"').replace(/&#39;/gi, "'").replace(/&apos;/gi, "'");
+  return h.replace(/\s+/g, ' ').trim();
+}
+
 // 计算同系列（新闻 user_id=0 或吧友文章 user_id>0）中按日期排序的上一篇/下一篇。
 // 中英版本（-en）视为同一篇，仅返回与当前文章同语言的邻居；
 // 日期倒序（新→旧），同日期按编号倒序。上一篇=更旧、下一篇=更新。

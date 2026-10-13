@@ -496,14 +496,35 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
     const searchButton = document.getElementById('searchButton');
 
-    // 搜索索引只抓取一次并缓存（由构建期 generate-manifest.js 生成，按语言拆分为 zh / en）
+    // 搜索索引由两部分合并而成（只抓取一次并缓存）：
+    // 1) 静态索引（构建期 generate-manifest.js 生成，按语言拆分为 zh / en）——覆盖非文章的全站页面；
+    // 2) 动态索引（GET /api/search-index，D1 实时数据）——覆盖全部文章（新闻 + 吧友文章）。
+    // 合并规则：按 url 覆盖——动态条目替换静态索引中同名的旧文章条目（news/post-N.html 的外壳旧文），
+    // 并无静态页的吧友文章（user-articles/N）作为新条目加入，保证后台改文章/发新文后搜索立即可见。
+    // 动态索引拉取失败时自动降级为仅静态索引，不影响既有页面搜索。
     let searchIndexCache = null;
     function loadSearchIndex() {
         if (searchIndexCache) return Promise.resolve(searchIndexCache);
-        const url = window.__SEARCH_INDEX_URL__ || '/assets/search-index.json';
-        return fetch(url)
-            .then(r => r.json())
-            .then(d => { searchIndexCache = d; return d; });
+        const staticUrl = window.__SEARCH_INDEX_URL__ || '/assets/search-index.json';
+        const dynUrl = '/api/search-index';
+        return Promise.all([
+            fetch(staticUrl).then(r => r.json()),
+            fetch(dynUrl)
+                .then(r => (r.ok ? r.json() : { zh: [], en: [] }))
+                .catch(() => ({ zh: [], en: [] })),
+        ]).then(([staticData, dynData]) => {
+            const merge = (a, b) => {
+                const byUrl = new Map();
+                for (const it of a || []) byUrl.set(it.url, it);
+                for (const it of b || []) byUrl.set(it.url, it); // 动态覆盖同名、新增无静态页条目
+                return Array.from(byUrl.values());
+            };
+            searchIndexCache = {
+                zh: merge(staticData.zh, dynData.zh),
+                en: merge(staticData.en, dynData.en),
+            };
+            return searchIndexCache;
+        });
     }
 
     function escapeHtml(s) {
@@ -1128,10 +1149,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return '<a href="' + url + '" class="group mb-3 flex items-start gap-3 rounded-xl border border-white/60 bg-white/15 backdrop-blur-sm p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg animate-result-in search-result-item" style="animation-delay:' + (i * 45) + 'ms">' +
                 '<span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><i class="fa fa-file-lines"></i></span>' +
                 '<div class="min-w-0 flex-1">' +
-                    '<div class="flex items-center gap-2 min-w-0">' +
-                        '<div class="truncate text-[15px] font-semibold text-gray-800 transition-colors group-hover:text-primary">' + highlightHtml(item.title, query) + '</div>' +
-                        (inText ? '' : '<span class="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">' + (isEn ? 'Title' : '标题') + '</span>') +
-                    '</div>' +
+                '<div class="flex items-center gap-2 min-w-0">' +
+                    '<div class="truncate text-[15px] font-semibold text-gray-800 transition-colors group-hover:text-primary">' + highlightHtml(item.title, query) + '</div>' +
+                    (item.tag === 'user' ? '<span class="shrink-0 rounded bg-secondary/10 px-1.5 py-0.5 text-[10px] font-medium text-secondary">' + (isEn ? 'User Post' : '吧友文章') + '</span>' : '') +
+                    (inText ? '' : '<span class="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">' + (isEn ? 'Title' : '标题') + '</span>') +
+                '</div>' +
                     '<div class="mt-1 line-clamp-2 text-sm leading-relaxed text-gray-500">' + buildSnippet(item.text, query, 70) + '</div>' +
                     '<div class="mt-1.5 text-xs text-secondary">' + escapeHtml(url) + '</div>' +
                 '</div>' +

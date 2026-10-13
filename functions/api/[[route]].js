@@ -15,6 +15,7 @@ import { ALLOWED_ORIGINS } from '../_lib/config.js';
 import { rateLimit, clientIp } from '../_lib/limit.js';
 import { recalcLevel, getUserLevel } from '../_lib/level.js';
 import { sendEmail } from '../_lib/mailer.js';
+import { htmlToText, searchEntryUrl } from '../_lib/article.js';
 
 // 变更型请求（POST/PUT/DELETE）校验 Origin：仅允许同源或白名单来源，抵御跨站伪造。
 // 同源请求浏览器不携带 Origin 或携带同域 Origin；跨站伪造请求将被拒绝。
@@ -71,6 +72,7 @@ export async function onRequest(context) {
       if (method === 'DELETE' && segments[1]) return await deleteComment(request, env, segments[1]);
     }
     if (head === 'admin') return await adminDispatch(request, env, segments);
+    if (head === 'search-index' && method === 'GET') return await searchIndex(request, env);
     return json({ error: 'Not Found' }, 404);
   } catch (e) {
     return json({ error: e.message || 'Server Error' }, 500);
@@ -320,6 +322,33 @@ async function getArticle(env, slug) {
   const row = await env.DB.prepare('SELECT * FROM articles WHERE slug = ?').bind(slug).first();
   if (!row) return json({ error: '文章不存在' }, 404);
   return json({ article: row });
+}
+
+// 动态搜索索引（GET /api/search-index，公开）：把 D1 中的全部文章（新闻 + 吧友文章）
+// 转成与静态索引 assets/search-index.json 同构的 { zh, en } 条目（title/url/text），
+// 前端拉取后按 url 合并：同名条目（news/post-N.html）用动态内容覆盖静态外壳旧文，
+// 无静态页的吧友文章（user-articles/N）作为新条目加入，实现全站搜索对动态文章的实时收录。
+// 附带 tag=user 标记吧友文章，供前端在结果里加徽标。响应允许边缘缓存 60 秒。
+async function searchIndex(request, env) {
+  let rows = [];
+  try {
+    const r = await env.DB.prepare('SELECT slug, lang, title, content, user_id FROM articles').all();
+    rows = r.results || [];
+  } catch (_) {
+    rows = []; // D1 异常时返回空动态索引，前端仍可用静态索引搜索
+  }
+  const zh = [];
+  const en = [];
+  for (const a of rows) {
+    const entry = {
+      title: String(a.title || '').trim() || '(untitled)',
+      url: searchEntryUrl(a.slug),
+      text: htmlToText(a.content),
+    };
+    if (a.user_id) entry.tag = 'user'; // 吧友文章标记
+    (a.lang === 'en' ? en : zh).push(entry);
+  }
+  return json({ zh, en }, 200, { 'Cache-Control': 'public, max-age=60' });
 }
 
 // ---------- 用户发文（等级系统：Lv3+ 可发布/编辑/删除自己的文章）----------
