@@ -13,7 +13,9 @@
 - **Resend 通道降级为备选**：实测 Resend API 拒绝验证 `pp.ua` 免费公共域名及其子域（`tstc.pp.ua` 在黑名单内，返回 422 "We don't allow free public domains"），域名验证路径不可行，故主推 SMTP 方案；如未来启用自有独立域名，仍可通过 `RESEND_API_KEY` 切换回 Resend。
 - **线上已完成配置并实测通过**：发信账号 `noreply@tstc.pp.ua`，SMTP 主机 `smtp.qiye.163.com:465`（隐式 TLS）。
   - 关键教训：Pages 会从仓库的 `wrangler.toml` 重建 production 部署配置，**仅通过 API/控制台设置的明文环境变量会在下次 git 构建后被覆盖**；因此非敏感参数（HOST/PORT/SECURE/USER/FROM）写入 `wrangler.toml` 的 `[vars]` 随版本管理，密码 `MAIL_SMTP_PASS` 使用 Pages Secret 保存（不进仓库）。
-  - 端到端实测：注册临时账号 → 登录 → 发绑定码（返回 `via:"smtp"`，邮箱真实收到验证码）→ 确认绑定（`/api/account` 回显 `email` 且 `email_verified=true`）→ 忘记密码发码 → 验码重置 → **旧会话 401（已吊销）**、旧密码登录失败、新密码登录成功；验证后测试数据与验证码存档已全部清除，各表计数回到基线（users=6 / articles=39 / comments=53 / email_codes=0）。
+  - 端到端实测：注册临时账号 → 登录 → 发绑定码（返回 `via:"smtp"`）→ 确认绑定（`/api/account` 回显 `email` 且 `email_verified=true`）→ 忘记密码发码 → 验码重置 → **旧会话 401（已吊销）**、旧密码登录失败、新密码登录成功；验证后测试数据与验证码存档已全部清除，各表计数回到基线（users=6 / articles=39 / comments=53 / email_codes=0）。
+- **网易企业邮箱投递失败诊断（2026-10-13）**：SMTP 对话完全正常（TLS / EHLO / AUTH LOGIN 235 / MAIL FROM·RCPT TO·DATA 均 250，服务端返回 `250 Ok: queued as <队列号>`），但**邮件入队后被静默丢弃**——经 IMAP 直连发件信箱核查，收件箱仅剩系统欢迎信、垃圾箱 0 封，用户三次绑定尝试（站内 `cmf@`、foxmail、QQ）均未收到任何邮件。判定为网易侧对 Cloudflare Workers 共享出口 IP 的反垃圾策略导致入队后丢弃，本地无解。**处理：切换为 QQ 邮箱 SMTP**（`smtp.qq.com:465`），网易授权码作废。
+- **安全修复**：曾将网易授权码硬编码在 `scripts/verify-smtp-auth.mjs` 中并提交（commit `17d3655`），已全部改为从环境变量读取（`MAIL_SMTP_USER`/`MAIL_SMTP_PASS`），仓库现行代码无凭证残留；因 git 历史仍包含该值，对应授权码已建议用户作废重置。新增 `scripts/diag-smtp.mjs`（SMTP 全对话诊断）与 `scripts/diag-imap.mjs`（IMAP 到达核查），凭证均从环境变量读取。
 
 ### 测试
 - **16 项 SMTP 单测（`scripts/test-smtp.mjs`，全部通过）**：本地模拟 SMTP 服务端（node:net + web streams 适配），覆盖正常发送全流程（命令序列、AUTH LOGIN base64、MAIL FROM/RCPT TO/DATA/QUIT、From/To/Date/Message-ID/MIME 头、Subject encoded-word 中文解码、正文 base64 解码）、认证失败抛异常、配置不完整不连接、starttls 模式；修复了 `writer.close()` Promise 拒绝未处理导致进程崩溃的问题。
