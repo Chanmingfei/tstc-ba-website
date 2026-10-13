@@ -633,5 +633,15 @@ async function adminDispatch(request, env, segments) {
     return json({ error: 'Not Found' }, 404);
   }
 
+  // 验证码存档列表（仅管理员）：含账号、邮箱、验证码明文、用途、状态、时间。
+  // LEFT JOIN users：用户被删后存档仍可查（账号列显示 —）。
+  if (sub === 'codes' && method === 'GET') {
+    const rows = await env.DB.prepare(
+      'SELECT c.id, c.user_id, c.email, c.code, c.purpose, c.used, c.expires_at, c.created_at, u.username ' +
+      'FROM email_codes c LEFT JOIN users u ON u.id = c.user_id ORDER BY c.id DESC LIMIT 200'
+    ).all();
+    return json({ codes: rows.results || [] });
+  }
+
   return json({ error: 'Not Found' }, 404);
 }

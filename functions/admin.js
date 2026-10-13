@@ -138,6 +138,7 @@ export async function onRequest(context) {
       <button class="tab" data-tab="users">用户</button>
       <button class="tab" data-tab="articles">文章</button>
       <button class="tab" data-tab="comments">评论</button>
+      <button class="tab" data-tab="codes">验证码</button>
     </div>
     <div id="view"></div>
   </div>
@@ -163,6 +164,7 @@ function show(tab) {
   else if (tab === 'users') loadUsers();
   else if (tab === 'articles') loadArticles();
   else if (tab === 'comments') loadComments();
+  else if (tab === 'codes') loadCodes();
 }
 document.querySelectorAll('.tab').forEach(function (t) { t.onclick = function () { show(t.dataset.tab); }; });
 
@@ -330,6 +332,40 @@ function loadComments() {
       b.onclick = function () { if (!confirm('删除评论 ' + b.dataset.del + '？')) return;
         api('/api/admin/comments/' + b.dataset.del, { method: 'DELETE' }).then(function (res) { if (res.ok) loadComments(); else alert(res.d.error || '失败'); }); };
     });
+  });
+}
+
+// 验证码存档：展示每条存档对应的账号、邮箱、验证码明文、用途与状态
+function loadCodes() {
+  api('/api/admin/codes').then(function (r) {
+    if (!r.ok) return (view.innerHTML = '<div class="card">加载失败</div>');
+    var rows = r.d.codes || [];
+    var now = Date.now();
+    var html = '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
+      '<b>验证码存档（' + rows.length + ' 条，仅显示最近 200 条；保留 7 天后自动清除）</b>' +
+      '<span><button class="btn ghost" id="refreshCodes">刷新</button> ' +
+      '<button class="btn warn" id="cleanupCodes2">立即清理</button></span></div>' +
+      '<table><thead><tr><th>ID</th><th>账号</th><th>邮箱</th><th>验证码</th><th>用途</th><th>状态</th><th>获取时间</th><th>过期时间</th></tr></thead><tbody>';
+    rows.forEach(function (c) {
+      var st = c.used ? '<span class="pill deleted">已使用</span>'
+        : (c.expires_at < now ? '<span class="pill banned">已过期</span>' : '<span class="pill active">未使用</span>');
+      var purpose = c.purpose === 'reset' ? '重置密码' : '绑定邮箱';
+      html += '<tr><td>' + c.id + '</td>' +
+        '<td>' + (c.username ? esc(c.username) : '<span class="muted">—</span>') + '</td>' +
+        '<td>' + esc(c.email) + '</td>' +
+        '<td style="font-family:ui-monospace,SFMono-Regular,monospace;font-weight:700;letter-spacing:3px;font-size:14px">' + esc(c.code) + '</td>' +
+        '<td>' + purpose + '</td><td>' + st + '</td><td>' + fmt(c.created_at) + '</td><td>' + fmt(c.expires_at) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+    view.innerHTML = html;
+    document.getElementById('refreshCodes').onclick = loadCodes;
+    document.getElementById('cleanupCodes2').onclick = function () {
+      if (!confirm('立即清理 7 天前的验证码存档？')) return;
+      api('/api/admin/cleanup-codes', { method: 'POST' }).then(function (res) {
+        if (res.ok) { alert('已清理 ' + res.d.removed + ' 条，剩余 ' + res.d.remaining + ' 条'); loadCodes(); }
+        else alert(res.d.error || '清理失败');
+      });
+    };
   });
 }
 

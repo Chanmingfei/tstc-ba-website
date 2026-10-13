@@ -9,6 +9,7 @@ import { sendViaSmtp } from '../functions/_lib/smtp.js';
 const received = [];   // 捕获服务端收到的全部原始行
 let dataPayload = '';  // DATA 阶段内容
 let rejectAuth = false;
+let lastConnectArgs = null; // 记录最近一次 connectFn 收到的参数（验证调用形态）
 
 function startServer() {
   return new Promise((resolve) => {
@@ -54,9 +55,11 @@ function startServer() {
 }
 
 // node:net → web streams 适配（模拟 workerd socket 接口）
+// 注意入参形态：workerd connect(address, options)，address 为 { hostname, port }
 function nodeConnectFactory() {
-  return (host, port) => {
-    const sock = net.connect(port, host);
+  return (addr, opts) => {
+    lastConnectArgs = { addr, opts };
+    const sock = net.connect(addr.port, addr.hostname);
     const web = Duplex.toWeb(sock);
     return { readable: web.readable, writable: web.writable, close: () => sock.destroy() };
   };
@@ -64,8 +67,8 @@ function nodeConnectFactory() {
 
 // 模拟「connect 后需等待 opened」的 socket（更接近 workerd 行为）
 function nodeConnectFactoryWithOpened() {
-  return (host, port) => {
-    const sock = net.connect(port, host);
+  return (addr, opts) => {
+    const sock = net.connect(addr.port, addr.hostname);
     const web = Duplex.toWeb(sock);
     return {
       readable: web.readable,
@@ -107,9 +110,14 @@ const msg = {
 };
 
 console.log('== 用例 1：正常发送 ==');
-received.length = 0; dataPayload = '';
+received.length = 0; dataPayload = ''; lastConnectArgs = null;
 let r = await sendViaSmtp(env, msg, { connectFn: nodeConnectFactory() });
 check('返回 {ok:true, via:smtp}', r.ok === true && r.via === 'smtp', JSON.stringify(r));
+check('connect() 首参为 {hostname, port} 地址对象（workerd 无 (host, port, opts) 三参重载）',
+  lastConnectArgs && typeof lastConnectArgs.addr === 'object' &&
+  lastConnectArgs.addr.hostname === '127.0.0.1' && typeof lastConnectArgs.addr.port === 'number' &&
+  lastConnectArgs.opts && typeof lastConnectArgs.opts.secureTransport === 'string',
+  JSON.stringify(lastConnectArgs && { addr: lastConnectArgs.addr, opts: lastConnectArgs.opts }));
 check('命令序列：EHLO 使用站点域名', received[0] === 'EHLO tstc.pp.ua', received[0]);
 check('命令序列：AUTH LOGIN', received.includes('AUTH LOGIN'));
 check('命令序列：base64 用户名', received.includes(Buffer.from('smtpuser@qq.com').toString('base64')));
@@ -144,21 +152,24 @@ check('缺少 USER/PASS 返回 ok:false 且不连接', r.ok === false && r.via =
 console.log('== 用例 4：starttls 模式（发送 STARTTLS 命令，升级后重新 EHLO）==');
 // 模拟 startTls() 语义：返回一个全新 socket（旧 socket 的 reader/writer 作废）
 function starttlsConnectFactory() {
-  let current = null;
-  const make = () => {
-    const sock = net.connect(port, '127.0.0.1');
+  let currentAddr = null;
+  const make = (addr) => {
+    const sock = net.connect(addr.port, addr.hostname);
     const web = Duplex.toWeb(sock);
-    const obj = {
+    return {
       readable: web.readable,
       writable: web.writable,
       opened: new Promise((resolve, reject) => { sock.once('connect', resolve); sock.once('error', reject); }),
       close: () => sock.destroy(),
     };
-    return obj;
   };
-  current = make();
-  current.startTls = () => { current = make(); return current; };
-  return async (host, p) => current;
+  let current = null;
+  return async (addr) => {
+    if (!currentAddr) currentAddr = addr;
+    if (!current) current = make(currentAddr);
+    current.startTls = () => { current = make(currentAddr); return current; };
+    return current;
+  };
 }
 received.length = 0; dataPayload = '';
 r = await sendViaSmtp({ ...env, MAIL_SMTP_SECURE: 'starttls' }, msg, { connectFn: starttlsConnectFactory() });
@@ -174,7 +185,7 @@ console.log('== 用例 5：async connectFn（生产默认实现的形状，回�
 // 且错误被 mailer/路由掩盖，线上表现为"发送成功"但邮件从未发出。
 received.length = 0; dataPayload = '';
 const syncFactory = nodeConnectFactoryWithOpened();
-r = await sendViaSmtp(env, msg, { connectFn: async (host, p, opts) => syncFactory(host, p, opts) });
+r = await sendViaSmtp(env, msg, { connectFn: async (addr, opts) => syncFactory(addr, opts) });
 check('async connectFn 正常完成发送', r.ok === true && r.via === 'smtp' && received.includes('AUTH LOGIN'), JSON.stringify(r));
 
 console.log('== 用例 6：连接失败时 opened reject，错误向上传播 ==');

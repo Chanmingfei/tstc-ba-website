@@ -13,10 +13,10 @@ const PASS = process.env.MAIL_SMTP_PASS;
 const TO = process.argv[2] || 'cmf@tstc.pp.ua';
 if (!USER || !PASS) { console.log('请设置环境变量 MAIL_SMTP_USER 与 MAIL_SMTP_PASS'); process.exit(2); }
 
-// 形状与 workerd connect() 一致：同步返回含 opened 的 socket 对象；
+// 形状与 workerd connect() 一致：connect(address, options)，address 为 {hostname, port}；
 // 外层包 async —— 与生产 defaultConnect（动态 import 包装）同形。
-async function connectFn(host, port) {
-  const sock = tls.connect({ host, port, servername: host });
+async function connectFn(address, opts) {
+  const sock = tls.connect({ host: address.hostname, port: address.port, servername: address.hostname });
   const web = Duplex.toWeb(sock);
   return {
     readable: web.readable,

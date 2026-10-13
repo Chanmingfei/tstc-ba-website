@@ -27,9 +27,12 @@ function wrapBase64(b64Str) {
   return (b64Str.match(/.{1,76}/g) || ['']).join('\r\n');
 }
 
-async function defaultConnect(host, port, opts) {
+async function defaultConnect(address, opts) {
   const { connect } = await import('cloudflare:sockets');
-  return connect(host, port, opts);
+  // 注意：workerd connect() 的签名是 connect(address, options)，address 为
+  // { hostname, port } 对象；不存在 (host, port, options) 三参重载，
+  // 传数字作第二参会报 "parameter 2 is not of type 'SocketOptions'"。
+  return connect(address, opts);
 }
 
 // 读取一条完整 SMTP 应答（支持 250- 多行续行，直到 "NNN " 空格行为止）
@@ -79,10 +82,12 @@ export async function sendViaSmtp(env, msg, opts = {}) {
   if (!host || !user || !pass) return { ok: false, via: 'smtp', error: 'SMTP 配置不完整' };
 
   const connectFn = opts.connectFn || defaultConnect;
-  // 注意：connectFn 可能是 async 函数（默认实现走动态 import cloudflare:sockets），
+  // 注意一：connectFn 可能是 async 函数（默认实现走动态 import cloudflare:sockets），
   // 返回的是 Promise 而非 socket 对象，必须 await 后才能访问 .writable/.readable。
   // workerd 的 connect() 本身是同步返回 Socket 的，但动态 import 迫使这层包装为 async。
-  let socket = await connectFn(host, port, { secureTransport: secure === 'starttls' ? 'starttls' : 'on' });
+  // 注意二：workerd connect() 只接受 connect(address, options) 两参，
+  // address 必须是 { hostname, port } 对象（无 (host, port, options) 三参重载）。
+  let socket = await connectFn({ hostname: host, port }, { secureTransport: secure === 'starttls' ? 'starttls' : 'on' });
   let writer;
   let reader;
   try {
