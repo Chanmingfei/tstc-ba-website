@@ -2,6 +2,24 @@
 
 本文件记录唐山师范学院吧官网近期全部重大更新（按日期归档）。
 
+## 2026-10-13（修复）· admin 页白屏紧急修复 + 验证码存档手动管理改造（全清/单删）
+
+### 紧急修复（线上事故：管理后台白屏）
+- **现象**：部署「验证码手动管理」后，管理后台（sso.tstc.pp.ua/admin）只显示 SSR 框架、内容区全白。
+- **根因**：「全部清除」confirm 文案中的 `\n` 写在 `functions/admin.js` 的模板字符串里，Node 求值模板字符串时将其转为**真实换行符**写入 HTML，inline script 的 JS 字符串字面量被截断，浏览器整块 script 解析失败（`Invalid or unexpected token`），页面全部交互代码不执行。`node --check` 只能检查 functions 源码自身语法，查不到「求值后」的产物，故此前漏过。
+- **修复**：源码改 `\\n`，使输出到 HTML 的 JS 字符串中是合法转义序列（commit `517179f`）。
+- **防回归**：新增 `scripts/test-ssr-scripts.mjs`（25 项）——直接渲染 admin / account / login / register / reset-password 五个 SSR 页面，提取 inline script 用 `new Function` 编译检查 + 未闭合单引号扫描；已验证灵敏度（回退到事故形态 2 条 FAIL，修复后 25/25）。
+
+### 变更（验证码存档手动管理，需求：手动清除应无视日期）
+- **`POST /api/admin/clear-codes` 取代 `cleanup-codes`**：原「立即清理」端点与发码时的懒清理同为 7 天阈值，手动清除形同虚设；新端点 `DELETE FROM email_codes` 无 WHERE 全部清除（返回实际删除条数）。
+- **新增 `DELETE /api/admin/codes/:id`**：按 id 精确删除单条存档（同样无视日期）；非数字 id 返回 404；均限管理员（403）。
+- **管理后台 UI**：验证码页表头「刷新」+「全部清除」（confirm 含条数与「无视日期、不可恢复」警示）；每行新增「删除」按钮；「概览」页验证码卡片的无效「立即清理」改为「管理存档」（跳转验证码标签页）。
+
+### 验证（2026-10-13，全部通过）
+- 单测：`test-cleanup-safety.mjs` 13 项（场景 A 全清：恰好 1 条 DELETE、目标 email_codes、**无 WHERE**、不碰其他表；场景 C 单删：WHERE id = ? / 绑定参数 / 404 / 403×2；场景 B 懒清理 7 天不回归）；`test-smtp.mjs` 20/20、`test-search-index.mjs` 20/20 回归通过；`test-ssr-scripts.mjs` 25/25。
+- 线上（临时管理员账号实测后已清理）：非管理员 GET/DELETE/全清均 403；单删 `removed:1` 且列表即时消失；不存在 id `removed:0`；非法 id 404；全清 `removed:8` 后列表为 0。
+- 测试前后数据核对：email_codes 7 条真实存档已逐条恢复原样，测试账号已删除，users 恢复 7 个原有账号。
+
 ## 2026-10-13（修复）· SMTP 发信通道双 bug 修复 + 失败不再被掩盖 + 管理后台验证码存档
 
 > 同日先更正确认：10-12 条目中「网易对 Cloudflare Workers 出口 IP 反垃圾导致入队后丢弃」的判断**有误**。真实原因是发信代码自身缺陷——Worker 侧 SMTP 连接从未真正建立，邮件从未进入网易投递队列。修复后网易企业邮箱 SMTP 通道完全正常，**无需切换 QQ 邮箱**。
