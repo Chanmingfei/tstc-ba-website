@@ -354,7 +354,7 @@ function loadCodes() {
     view.innerHTML = html;
     document.getElementById('refreshCodes').onclick = loadCodes;
     document.getElementById('clearCodes').onclick = function () {
-      if (!confirm('确定要全部清除 ' + rows.length + ' 条验证码存档吗？\n此操作无视日期、不可恢复（日常也会在 7 天后自动清除）。')) return;
+      if (!confirm('确定要全部清除 ' + rows.length + ' 条验证码存档吗？\\n此操作无视日期、不可恢复（日常也会在 7 天后自动清除）。')) return;
       api('/api/admin/clear-codes', { method: 'POST' }).then(function (res) {
         if (res.ok) { alert('已全部清除 ' + res.d.removed + ' 条验证码存档'); loadCodes(); }
         else alert(res.d.error || '清除失败');
