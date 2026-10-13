@@ -198,7 +198,7 @@ async function sendCodeEmail(env, { email, purpose, userId }) {
     `【唐山师范学院吧】您正在${purpose === 'reset' ? '重置账号密码' : '绑定邮箱'}，验证码为：${code}\n` +
     '验证码 5 分钟内有效，请勿转发给他人。如非本人操作，请忽略本邮件。';
   const m = await sendEmail(env, { to: email, subject, text });
-  return { ok: true, via: m.via };
+  return { ok: m.ok !== false, via: m.via, error: m.error };
 }
 
 // 校验并消费验证码（一次性）：成功标记 used，失败返回 { error }。
@@ -228,6 +228,12 @@ async function sendBindCode(request, env) {
   const taken = await env.DB.prepare('SELECT id FROM users WHERE email = ? AND id != ?').bind(e, s.userId).first();
   if (taken) return json({ error: '该邮箱已被其他账号绑定' }, 409);
   const r = await sendCodeEmail(env, { email: e, purpose: 'bind', userId: s.userId });
+  if (r.ok === false) {
+    console.error('[sendBindCode] 验证码邮件发送失败', r.via, r.error);
+    // 管理员账号附带详细错误便于排查；普通用户只给通用提示，不暴露内部细节
+    const detail = s.role === 'admin' && r.error ? `（${r.error}）` : '';
+    return json({ error: '验证码发送失败，请稍后重试' + detail }, 500);
+  }
   return json({ ok: true, via: r.via });
 }
 
@@ -264,7 +270,9 @@ async function sendResetCode(request, env) {
   if (!EMAIL_RE.test(e)) return json({ error: '邮箱格式不正确' }, 400);
   const row = await env.DB.prepare('SELECT id, status FROM users WHERE email = ?').bind(e).first();
   if (row && row.status === 'active') {
-    await sendCodeEmail(env, { email: e, purpose: 'reset', userId: row.id });
+    const r = await sendCodeEmail(env, { email: e, purpose: 'reset', userId: row.id });
+    // 防枚举要求响应同构，失败只记日志不外泄
+    if (r.ok === false) console.error('[sendResetCode] 重置验证码邮件发送失败', r.via, r.error);
   }
   return json({ ok: true });
 }
