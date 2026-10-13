@@ -79,11 +79,14 @@ export async function sendViaSmtp(env, msg, opts = {}) {
   if (!host || !user || !pass) return { ok: false, via: 'smtp', error: 'SMTP 配置不完整' };
 
   const connectFn = opts.connectFn || defaultConnect;
-  const socket = connectFn(host, port, { secureTransport: secure === 'starttls' ? 'starttls' : 'on' });
+  // 注意：connectFn 可能是 async 函数（默认实现走动态 import cloudflare:sockets），
+  // 返回的是 Promise 而非 socket 对象，必须 await 后才能访问 .writable/.readable。
+  // workerd 的 connect() 本身是同步返回 Socket 的，但动态 import 迫使这层包装为 async。
+  let socket = await connectFn(host, port, { secureTransport: secure === 'starttls' ? 'starttls' : 'on' });
   let writer;
   let reader;
   try {
-    // 等待底层连接就绪（含 TLS 握手）
+    // 等待底层连接就绪（含 TLS 握手）；失败时 opened 会 reject，错误向上传递给 mailer
     if (socket.opened) await socket.opened;
     writer = socket.writable.getWriter();
     reader = socket.readable.getReader();
@@ -92,6 +95,19 @@ export async function sendViaSmtp(env, msg, opts = {}) {
     if (greeting !== 220) throw new Error(`SMTP 问候语异常: ${greeting}`);
 
     await cmd(writer, reader, `EHLO tstc.pp.ua`);
+
+    // STARTTLS 模式（587 端口）：明文发送 STARTTLS 命令 → 服务端 220 → startTls() 升级。
+    // 升级后旧 socket 作废（其 reader/writer 全部失效），必须用新 socket 重建，
+    // 并按 RFC 3207 重新 EHLO。
+    if (secure === 'starttls' && typeof socket.startTls === 'function') {
+      await cmd(writer, reader, 'STARTTLS');
+      socket = socket.startTls();
+      if (socket.opened) await socket.opened; // 新 socket 的 TLS 握手
+      writer = socket.writable.getWriter();
+      reader = socket.readable.getReader();
+      await cmd(writer, reader, `EHLO tstc.pp.ua`);
+    }
+
     await cmd(writer, reader, 'AUTH LOGIN');
     await cmd(writer, reader, b64(user));
     await cmd(writer, reader, b64(pass));
@@ -121,8 +137,8 @@ export async function sendViaSmtp(env, msg, opts = {}) {
     try { await cmd(writer, reader, 'QUIT', 5000); } catch { /* QUIT 失败不影响送达 */ }
     return { ok: true, via: 'smtp' };
   } finally {
-    // 清理：writer.close() 返回 Promise，底层流异常时会被 reject，必须接住防止未处理拒绝
+    // 清理：writer.close()/socket.close() 均返回 Promise，底层流异常时会被 reject，必须接住防止未处理拒绝
     try { const p = writer?.close?.(); if (p && typeof p.catch === 'function') p.catch(() => {}); } catch { /* 忽略 */ }
-    try { socket.close(); } catch { /* 忽略 */ }
+    try { const p = socket?.close?.(); if (p && typeof p.catch === 'function') p.catch(() => {}); } catch { /* 忽略 */ }
   }
 }

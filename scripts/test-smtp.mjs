@@ -62,6 +62,20 @@ function nodeConnectFactory() {
   };
 }
 
+// 模拟「connect 后需等待 opened」的 socket（更接近 workerd 行为）
+function nodeConnectFactoryWithOpened() {
+  return (host, port) => {
+    const sock = net.connect(port, host);
+    const web = Duplex.toWeb(sock);
+    return {
+      readable: web.readable,
+      writable: web.writable,
+      opened: new Promise((resolve, reject) => { sock.once('connect', resolve); sock.once('error', reject); }),
+      close: () => sock.destroy(),
+    };
+  };
+}
+
 // ── 断言工具 ────────────────────────────────────────────────────
 let pass = 0, fail = 0;
 function check(name, cond, detail = '') {
@@ -127,10 +141,56 @@ console.log('== 用例 3：配置不完整时不尝试连接 ==');
 r = await sendViaSmtp({ MAIL_SMTP_HOST: 'x' }, msg, { connectFn: () => { throw new Error('不应被调用'); } });
 check('缺少 USER/PASS 返回 ok:false 且不连接', r.ok === false && r.via === 'smtp', JSON.stringify(r));
 
-console.log('== 用例 4：starttls 模式同样走通（适配层忽略 TLS）==');
+console.log('== 用例 4：starttls 模式（发送 STARTTLS 命令，升级后重新 EHLO）==');
+// 模拟 startTls() 语义：返回一个全新 socket（旧 socket 的 reader/writer 作废）
+function starttlsConnectFactory() {
+  let current = null;
+  const make = () => {
+    const sock = net.connect(port, '127.0.0.1');
+    const web = Duplex.toWeb(sock);
+    const obj = {
+      readable: web.readable,
+      writable: web.writable,
+      opened: new Promise((resolve, reject) => { sock.once('connect', resolve); sock.once('error', reject); }),
+      close: () => sock.destroy(),
+    };
+    return obj;
+  };
+  current = make();
+  current.startTls = () => { current = make(); return current; };
+  return async (host, p) => current;
+}
 received.length = 0; dataPayload = '';
-r = await sendViaSmtp({ ...env, MAIL_SMTP_SECURE: 'starttls', MAIL_SMTP_PORT: String(port) }, msg, { connectFn: nodeConnectFactory() });
-check('starttls 配置正常完成发送', r.ok === true && received.includes('AUTH LOGIN'));
+r = await sendViaSmtp({ ...env, MAIL_SMTP_SECURE: 'starttls' }, msg, { connectFn: starttlsConnectFactory() });
+check('starttls：发送 STARTTLS 命令', received.includes('STARTTLS'), received.join(' | '));
+check('starttls：升级后重新 EHLO 且完成发送',
+  r.ok === true && received.filter(l => l.startsWith('EHLO')).length === 2 && received.includes('AUTH LOGIN'),
+  JSON.stringify(r) + ' :: ' + received.join(' | '));
+
+console.log('== 用例 5：async connectFn（生产默认实现的形状，回归测试）==');
+// 生产 defaultConnect 因动态 import 而是 async 函数，返回 Promise。
+// 曾经 sendViaSmtp 未 await 该结果，直接访问 socket.writable 导致
+// TypeError: Cannot read properties of undefined (reading 'getWriter')，
+// 且错误被 mailer/路由掩盖，线上表现为"发送成功"但邮件从未发出。
+received.length = 0; dataPayload = '';
+const syncFactory = nodeConnectFactoryWithOpened();
+r = await sendViaSmtp(env, msg, { connectFn: async (host, p, opts) => syncFactory(host, p, opts) });
+check('async connectFn 正常完成发送', r.ok === true && r.via === 'smtp' && received.includes('AUTH LOGIN'), JSON.stringify(r));
+
+console.log('== 用例 6：连接失败时 opened reject，错误向上传播 ==');
+received.length = 0;
+let connErr = null;
+try {
+  await sendViaSmtp(env, msg, {
+    connectFn: async () => ({
+      readable: new ReadableStream(),
+      writable: new WritableStream(),
+      opened: Promise.reject(new Error('connection refused')),
+      close: () => {},
+    }),
+  });
+} catch (e) { connErr = e; }
+check('opened 拒绝时抛出可读错误（由 mailer 捕获转 {ok:false}）', connErr !== null && /refused/.test(String(connErr)), String(connErr));
 
 server.close();
 console.log(`\n结果：${pass} 通过，${fail} 失败`);
