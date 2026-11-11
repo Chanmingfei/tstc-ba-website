@@ -37,3 +37,9 @@
 # 已删除的生日页路径：彻底禁止缓存，避免任何末端节点残留陈旧内容
 /cmf*
   Cache-Control: public, max-age=0, no-store
+
+# 「掌上唐师」官方 App 安装包：明确 MIME + 强制下载（中文文件名用 RFC5987 编码）
+/zstangshi.apk
+  Content-Type: application/vnd.android.package-archive
+  Content-Disposition: attachment; filename="zstangshi.apk"; filename*=UTF-8''%E6%8E%8C%E4%B8%8A%E5%94%90%E5%B8%88.apk
+  Cache-Control: public, max-age=86400, s-maxage=86400
