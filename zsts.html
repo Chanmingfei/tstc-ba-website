@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+    <script id="data-theme-no-flash">(function(){try{var t=localStorage.getItem("theme");if(t!=="light"&&t!=="dark"){t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}if(t==="dark"){document.documentElement.setAttribute("data-theme","dark");}}catch(_){}})();</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>掌上唐师 - 唐山师范学院校园助手</title>
+    <meta name="description" content="掌上唐师是面向唐山师范学院在校生的校园 App：课表、成绩、学分绩点、校历、实时公交，直接连正方教务系统。免费下载安卓版与鸿蒙版。">
+    <meta name="keywords" content="掌上唐师,唐山师范学院,校园App,课表,成绩查询,实时公交,鸿蒙">
+    <link rel="canonical" href="https://tstc.pp.ua/zsts">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="掌上唐师 - 唐山师范学院校园助手">
+    <meta property="og:description" content="课表、成绩、学分绩点、校历、实时公交，一个 App 全部搞定。">
+    <meta property="og:url" content="https://tstc.pp.ua/zsts">
+
+    <link rel="preload" href="assets/fontawesome/fa.min.css?v=d108a2fe" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="assets/fontawesome/fa.min.css?v=d108a2fe"></noscript>
+    <link rel="preload" href="assets/style.css?v=2fd03287" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="assets/style.css?v=2fd03287"></noscript>
+
+    <link rel="icon" href="assets/images/bar-logo.jpg">
+
+    <style>
+/* ── 页面局部样式：只服务于 /zsts，避免污染全站 ── */
+.zp-wrap{max-width:860px;margin:0 auto;padding:0 20px}
+.zp-hero{padding:104px 0 40px;text-align:center}
+.zp-icon{width:88px;height:88px;border-radius:20px;display:block;margin:0 auto 20px;
+    box-shadow:0 8px 24px rgba(4,101,188,.18);background:#e8f1fc}
+.zp-hero h1{font-size:clamp(1.7rem,5vw,2.2rem);font-weight:700;color:#0465bc;margin:0 0 8px;letter-spacing:-.01em}
+.zp-hero .zp-sub{font-size:clamp(.95rem,2.4vw,1.05rem);color:#5a6273;margin:0 0 6px}
+.zp-hero .zp-meta{font-size:.82rem;color:#8b93a5;margin-top:14px}
+
+.zp-btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:28px 0 0}
+.zp-btn{display:inline-flex;align-items:center;gap:9px;padding:13px 26px;border-radius:12px;
+    font-size:.95rem;font-weight:600;text-decoration:none;transition:transform .15s,box-shadow .15s,background .15s;
+    border:none;cursor:pointer;line-height:1.2}
+.zp-btn:active{transform:scale(.98)}
+.zp-btn--primary{background:#0465bc;color:#fff;box-shadow:0 3px 12px rgba(4,101,188,.24)}
+.zp-btn--primary:hover{background:#0557a1;box-shadow:0 5px 18px rgba(4,101,188,.3)}
+.zp-btn--ghost{background:#fff;color:#0465bc;border:1.5px solid #d5e3f3}
+.zp-btn--ghost:hover{background:#f4f9ff;border-color:#a9c8ec}
+.zp-btn[disabled],.zp-btn--busy{opacity:.6;pointer-events:none}
+.zp-btn i{font-size:1.05em}
+
+/* 两个版本并列 */
+.zp-dls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media (max-width:640px){.zp-dls{grid-template-columns:1fr}}
+
+.zp-card{background:#fff;border-radius:16px;padding:22px 24px;margin:0 0 16px;
+    border:1px solid #e8eef5}
+.zp-card h2{font-size:1.05rem;font-weight:700;color:#141821;margin:0 0 14px;
+    display:flex;align-items:center;gap:9px}
+.zp-card h2 i{color:#0465bc;font-size:.95em}
+.zp-card p{font-size:.92rem;line-height:1.75;color:#4a5262;margin:0}
+
+/* 下载卡 */
+.zp-dl{background:#fff;border-radius:16px;padding:24px;border:1px solid #e8eef5;margin-bottom:16px}
+.zp-dl-head{display:flex;align-items:center;gap:13px;margin-bottom:16px}
+.zp-dl-head .zp-badge{width:46px;height:46px;border-radius:12px;background:#e8f1fc;
+    display:flex;align-items:center;justify-content:center;color:#0465bc;font-size:1.3rem;flex-shrink:0}
+.zp-dl-head .zp-badge--hm{background:#eef3f9;color:#3d4a5c}
+.zp-dl-head h3{font-size:1.02rem;font-weight:700;color:#141821;margin:0 0 3px}
+.zp-dl-head .zp-ver{font-size:.8rem;color:#8b93a5}
+.zp-dl-note{font-size:.82rem;line-height:1.7;color:#7a8296;margin-top:14px;
+    padding-top:14px;border-top:1px dashed #e6ecf4}
+.zp-dl-note strong{color:#5a6273}
+
+/* 特性 */
+.zp-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px}
+.zp-feat{background:#fff;border-radius:14px;padding:18px;border:1px solid #e8eef5}
+.zp-feat .zp-fi{width:36px;height:36px;border-radius:10px;background:#eef4fc;
+    display:flex;align-items:center;justify-content:center;color:#0465bc;font-size:.95rem;margin-bottom:11px}
+.zp-feat h4{font-size:.92rem;font-weight:700;color:#141821;margin:0 0 6px}
+.zp-feat p{font-size:.82rem;line-height:1.65;color:#7a8296;margin:0}
+
+/* 提示条 */
+.zp-tip{background:#fdf8ec;border:1px solid #f2e5c8;border-radius:12px;
+    padding:14px 16px;font-size:.84rem;line-height:1.7;color:#8a6d2f;margin-bottom:16px}
+.zp-tip i{color:#c99a2e;margin-right:6px}
+.zp-tip code{background:#f6edda;padding:1px 5px;border-radius:4px;font-size:.92em}
+
+/* 源码仓库 */
+.zp-repos{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.zp-repo{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:11px;
+    background:#f6f9fd;border:1px solid #e3ecf7;text-decoration:none;color:inherit;
+    transition:background .15s,border-color .15s,transform .15s}
+.zp-repo:hover{background:#eff6fe;border-color:#bcd6f0;transform:translateY(-1px)}
+.zp-repo>i{font-size:1.5rem;color:#0465bc;flex-shrink:0;width:26px;text-align:center}
+.zp-repo div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.zp-repo strong{font-size:.88rem;color:#141821;font-weight:700}
+.zp-repo span{font-size:.76rem;color:#8b93a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.zp-foot{margin:28px 0 0;text-align:center;font-size:.8rem;color:#9aa2b2;line-height:1.9}
+.zp-back{display:inline-flex;align-items:center;gap:6px;margin-top:26px;
+    font-size:.86rem;color:#68738a;text-decoration:none}
+.zp-back:hover{color:#0465bc}
+
+@media (max-width:520px){
+    .zp-hero{padding:88px 0 30px}
+    .zp-card,.zp-dl{padding:18px}
+    .zp-btn{padding:12px 20px;font-size:.9rem}
+}
+@media (prefers-color-scheme:dark){
+    html[data-theme="dark"] .zp-card,
+    html[data-theme="dark"] .zp-dl,
+    html[data-theme="dark"] .zp-feat{background:#1e232b;border-color:#2b323d}
+    html[data-theme="dark"] .zp-card h2,
+    html[data-theme="dark"] .zp-dl-head h3,
+    html[data-theme="dark"] .zp-feat h4{color:#e8ecf3}
+    html[data-theme="dark"] .zp-card p,
+    html[data-theme="dark"] .zp-feat p{color:#a7b0c0}
+    html[data-theme="dark"] .zp-tip{background:#2b2718;border-color:#413a22;color:#c9ab6a}
+    html[data-theme="dark"] .zp-repo{background:#252b35;border-color:#333b47}
+    html[data-theme="dark"] .zp-repo:hover{background:#2b3240;border-color:#41506a}
+    html[data-theme="dark"] .zp-repo strong{color:#e8ecf3}
+    html[data-theme="dark"] .zp-repo span{color:#8b93a5}
+}
+    </style>
+</head>
+<body class="font-inter bg-light text-dark">
+
+    <!-- 导航栏 -->
+    <nav id="mainNav" class="glass-effect fixed top-0 left-0 w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap justify-between items-center py-3">
+                <div class="flex items-center space-x-3">
+                    <img src="assets/images/bar-logo.jpg" alt="唐山师范学院吧" class="w-10 h-10 rounded-full border-2 border-primary">
+                    <a href="index.html" class="text-primary font-bold text-xl md:text-2xl">唐山师范学院吧</a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-700 hover:text-primary font-medium transition-colors">首页</a>
+                    <a href="news.html" class="text-gray-700 hover:text-primary font-medium transition-colors">新闻动态</a>
+                    <a href="bazhu.html" class="text-gray-700 hover:text-primary font-medium transition-colors">吧务组公示</a>
+                    <a href="zsts" class="text-primary font-medium transition-colors border-b-2 border-primary pb-0.5">掌上唐师</a>
+                    <a href="about.html" class="text-gray-700 hover:text-primary font-medium transition-colors">关于我们</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="menuBtn" class="text-gray-700 focus:outline-none">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobileMenu" class="md:hidden hidden bg-white border-t nav-shadow">
+            <div class="container mx-auto px-4 py-2 space-y-3">
+                <a href="index.html" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">首页</a>
+                <a href="news.html" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">新闻动态</a>
+                <a href="bazhu.html" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">吧务组公示</a>
+                <a href="zsts" class="block py-3 text-primary font-medium hover:bg-gray-100 px-3 rounded-lg">掌上唐师</a>
+                <a href="about.html" class="block py-3 text-gray-700 hover:bg-gray-100 px-3 rounded-lg">关于我们</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- 头部 -->
+        <section class="zp-hero">
+            <div class="zp-wrap">
+                <img src="assets/images/zsts-icon.png" alt="掌上唐师" class="zp-icon"
+                     onerror="this.style.display='none'">
+                <h1>掌上唐师</h1>
+                <p class="zp-sub">唐山师范学院校园助手</p>
+                <p class="zp-meta">课表 · 成绩 · 学分绩点 · 校历 · 实时公交</p>
+            </div>
+        </section>
+
+        <div class="zp-wrap">
+
+            <!-- 下载区：两个版本并列 -->
+            <div class="zp-dls">
+                <!-- 安卓版 -->
+                <div class="zp-dl">
+                    <div class="zp-dl-head">
+                        <div class="zp-badge"><i class="fa fa-android"></i></div>
+                        <div>
+                            <h3>安卓版</h3>
+                            <div class="zp-ver" id="ver-android">正在获取版本号…</div>
+                        </div>
+                    </div>
+                    <div class="zp-btnrow" style="margin-top:0">
+                        <a class="zp-btn zp-btn--primary" id="dl-android" href="zstangshi.apk" download>
+                            <i class="fa fa-download"></i>下载安装包
+                        </a>
+                    </div>
+                    <div class="zp-dl-note">
+                        小米、OPPO、vivo、三星等常规安卓手机。<br>
+                        <strong>系统要求</strong>：Android 8.0 及以上。
+                    </div>
+                </div>
+
+                <!-- 鸿蒙版 -->
+                <div class="zp-dl">
+                    <div class="zp-dl-head">
+                        <div class="zp-badge zp-badge--hm"><i class="fa fa-mobile"></i></div>
+                        <div>
+                            <h3>鸿蒙版</h3>
+                            <div class="zp-ver" id="ver-harmony">正在获取版本号…</div>
+                        </div>
+                    </div>
+                    <div class="zp-btnrow" style="margin-top:0">
+                        <a class="zp-btn zp-btn--primary" id="dl-harmony"
+                           href="https://github.com/Chanmingfei/zstangshi/releases/tag/harmony-v4.0.0" target="_blank" rel="noopener">
+                            <i class="fa fa-download"></i>下载安装包
+                        </a>
+                    </div>
+                    <div class="zp-dl-note">
+                        华为、荣耀等鸿蒙系统手机。<br>
+                        <strong>提示</strong>：若提示「签名冲突」，先卸载旧版再装。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 怎么知道自己是什么系统 -->
+            <div class="zp-tip">
+                <i class="fa fa-info-circle"></i>
+                不确定下哪个？打开手机 <strong>设置 → 关于手机</strong>：
+                看到「HarmonyOS 版本」或「鸿蒙版本」选<strong>鸿蒙版</strong>，
+                看到「Android 版本」或「MIUI / ColorOS / OriginOS」选<strong>安卓版</strong>。
+            </div>
+
+            <!-- 简介 -->
+            <div class="zp-card">
+                <h2><i class="fa fa-quote-left"></i>这是什么</h2>
+                <p>
+                    教务系统的网页版在手机上要横屏、缩小、反复缩放，查一次课表得滑三层菜单；
+                    最后一节课记不住在哪个教室；明天有没有课，还得翻教学周历对着算是第几周；
+                    门口的公交到哪了，只能打开地图 App 再搜一遍站名。
+                </p>
+                <p style="margin-top:12px">
+                    掌上唐师把这些直接摊平在首页：一早解锁就能看到今天第几门课、在哪个教室、还有多少分钟下课；
+                    通勤路上点开就能看到公交还有几站、几分钟到。
+                </p>
+            </div>
+
+            <!-- 功能 -->
+            <div class="zp-feats">
+                <div class="zp-feat">
+                    <div class="zp-fi"><i class="fa fa-calendar"></i></div>
+                    <h4>课表</h4>
+                    <p>四色课程块、单双周、冲突并排，点一下就能改</p>
+                </div>
+                <div class="zp-feat">
+                    <div class="zp-fi"><i class="fa fa-list-alt"></i></div>
+                    <h4>成绩与绩点</h4>
+                    <p>按学期筛选，含平时分与期末分明细</p>
+                </div>
+                <div class="zp-feat">
+                    <div class="zp-fi"><i class="fa fa-bus"></i></div>
+                    <h4>实时公交</h4>
+                    <p>附近站点、到站预测、首站发车时刻表</p>
+                </div>
+                <div class="zp-feat">
+                    <div class="zp-fi"><i class="fa fa-clock"></i></div>
+                    <h4>今日课程</h4>
+                    <p>正在上的课高亮，显示还有多久下课</p>
+                </div>
+                <div class="zp-feat">
+                    <div class="zp-fi"><i class="fa fa-graduation-cap"></i></div>
+                    <h4>校历与教务</h4>
+                    <p>教学周次、节假日、选课与推荐课表</p>
+                </div>
+                <div class="zp-feat">
+                    <div class="zp-fi"><i class="fa fa-moon"></i></div>
+                    <h4>深色模式</h4>
+                    <p>浅色、深色、跟随系统三种可选</p>
+                </div>
+            </div>
+
+            <!-- 说明 -->
+            <div class="zp-card">
+                <h2><i class="fa fa-info"></i>说明</h2>
+                <p>
+                    本 App 由个人开发，与学校官方无关。账号密码只用于登录学校教务系统，
+                    经过加密后直接提交给教务，不经过任何第三方服务器。
+                    课表、成绩等数据只存在你手机本地。
+                </p>
+                <p style="margin-top:12px">
+                    实时公交是唯一会联网查询的业务功能：只把定位坐标发给公交数据服务商用来查附近站点，
+                    不携带学号、姓名等任何身份信息。也可以拒绝定位，改用手动搜索线路。
+                </p>
+            </div>
+
+            <!-- 源码仓库 -->
+            <div class="zp-card">
+                <h2><i class="fa fa-code"></i>开源仓库</h2>
+                <p style="margin-bottom:16px">
+                    源码公开，欢迎 star、提 issue 或参与改进。
+                </p>
+                <div class="zp-repos">
+                    <a class="zp-repo" href="https://github.com/Chanmingfei/zstangshi" target="_blank" rel="noopener">
+                        <i class="fa fa-github"></i>
+                        <div>
+                            <strong>GitHub</strong>
+                            <span>Chanmingfei/zstangshi</span>
+                        </div>
+                    </a>
+                    <a class="zp-repo" href="https://gitee.com/mingfei123/zstangshi" target="_blank" rel="noopener">
+                        <i class="fa fa-code-fork"></i>
+                        <div>
+                            <strong>Gitee</strong>
+                            <span>mingfei123/zstangshi</span>
+                        </div>
+                    </a>
+                </div>
+                <p style="margin-top:16px">
+                    历史版本与更新日志：<a href="https://github.com/Chanmingfei/zstangshi/releases" target="_blank" rel="noopener"
+                        style="color:#0465bc">全部版本</a>
+                </p>
+            </div>
+
+            <div style="text-align:center">
+                <a href="index.html" class="zp-back"><i class="fa fa-angle-left"></i>返回官网首页</a>
+            </div>
+
+            <p class="zp-foot">
+                开发者：陈铭霏 · 唐山师范学院吧务组 荣誉出品<br>
+                非学校官方发布
+            </p>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-primary text-white py-10" style="margin-top:40px">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-6 md:mb-0">
+                    <img src="assets/images/bar-logo.jpg" alt="唐山师范学院吧" class="w-12 h-12 rounded-full border-2 border-white">
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold">唐山师范学院吧</h3>
+                        <p class="text-sm text-white/80">吧务组官网（非学校官方）</p>
+                    </div>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="mb-2">吧主信箱</p>
+                    <a href="mailto:bazhu@tstc.pp.ua" class="text-white hover:underline flex items-center justify-center md:justify-end">
+                        <i class="fa fa-envelope mr-2"></i>
+                        <span>bazhu@tstc.pp.ua</span>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-8 pt-6 border-t border-white/20 text-center text-sm text-white/70">
+                <p>© 2025 唐山师范学院吧务组（非学校官方） 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+(function () {
+    'use strict';
+
+    var REPO = 'Chanmingfei/zstangshi';
+    var API = 'https://api.github.com/repos/' + REPO + '/releases';
+    var CACHE_KEY = 'zsts_rel_cache_v1';
+    var CACHE_TTL = 30 * 60 * 1000;   // 30 分钟内复用缓存，避免频繁打 GitHub API
+
+    /* ---------- 工具 ---------- */
+    function fmtDate(iso) {
+        if (!iso) return '';
+        try {
+            var d = new Date(iso);
+            return d.getFullYear() + '-' +
+                   String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(d.getDate()).padStart(2, '0');
+        } catch (e) { return ''; }
+    }
+
+    function fmtSize(bytes) {
+        if (!bytes) return '';
+        var mb = bytes / 1024 / 1024;
+        return mb.toFixed(2) + ' MB';
+    }
+
+    function readCache() {
+        try {
+            var raw = localStorage.getItem(CACHE_KEY);
+            if (!raw) return null;
+            var obj = JSON.parse(raw);
+            if (!obj || !obj.at || Date.now() - obj.at > CACHE_TTL) return null;
+            return obj.data;
+        } catch (e) { return null; }
+    }
+
+    function writeCache(data) {
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data: data }));
+        } catch (e) { /* 隐私模式下写不进去，忽略 */ }
+    }
+
+    /* ---------- 从 release 列表里挑出两个平台的最新版 ---------- */
+    function pickLatest(releases) {
+        var out = { android: null, harmony: null };
+        releases.forEach(function (rel) {
+            if (rel.draft) return;
+            var tag = rel.tag_name || '';
+            var isHarmony = /^harmony/i.test(tag);
+            // 跳过 iOS 之类不存在的历史版本
+            if (!isHarmony && /^(ios|ios-native)/i.test(tag)) return;
+            if (!rel.assets || !rel.assets.length) return;
+
+            var apk = null;
+            for (var i = 0; i < rel.assets.length; i++) {
+                var a = rel.assets[i];
+                if (/\.apk$/i.test(a.name)) { apk = a; break; }
+            }
+            if (!apk) return;
+
+            var slot = isHarmony ? out.harmony : out.android;
+            if (!slot || new Date(rel.published_at) > new Date(slot.published_at)) {
+                out[isHarmony ? 'harmony' : 'android'] = {
+                    tag: tag,
+                    name: rel.name || tag,
+                    published_at: rel.published_at,
+                    url: apk.browser_download_url,
+                    size: apk.size,
+                    file: apk.name
+                };
+            }
+        });
+        return out;
+    }
+
+    /* ---------- 应用到页面 ---------- */
+    function apply(kind, info) {
+        var verEl = document.getElementById('ver-' + kind);
+        var btn = document.getElementById('dl-' + kind);
+        if (!info) {
+            if (verEl) verEl.textContent = '暂无可用版本';
+            return;
+        }
+        var bits = [];
+        bits.push(info.tag);
+        if (info.size) bits.push(fmtSize(info.size));
+        var d = fmtDate(info.published_at);
+        if (d) bits.push(d);
+        if (verEl) verEl.textContent = bits.join(' · ');
+
+        if (btn) {
+            btn.setAttribute('href', info.url);
+            btn.setAttribute('download', '');
+            btn.removeAttribute('target');
+            btn.removeAttribute('rel');
+        }
+    }
+
+    function fallback() {
+        // 拿不到 GitHub 数据时：安卓版用站内托管的 APK，鸿蒙版指向 release 页
+        var a = document.getElementById('ver-android');
+        if (a) a.textContent = '点击下载最新版';
+        var h = document.getElementById('ver-harmony');
+        if (h) h.textContent = '点击前往下载页';
+    }
+
+    /* ---------- 主流程 ---------- */
+    function load() {
+        var cached = readCache();
+        if (cached) {
+            apply('android', cached.android);
+            apply('harmony', cached.harmony);
+            return;
+        }
+
+        if (!window.fetch) { fallback(); return; }
+
+        var ctrl = window.AbortController ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 8000) : null;
+
+        fetch(API + '?per_page=20', {
+            headers: { 'Accept': 'application/vnd.github+json' },
+            signal: ctrl ? ctrl.signal : undefined
+        }).then(function (r) {
+            if (timer) clearTimeout(timer);
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        }).then(function (list) {
+            if (!Array.isArray(list)) throw new Error('bad payload');
+            var picked = pickLatest(list);
+            writeCache(picked);
+            apply('android', picked.android);
+            apply('harmony', picked.harmony);
+        }).catch(function () {
+            if (timer) clearTimeout(timer);
+            fallback();
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', load);
+    } else {
+        load();
+    }
+})();
+    </script>
+
+    <script defer src="assets/main.js?v=0e47c21e"></script>
+</body>
+</html>

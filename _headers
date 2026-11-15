@@ -29,6 +29,12 @@
   Cache-Control: public, max-age=300, s-maxage=300
 /dzl
   Cache-Control: public, max-age=300, s-maxage=300
+/zsts
+  Cache-Control: public, max-age=300, s-maxage=300
+
+# 「掌上唐师」App 图标：不变，长缓存
+/assets/images/zsts-icon.png*
+  Cache-Control: public, max-age=86400, s-maxage=86400
 
 # 样式表：基本不变，长缓存保速度
 /assets/style.css*
