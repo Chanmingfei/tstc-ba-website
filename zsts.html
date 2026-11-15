@@ -104,23 +104,63 @@
     .zp-card,.zp-dl{padding:17px}
     .zp-btn{padding:11px 19px;font-size:.88rem}
 }
-@media (prefers-color-scheme:dark){
-    html[data-theme="dark"] .zp-card,
-    html[data-theme="dark"] .zp-dl,
-    html[data-theme="dark"] .zp-feat{background:#1e232b;border-color:#2b323d}
-    html[data-theme="dark"] .zp-card h2,
-    html[data-theme="dark"] .zp-dl-head h3,
-    html[data-theme="dark"] .zp-feat h4{color:#e8ecf3}
-    html[data-theme="dark"] .zp-card p,
-    html[data-theme="dark"] .zp-feat p{color:#a7b0c0}
-    html[data-theme="dark"] .zp-tip{background:#2b2718;border-color:#413a22;color:#c9ab6a}
-    html[data-theme="dark"] .zp-repo{background:#252b35;border-color:#333b47}
-    html[data-theme="dark"] .zp-repo:hover{background:#2b3240;border-color:#41506a}
-    html[data-theme="dark"] .zp-repo strong{color:#e8ecf3}
-    html[data-theme="dark"] .zp-badge{background:#22303f}
-    html[data-theme="dark"] .zp-badge--hm{background:#2b3340;color:#c3ccda}
-    html[data-theme="dark"] .zp-fi{background:#22303f}
+/* ── 夜间模式：跟随站点的 data-theme 属性（不用 prefers-color-scheme，
+      因为站点是「手动切换 + 默认跟随系统」，只写媒体查询会导致
+      「系统浅色 + 手动切夜间」时卡片不变色）。配色取站点自己的深色变量。 ── */
+[data-theme=dark] .zp-card,
+[data-theme=dark] .zp-dl,
+[data-theme=dark] .zp-feat{
+    background:var(--surface,#181d27);
+    border-color:var(--border,#2f3747);
 }
+[data-theme=dark] .zp-card h2,
+[data-theme=dark] .zp-dl-head h3,
+[data-theme=dark] .zp-feat h4{color:var(--text-strong,#f5f7fa)}
+[data-theme=dark] .zp-card p{color:var(--text,#e6e8ec)}
+[data-theme=dark] .zp-feat p{color:var(--text-muted,#97a0b0)}
+
+/* 卡片内的细线、次要文字 */
+[data-theme=dark] .zp-dl-note{
+    color:var(--text-muted,#97a0b0);
+    border-top-color:var(--border,#2f3747);
+}
+[data-theme=dark] .zp-dl-note strong{color:var(--text,#e6e8ec)}
+[data-theme=dark] .zp-dl-head .zp-ver{color:var(--text-muted,#97a0b0)}
+
+/* 卡片里的小图标底 */
+[data-theme=dark] .zp-badge{
+    background:rgba(77,148,232,.15);
+    color:var(--primary,#4d94e8);
+}
+[data-theme=dark] .zp-badge--hm{
+    background:rgba(255,255,255,.08);
+    color:var(--text-muted,#97a0b0);
+}
+[data-theme=dark] .zp-fi{
+    background:rgba(77,148,232,.15);
+    color:var(--primary,#4d94e8);
+}
+
+/* 卡片里的仓库条目 */
+[data-theme=dark] .zp-repo{
+    background:var(--surface-2,#222a38);
+    border-color:var(--border,#2f3747);
+}
+[data-theme=dark] .zp-repo:hover{
+    background:#28313f;
+    border-color:#3d4859;
+}
+[data-theme=dark] .zp-repo strong{color:var(--text-strong,#f5f7fa)}
+[data-theme=dark] .zp-repo span{color:var(--text-muted,#97a0b0)}
+[data-theme=dark] .zp-repo>svg{color:var(--primary,#4d94e8)}
+
+/* 提示条（同样是卡片式容器） */
+[data-theme=dark] .zp-tip{
+    background:rgba(201,154,46,.12);
+    border-color:rgba(201,154,46,.3);
+    color:#d8bb7a;
+}
+[data-theme=dark] .zp-tip svg{color:#d8bb7a}
     </style>
 </head>
 <body class="font-inter bg-light text-dark">
