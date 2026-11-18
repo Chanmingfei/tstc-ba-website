@@ -23,7 +23,7 @@
 
     <style>
 /* ── /zsts 页面专用样式（全部内联，不依赖外部样式表） ── */
-.zp-wrap{max-width:860px;margin:0 auto;padding:0 20px}
+.zp-wrap{max-width:860px;margin:0 auto;padding:0 20px;box-sizing:border-box;width:100%}
 .zp-hero{padding:100px 0 36px;text-align:center}
 .zp-icon{width:84px;height:84px;border-radius:19px;display:block;margin:0 auto 18px;
     box-shadow:0 6px 20px rgba(4,101,188,.16);background:#e8f1fc}
@@ -83,6 +83,18 @@
 .zp-tip strong{font-weight:600}
 
 /* 源码仓库 */
+/* 截图展示 —— 4 张并排，移动端 2 列；图片懒加载不拖首屏 */
+.zp-shots{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:15px;
+    width:100%;box-sizing:border-box}
+.zp-shot{margin:0;overflow:hidden;border-radius:14px;background:#eef3f9;
+    border:1px solid #e8eef5;min-width:0}
+.zp-shot img{display:block;width:100%;height:auto;max-width:100%}
+.zp-shot figcaption{padding:9px 4px;text-align:center;font-size:.76rem;
+    color:#68738a;font-weight:500}
+@media (max-width:680px){
+    .zp-shots{grid-template-columns:repeat(2,1fr);gap:10px}
+}
+
 .zp-repos{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:11px}
 .zp-repo{display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:10px;
     background:#f6f9fd;border:1px solid #e3ecf7;text-decoration:none;color:inherit;
@@ -103,6 +115,10 @@
     .zp-hero{padding:84px 0 28px}
     .zp-card,.zp-dl{padding:17px}
     .zp-btn{padding:11px 19px;font-size:.88rem}
+    .zp-wrap{padding:0 16px}
+    .zp-hero .zp-meta{font-size:.74rem;line-height:1.7}
+    .zp-tip{padding:12px 13px;font-size:.79rem}
+    .zp-shot figcaption{font-size:.7rem}
 }
 /* ── 夜间模式：跟随站点的 data-theme 属性（不用 prefers-color-scheme，
       因为站点是「手动切换 + 默认跟随系统」，只写媒体查询会导致
@@ -153,6 +169,13 @@
 [data-theme=dark] .zp-repo strong{color:var(--text-strong,#f5f7fa)}
 [data-theme=dark] .zp-repo span{color:var(--text-muted,#97a0b0)}
 [data-theme=dark] .zp-repo>svg{color:var(--primary,#4d94e8)}
+
+/* 截图卡片 */
+[data-theme=dark] .zp-shot{
+    background:var(--surface-2,#222a38);
+    border-color:var(--border,#2f3747);
+}
+[data-theme=dark] .zp-shot figcaption{color:var(--text-muted,#97a0b0)}
 
 /* 提示条（同样是卡片式容器） */
 [data-theme=dark] .zp-tip{
@@ -213,6 +236,13 @@
                 <circle cx="6.5" cy="5.5" r="2.2"/><circle cx="6.5" cy="18.5" r="2.2"/><circle cx="17.5" cy="9" r="2.2"/>
                 <path d="M6.5 7.7v8.6"/><path d="M15.3 9H10a3.5 3.5 0 0 0-3.5 3.5"/>
             </g>
+            <g id="i-live" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2.5" y="6.5" width="19" height="11" rx="5.5"/>
+                <line x1="7" y1="10.5" x2="13" y2="10.5"/>
+                <line x1="7" y1="13.8" x2="10.5" y2="13.8"/>
+                <circle cx="17" cy="12" r="2.4"/>
+                <line x1="17" y1="11" x2="17" y2="12"/>
+            </g>
             <g id="i-back" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14.5 5.5 8 12l6.5 6.5"/>
             </g>
@@ -261,7 +291,7 @@
                      width="84" height="84" onerror="this.style.display='none'">
                 <h1>掌上唐师</h1>
                 <p class="zp-sub">唐山师范学院校园助手</p>
-                <p class="zp-meta">课表 · 成绩 · 学分绩点 · 校历 · 实时公交</p>
+                <p class="zp-meta">课表 · 成绩 · 学分绩点 · 校历 · 实时公交 · 课程实况窗</p>
             </div>
         </section>
 
@@ -284,7 +314,7 @@
                         </a>
                     </div>
                     <div class="zp-dl-note">
-                        小米、OPPO、vivo、三星等常规安卓手机。<br>
+                        小米、OPPO、vivo、三星、一加等常规安卓手机。<br>
                         <strong>系统要求</strong>：Android 8.0 及以上。
                     </div>
                 </div>
@@ -300,13 +330,13 @@
                     </div>
                     <div class="zp-btnrow">
                         <a class="zp-btn zp-btn--primary" id="dl-harmony"
-                           href="https://github.com/Chanmingfei/zstangshi/releases/tag/harmony-v4.0.0" target="_blank" rel="noopener">
+                           href="https://github.com/Chanmingfei/zstangshi/releases/tag/harmony-v4.1.0" target="_blank" rel="noopener">
                             <svg viewBox="0 0 24 24"><use href="#i-download"/></svg>下载安装包
                         </a>
                     </div>
                     <div class="zp-dl-note">
-                        华为、荣耀等鸿蒙系统手机。<br>
-                        <strong>提示</strong>：若提示「签名冲突」，先卸载旧版再装。
+                        华为、荣耀等鸿蒙系统手机，桌面名「掌上唐师·鸿蒙版」。<br>
+                        <strong>提示</strong>：与安卓版签名冲突，需先卸载旧版再装。
                     </div>
                 </div>
             </div>
@@ -321,6 +351,26 @@
                 </div>
             </div>
 
+            <!-- 截图 -->
+            <div class="zp-shots">
+                <figure class="zp-shot">
+                    <img src="/assets/images/zsts/01-home.jpg" alt="首页" width="440" height="968" loading="lazy" decoding="async">
+                    <figcaption>首页</figcaption>
+                </figure>
+                <figure class="zp-shot">
+                    <img src="/assets/images/zsts/02-timetable.jpg" alt="课表" width="440" height="968" loading="lazy" decoding="async">
+                    <figcaption>课表</figcaption>
+                </figure>
+                <figure class="zp-shot">
+                    <img src="/assets/images/zsts/03-grades.jpg" alt="成绩" width="440" height="968" loading="lazy" decoding="async">
+                    <figcaption>成绩</figcaption>
+                </figure>
+                <figure class="zp-shot">
+                    <img src="/assets/images/zsts/05-bus.jpg" alt="实时公交" width="440" height="968" loading="lazy" decoding="async">
+                    <figcaption>实时公交</figcaption>
+                </figure>
+            </div>
+
             <!-- 简介 -->
             <div class="zp-card">
                 <h2><svg viewBox="0 0 24 24"><use href="#i-quote"/></svg>这是什么</h2>
@@ -333,6 +383,9 @@
                     掌上唐师把这些直接摊平在首页：一早解锁就能看到今天第几门课、在哪个教室、还有多少分钟下课；
                     通勤路上点开就能看到公交还有几站、几分钟到。
                 </p>
+                <p>
+                    它没有开屏广告，没有信息流，不申请与功能无关的权限。
+                </p>
             </div>
 
             <!-- 功能 -->
@@ -340,7 +393,7 @@
                 <div class="zp-feat">
                     <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-calendar"/></svg></div>
                     <h4>课表</h4>
-                    <p>四色课程块、单双周、冲突并排，点一下就能改</p>
+                    <p>四色课程块、单双周、冲突并排，点击即可编辑</p>
                 </div>
                 <div class="zp-feat">
                     <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-chart"/></svg></div>
@@ -353,9 +406,9 @@
                     <p>附近站点、到站预测、首站发车时刻表</p>
                 </div>
                 <div class="zp-feat">
-                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-clock"/></svg></div>
-                    <h4>今日课程</h4>
-                    <p>正在上的课高亮，显示还有多久下课</p>
+                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-live"/></svg></div>
+                    <h4>课程实况窗</h4>
+                    <p>课前提醒推上系统胶囊，上课后秒级倒计时</p>
                 </div>
                 <div class="zp-feat">
                     <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-cap"/></svg></div>
@@ -369,6 +422,23 @@
                 </div>
             </div>
 
+            <!-- 实况窗详解 -->
+            <div class="zp-card">
+                <h2><svg viewBox="0 0 24 24"><use href="#i-live"/></svg>课程实况窗</h2>
+                <p>
+                    课前几分钟，下一节课会出现在手机顶部的系统胶囊里 ——
+                    ColorOS 流体云、小米焦点通知、鸿蒙实况窗、Android 16 实况通知都支持。
+                </p>
+                <p>
+                    收起时显示「课程名 · 地点」，上课后自动切成倒计时；
+                    课间、下一节按边界时刻自动切换，不常驻后台，也不耗电。
+                    划掉即「本次不再提醒」，到下课时自动失效。
+                </p>
+                <p>
+                    提前提醒时长可以在「我的 → 课程实况窗」里调，效果先在设置页预览。
+                </p>
+            </div>
+
             <!-- 说明 -->
             <div class="zp-card">
                 <h2><svg viewBox="0 0 24 24"><use href="#i-info"/></svg>说明</h2>
@@ -380,6 +450,24 @@
                 <p>
                     实时公交是唯一会联网查询的业务功能：只把定位坐标发给公交数据服务商用来查附近站点，
                     不携带学号、姓名等任何身份信息。也可以拒绝定位，改用手动搜索线路。
+                </p>
+                <p>
+                    学工系统走应用内网页打开原页面，不解析、不留存任何数据。
+                    安装时若提示「未知来源」，是因为调试签名、未上架应用商店，属正常现象。
+                </p>
+            </div>
+
+            <!-- 版本对比 -->
+            <div class="zp-card">
+                <h2><svg viewBox="0 0 24 24"><use href="#i-info"/></svg>两个版本的区别</h2>
+                <p style="margin-bottom:12px">功能对齐，实现各自独立。鸿蒙专版按鸿蒙的能力边界单独改造。</p>
+                <p>
+                    <strong>安卓版</strong> 4.0.5 · 约 3.55 MB · 桌面名「掌上唐师」<br>
+                    <strong>鸿蒙版</strong> 4.1.0 · 约 1.66 MB · 桌面名「掌上唐师·鸿蒙版」
+                </p>
+                <p>
+                    两版包名相同但签名不同，<strong>不能互相覆盖安装</strong>。
+                    换版本前需要先卸载旧版，这会清掉本地课表与登录状态，装好后重新登录一次即可。
                 </p>
             </div>
 

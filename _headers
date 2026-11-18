@@ -36,6 +36,10 @@
 /assets/images/zsts-icon.png*
   Cache-Control: public, max-age=86400, s-maxage=86400
 
+# 「掌上唐师」页面截图：内容固定，长缓存
+/assets/images/zsts/*
+  Cache-Control: public, max-age=604800, s-maxage=604800
+
 # 样式表：基本不变，长缓存保速度
 /assets/style.css*
   Cache-Control: public, max-age=86400, s-maxage=86400
