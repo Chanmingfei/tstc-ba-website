@@ -36,7 +36,11 @@
 /assets/images/zsts-icon.png*
   Cache-Control: public, max-age=86400, s-maxage=86400
 
-# 「掌上唐师」页面截图：内容固定，长缓存
+# 导航栏小尺寸 logo（96px，替代 847KB 原图）
+/assets/images/bar-logo-sm.jpg*
+  Cache-Control: public, max-age=604800, s-maxage=604800
+
+# 「掌上唐师」页面截图/海报：内容固定，长缓存
 /assets/images/zsts/*
   Cache-Control: public, max-age=604800, s-maxage=604800
 
