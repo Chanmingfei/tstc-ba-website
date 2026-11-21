@@ -303,7 +303,12 @@ h2{font-size:1.08rem;font-weight:700;text-align:center;letter-spacing:-.01em}
     var ver = document.getElementById('v-' + kind);
     var btn = document.getElementById('dl-' + kind);
     if (!info || !info.size) return;
-    if (ver) ver.textContent = 'v' + info.tag.replace(/^harmony-/i, '') + ' · ' + mb(info.size);
+    if (ver) {
+      // tag 本身已带 v 前缀（v4.0.7 / harmony-v4.1.2），
+      // 先去掉 harmony- 前缀，再确保只有一个 v
+      var tag = String(info.tag || '').replace(/^harmony-/i, '').replace(/^v/i, '');
+      ver.textContent = 'v' + tag + ' · ' + mb(info.size);
+    }
     if (btn) {
       btn.href = info.url;
       btn.setAttribute('download', '');
