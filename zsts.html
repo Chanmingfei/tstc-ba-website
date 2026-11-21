@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>掌上唐师 - 唐山师范学院校园助手</title>
-    <meta name="description" content="掌上唐师是面向唐山师范学院在校生的校园 App：课表、成绩、学分绩点、校历、实时公交，直接连正方教务系统。免费下载安卓版与鸿蒙版。">
-    <meta name="keywords" content="掌上唐师,唐山师范学院,校园App,课表,成绩查询,实时公交,鸿蒙">
+    <meta name="description" content="掌上唐师是面向唐山师范学院在校生的校园 App：课表、成绩、学分绩点、校历、实时公交、课程实况窗，直接连正方教务系统。免费下载安卓版与鸿蒙版。">
+    <meta name="keywords" content="掌上唐师,唐山师范学院,校园App,课表,成绩查询,实时公交,鸿蒙,课程实况窗">
     <link rel="canonical" href="https://tstc.pp.ua/zsts">
 
     <meta property="og:type" content="website">
@@ -14,193 +14,201 @@
     <meta property="og:description" content="课表、成绩、学分绩点、校历、实时公交，一个 App 全部搞定。">
     <meta property="og:url" content="https://tstc.pp.ua/zsts">
 
-    <!-- 样式：用普通 link，不用 preload+onload 换 rel 的写法。
-         后者在资源命中 HTTP 缓存时 onload 可能不触发，rel 无法切换成 stylesheet，
-         表现为「整站样式不加载」。普通 link 没有任何时序依赖。 -->
+    <!-- 样式：普通 link，不用 preload+onload 换 rel（命中缓存时 onload 可能不触发，会导致整站无样式） -->
     <link rel="stylesheet" href="/assets/fontawesome/fa.min.css?v=d108a2fe">
     <link rel="stylesheet" href="/assets/style.css?v=2fd03287">
     <link rel="icon" href="/assets/images/zsts-icon.png">
 
     <style>
-/* ── /zsts 页面专用样式（全部内联，不依赖外部样式表） ── */
-.zp-wrap{max-width:860px;margin:0 auto;padding:0 20px;box-sizing:border-box;width:100%}
-.zp-hero{padding:100px 0 36px;text-align:center}
-.zp-icon{width:84px;height:84px;border-radius:19px;display:block;margin:0 auto 18px;
-    box-shadow:0 6px 20px rgba(4,101,188,.16);background:#e8f1fc}
-.zp-hero h1{font-size:clamp(1.65rem,5vw,2.1rem);font-weight:700;color:#0465bc;margin:0 0 7px;letter-spacing:-.01em}
-.zp-hero .zp-sub{font-size:clamp(.94rem,2.4vw,1.02rem);color:#5a6273;margin:0 0 5px}
-.zp-hero .zp-meta{font-size:.81rem;color:#8b93a5;margin-top:13px}
+/* ══════════════════════════════════════════════
+   /zsts 落地页
+   设计目标：首屏 3 秒内看懂「这是什么、下哪个」，
+   往下滚才加载截图，不拖慢第一屏。
+   ══════════════════════════════════════════════ */
+.zp{max-width:920px;margin:0 auto;padding:0 20px;box-sizing:border-box;width:100%}
 
-.zp-btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
-.zp-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:11px;
-    font-size:.93rem;font-weight:600;text-decoration:none;transition:transform .15s,box-shadow .15s,background .15s;
-    border:none;cursor:pointer;line-height:1.2}
-.zp-btn:active{transform:scale(.98)}
-.zp-btn--primary{background:#0465bc;color:#fff;box-shadow:0 3px 12px rgba(4,101,188,.22)}
-.zp-btn--primary:hover{background:#0557a1;box-shadow:0 5px 16px rgba(4,101,188,.28)}
-.zp-btn svg{width:16px;height:16px;flex-shrink:0}
-.zp-btn[disabled],.zp-btn--busy{opacity:.6;pointer-events:none}
+/* ── 首屏 ── */
+.zp-hero{padding:104px 0 44px;text-align:center;position:relative}
+.zp-appicon{width:96px;height:96px;border-radius:22px;display:block;margin:0 auto 18px;
+    box-shadow:0 10px 28px rgba(4,101,188,.18);background:#e8f1fc}
+.zp-name{font-size:clamp(1.8rem,5.2vw,2.35rem);font-weight:700;color:#0465bc;
+    margin:0 0 8px;letter-spacing:-.02em;line-height:1.2}
+.zp-tagline{font-size:clamp(.95rem,2.5vw,1.08rem);color:#5a6273;margin:0 0 4px;font-weight:500}
+.zp-feature-line{font-size:clamp(.8rem,2.1vw,.86rem);color:#8b93a5;margin:14px 0 0;line-height:1.8}
 
-/* 两个版本并列 */
-.zp-dls{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px}
-@media (max-width:640px){.zp-dls{grid-template-columns:1fr}}
+/* ── 下载按钮组 ── */
+.zp-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:30px 0 0}
+.zp-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:13px;
+    font-size:.94rem;font-weight:600;text-decoration:none;cursor:pointer;border:none;
+    transition:transform .15s,box-shadow .15s,background .15s;line-height:1.25;
+    -webkit-tap-highlight-color:transparent}
+.zp-btn:active{transform:scale(.985)}
+.zp-btn svg{width:19px;height:19px;flex-shrink:0}
+.zp-btn-primary{background:#0465bc;color:#fff;box-shadow:0 4px 14px rgba(4,101,188,.26)}
+.zp-btn-primary:hover{background:#0557a1;box-shadow:0 6px 20px rgba(4,101,188,.32)}
+.zp-btn-ghost{background:#fff;color:#0465bc;border:1.5px solid #d5e3f3}
+.zp-btn-ghost:hover{background:#f4f9ff;border-color:#a9c8ec}
+.zp-btn small{display:block;font-size:.72rem;font-weight:400;opacity:.82;margin-top:2px}
+.zp-btn .zp-btn-text{display:flex;flex-direction:column;align-items:flex-start;line-height:1.3}
 
-.zp-card{background:#fff;border-radius:15px;padding:21px 23px;margin:0 0 15px;border:1px solid #e8eef5}
-.zp-card h2{font-size:1.02rem;font-weight:700;color:#141821;margin:0 0 13px;
-    display:flex;align-items:center;gap:8px}
-.zp-card h2 svg{width:17px;height:17px;color:#0465bc;flex-shrink:0}
-.zp-card p{font-size:.91rem;line-height:1.75;color:#4a5262;margin:0}
-.zp-card p+p{margin-top:11px}
+/* 版本说明小字 */
+.zp-under{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
+    margin:18px 0 0;font-size:.78rem;color:#9aa2b2}
+.zp-under span{display:inline-flex;align-items:center;gap:5px}
+.zp-under svg{width:13px;height:13px;opacity:.7}
 
-/* 下载卡 */
-.zp-dl{background:#fff;border-radius:15px;padding:22px;border:1px solid #e8eef5}
-.zp-dl-head{display:flex;align-items:center;gap:12px;margin-bottom:15px}
-.zp-badge{width:44px;height:44px;border-radius:11px;background:#e8f1fc;
-    display:flex;align-items:center;justify-content:center;color:#0465bc;flex-shrink:0}
-.zp-badge svg{width:21px;height:21px}
-.zp-badge--hm{background:#eef3f9;color:#3d4a5c}
-.zp-dl-head h3{font-size:1rem;font-weight:700;color:#141821;margin:0 0 3px}
-.zp-dl-head .zp-ver{font-size:.78rem;color:#8b93a5}
-.zp-dl .zp-btnrow{margin-top:0;justify-content:flex-start}
-.zp-dl-note{font-size:.79rem;line-height:1.7;color:#7a8296;margin-top:13px;
-    padding-top:13px;border-top:1px dashed #e6ecf4}
-.zp-dl-note strong{color:#5a6273;font-weight:600}
+/* ── 通用区块 ── */
+.zp-section{padding:40px 0 8px}
+.zp-h2{font-size:1.16rem;font-weight:700;color:#141821;margin:0 0 6px;text-align:center;
+    letter-spacing:-.01em}
+.zp-sub{font-size:.86rem;color:#8b93a5;margin:0 0 24px;text-align:center}
 
-/* 特性 */
-.zp-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;margin-bottom:15px}
-.zp-feat{background:#fff;border-radius:13px;padding:17px;border:1px solid #e8eef5}
-.zp-fi{width:34px;height:34px;border-radius:9px;background:#eef4fc;
-    display:flex;align-items:center;justify-content:center;color:#0465bc;margin-bottom:10px}
-.zp-fi svg{width:17px;height:17px}
-.zp-feat h4{font-size:.9rem;font-weight:700;color:#141821;margin:0 0 5px}
-.zp-feat p{font-size:.8rem;line-height:1.65;color:#7a8296;margin:0}
-
-/* 提示条 */
-.zp-tip{background:#fdf8ec;border:1px solid #f2e5c8;border-radius:11px;
-    padding:13px 15px;font-size:.83rem;line-height:1.7;color:#8a6d2f;margin-bottom:15px;
-    display:flex;gap:9px;align-items:flex-start}
-.zp-tip svg{width:16px;height:16px;color:#c99a2e;flex-shrink:0;margin-top:2px}
-.zp-tip strong{font-weight:600}
-
-/* 源码仓库 */
-/* 截图展示 —— 4 张并排，移动端 2 列；图片懒加载不拖首屏 */
-.zp-shots{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:15px;
-    width:100%;box-sizing:border-box}
-.zp-shot{margin:0;overflow:hidden;border-radius:14px;background:#eef3f9;
-    border:1px solid #e8eef5;min-width:0}
-.zp-shot img{display:block;width:100%;height:auto;max-width:100%}
-.zp-shot figcaption{padding:9px 4px;text-align:center;font-size:.76rem;
+/* 截图区：外层不受 .zp 内边距限制，可贴屏幕边缘滑动 */
+.zp-shots-wrap{margin:0 auto;max-width:920px;position:relative}
+.zp-shots{display:flex;gap:14px;overflow-x:auto;padding:4px 20px 16px;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;scroll-padding-left:20px}
+.zp-shots::-webkit-scrollbar{height:6px}
+.zp-shots::-webkit-scrollbar-thumb{background:#d5dce8;border-radius:3px}
+.zp-shots::-webkit-scrollbar-track{background:transparent}
+.zp-shot{flex:0 0 auto;width:200px;scroll-snap-align:start;margin:0}
+.zp-shot img{display:block;width:100%;height:auto;border-radius:16px;
+    border:1px solid #e4eaf3;background:#eef3f9;
+    box-shadow:0 4px 16px rgba(20,24,33,.07)}
+.zp-shot figcaption{padding:10px 2px 0;text-align:center;font-size:.78rem;
     color:#68738a;font-weight:500}
-@media (max-width:680px){
-    .zp-shots{grid-template-columns:repeat(2,1fr);gap:10px}
-}
 
-.zp-repos{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:11px}
-.zp-repo{display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:10px;
+/* ── 功能网格 ── */
+.zp-feats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.zp-feat{background:#fff;border:1px solid #e8eef5;border-radius:16px;padding:20px}
+.zp-fi{width:38px;height:38px;border-radius:11px;background:#eef4fc;
+    display:flex;align-items:center;justify-content:center;color:#0062cc;margin-bottom:12px}
+.zp-fi svg{width:19px;height:19px}
+.zp-feat h3{font-size:.94rem;font-weight:700;color:#141821;margin:0 0 6px}
+.zp-feat p{font-size:.82rem;line-height:1.65;color:#7a8296;margin:0}
+
+/* ── 亮点大图 ──
+   两栏等宽，图片与文字各自居中，左右两块的版式节奏一致 */
+.zp-spot{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-items:center;
+    background:#fff;border:1px solid #e8eef5;border-radius:20px;padding:28px;
+    margin-bottom:16px;overflow:hidden}
+.zp-spot:last-child{margin-bottom:0}
+.zp-spot-img{display:flex;justify-content:center}
+.zp-spot-img img{display:block;width:100%;max-width:320px;height:auto;border-radius:14px;
+    border:1px solid #e4eaf3}
+.zp-spot-body h3{font-size:1.05rem;font-weight:700;color:#141821;margin:0 0 10px}
+.zp-spot-body p{font-size:.87rem;line-height:1.75;color:#5a6273;margin:0 0 10px}
+.zp-spot-body p:last-child{margin-bottom:0}
+.zp-spot-body .zp-tag{display:inline-block;font-size:.72rem;font-weight:600;
+    color:#0062cc;background:#e8f1fc;padding:3px 10px;border-radius:7px;margin-bottom:10px}
+/* 反向：文字在左、图在右 */
+.zp-spot.rev .zp-spot-img{order:2}
+
+/* ── 提示条 ── */
+.zp-tip{background:#fdf8ec;border:1px solid #f2e5c8;border-radius:13px;
+    padding:14px 16px;font-size:.83rem;line-height:1.75;color:#8a6d2f;
+    display:flex;gap:9px;align-items:flex-start;margin-bottom:16px}
+.zp-tip svg{width:16px;height:16px;color:#c99a2e;flex-shrink:0;margin-top:2px}
+
+/* ── 信息行 ── */
+.zp-rows{background:#fff;border:1px solid #e8eef5;border-radius:18px;overflow:hidden}
+.zp-row{display:flex;padding:16px 20px;font-size:.85rem;align-items:flex-start}
+.zp-row+.zp-row{border-top:1px solid #eef2f8}
+.zp-row-k{width:96px;flex-shrink:0;color:#8b93a5}
+.zp-row-v{flex:1;color:#4a5262;line-height:1.7}
+
+/* ── 仓库 ── */
+.zp-repos{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px}
+.zp-repo{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;
     background:#f6f9fd;border:1px solid #e3ecf7;text-decoration:none;color:inherit;
     transition:background .15s,border-color .15s,transform .15s}
 .zp-repo:hover{background:#eff6fe;border-color:#bcd6f0;transform:translateY(-1px)}
-.zp-repo>svg{width:21px;height:21px;color:#0465bc;flex-shrink:0}
+.zp-repo>svg{width:22px;height:22px;color:#0465bc;flex-shrink:0}
 .zp-repo div{display:flex;flex-direction:column;gap:2px;min-width:0}
-.zp-repo strong{font-size:.86rem;color:#141821;font-weight:700}
+.zp-repo strong{font-size:.87rem;color:#141821;font-weight:700}
 .zp-repo span{font-size:.74rem;color:#8b93a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.zp-foot{margin:26px 0 0;text-align:center;font-size:.79rem;color:#9aa2b2;line-height:1.9}
-.zp-back{display:inline-flex;align-items:center;gap:5px;margin-top:24px;
+/* ── 页脚 ── */
+.zp-foot{margin:44px 0 0;text-align:center;font-size:.79rem;color:#9aa2b2;line-height:1.9}
+.zp-back{display:inline-flex;align-items:center;gap:5px;margin-top:26px;
     font-size:.85rem;color:#68738a;text-decoration:none}
 .zp-back:hover{color:#0465bc}
 .zp-back svg{width:14px;height:14px}
+.zp-bottom{height:40px}
 
+/* ── 响应式 ── */
+@media (max-width:720px){
+    .zp-spot,
+    .zp-spot.rev{grid-template-columns:1fr;gap:16px;padding:18px}
+    .zp-spot.rev .zp-spot-img{order:0}
+    .zp-shot{width:158px}
+}
 @media (max-width:520px){
-    .zp-hero{padding:84px 0 28px}
-    .zp-card,.zp-dl{padding:17px}
-    .zp-btn{padding:11px 19px;font-size:.88rem}
-    .zp-wrap{padding:0 16px}
-    .zp-hero .zp-meta{font-size:.74rem;line-height:1.7}
-    .zp-tip{padding:12px 13px;font-size:.79rem}
-    .zp-shot figcaption{font-size:.7rem}
-}
-/* ── 夜间模式：跟随站点的 data-theme 属性（不用 prefers-color-scheme，
-      因为站点是「手动切换 + 默认跟随系统」，只写媒体查询会导致
-      「系统浅色 + 手动切夜间」时卡片不变色）。配色取站点自己的深色变量。 ── */
-[data-theme=dark] .zp-card,
-[data-theme=dark] .zp-dl,
-[data-theme=dark] .zp-feat{
-    background:var(--surface,#181d27);
-    border-color:var(--border,#2f3747);
-}
-[data-theme=dark] .zp-card h2,
-[data-theme=dark] .zp-dl-head h3,
-[data-theme=dark] .zp-feat h4{color:var(--text-strong,#f5f7fa)}
-[data-theme=dark] .zp-card p{color:var(--text,#e6e8ec)}
-[data-theme=dark] .zp-feat p{color:var(--text-muted,#97a0b0)}
-
-/* 卡片内的细线、次要文字 */
-[data-theme=dark] .zp-dl-note{
-    color:var(--text-muted,#97a0b0);
-    border-top-color:var(--border,#2f3747);
-}
-[data-theme=dark] .zp-dl-note strong{color:var(--text,#e6e8ec)}
-[data-theme=dark] .zp-dl-head .zp-ver{color:var(--text-muted,#97a0b0)}
-
-/* 卡片里的小图标底 */
-[data-theme=dark] .zp-badge{
-    background:rgba(77,148,232,.15);
-    color:var(--primary,#4d94e8);
-}
-[data-theme=dark] .zp-badge--hm{
-    background:rgba(255,255,255,.08);
-    color:var(--text-muted,#97a0b0);
-}
-[data-theme=dark] .zp-fi{
-    background:rgba(77,148,232,.15);
-    color:var(--primary,#4d94e8);
+    .zp{padding:0 16px}
+    .zp-hero{padding:92px 0 34px}
+    .zp-appicon{width:82px;height:82px;border-radius:19px;margin-bottom:15px}
+    .zp-cta{gap:10px}
+    .zp-btn{padding:12px 18px;font-size:.89rem;flex:1 1 0;justify-content:center;min-width:140px}
+    .zp-btn svg{width:17px;height:17px}
+    .zp-under{gap:12px;font-size:.74rem}
+    .zp-row-k{width:76px}
+    .zp-row{font-size:.81rem;padding:14px 16px}
+    .zp-section{padding:32px 0 6px}
 }
 
-/* 卡片里的仓库条目 */
-[data-theme=dark] .zp-repo{
-    background:var(--surface-2,#222a38);
-    border-color:var(--border,#2f3747);
-}
-[data-theme=dark] .zp-repo:hover{
-    background:#28313f;
-    border-color:#3d4859;
-}
+/* ── 夜间模式（跟随站点 data-theme） ── */
+[data-theme=dark] .zp-appicon{background:#1a2230}
+[data-theme=dark] .zp-name{color:var(--primary,#4d94e8)}
+[data-theme=dark] .zp-tagline{color:var(--text,#e6e8ec)}
+[data-theme=dark] .zp-feature-line,
+[data-theme=dark] .zp-under,
+[data-theme=dark] .zp-sub{color:var(--text-muted,#97a0b0)}
+[data-theme=dark] .zp-btn-ghost{background:#252b35;border-color:#3a4350;color:var(--primary,#4d94e8)}
+[data-theme=dark] .zp-btn-ghost:hover{background:#2c333f}
+[data-theme=dark] .zp-h2{color:var(--text-strong,#f5f7fa)}
+[data-theme=dark] .zp-feat,
+[data-theme=dark] .zp-spot,
+[data-theme=dark] .zp-rows{background:var(--surface,#181d27);border-color:var(--border,#2f3747)}
+[data-theme=dark] .zp-feat h3,
+[data-theme=dark] .zp-spot-body h3{color:var(--text-strong,#f5f7fa)}
+[data-theme=dark] .zp-feat p,
+[data-theme=dark] .zp-spot-body p{color:var(--text-muted,#97a0b0)}
+[data-theme=dark] .zp-fi{background:rgba(77,148,232,.15);color:var(--primary,#4d94e8)}
+[data-theme=dark] .zp-spot-body .zp-tag{background:rgba(77,148,232,.15);color:var(--primary,#4d94e8)}
+[data-theme=dark] .zp-shot img{border-color:var(--border,#2f3747);background:#232b3a}
+[data-theme=dark] .zp-shot figcaption{color:var(--text-muted,#97a0b0)}
+[data-theme=dark] .zp-row+.zp-row{border-top-color:var(--border,#2f3747)}
+[data-theme=dark] .zp-row-k{color:var(--text-muted,#97a0b0)}
+[data-theme=dark] .zp-row-v{color:var(--text,#e6e8ec)}
+[data-theme=dark] .zp-tip{background:rgba(201,154,46,.12);border-color:rgba(201,154,46,.3);color:#d8bb7a}
+[data-theme=dark] .zp-tip svg{color:#d8bb7a}
+[data-theme=dark] .zp-repo{background:var(--surface-2,#222a38);border-color:var(--border,#2f3747)}
+[data-theme=dark] .zp-repo:hover{background:#28313f;border-color:#3d4859}
 [data-theme=dark] .zp-repo strong{color:var(--text-strong,#f5f7fa)}
 [data-theme=dark] .zp-repo span{color:var(--text-muted,#97a0b0)}
 [data-theme=dark] .zp-repo>svg{color:var(--primary,#4d94e8)}
-
-/* 截图卡片 */
-[data-theme=dark] .zp-shot{
-    background:var(--surface-2,#222a38);
-    border-color:var(--border,#2f3747);
-}
-[data-theme=dark] .zp-shot figcaption{color:var(--text-muted,#97a0b0)}
-
-/* 提示条（同样是卡片式容器） */
-[data-theme=dark] .zp-tip{
-    background:rgba(201,154,46,.12);
-    border-color:rgba(201,154,46,.3);
-    color:#d8bb7a;
-}
-[data-theme=dark] .zp-tip svg{color:#d8bb7a}
     </style>
 </head>
 <body class="font-inter bg-light text-dark">
 
-    <!-- 图标精灵：内联 SVG，不依赖任何字体文件，字体加载失败也不会缺图标 -->
+    <!-- 图标精灵：内联 SVG，不依赖字体文件 -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
         <defs>
-            <g id="i-phone" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="6" y="2.5" width="12" height="19" rx="2.5"/>
-                <line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/>
-            </g>
             <g id="i-download" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M4 17v2.5h16V17"/>
             </g>
-            <g id="i-quote" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 7H6a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1v3"/>
-                <path d="M18 7h-3a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1v3"/>
+            <g id="i-android" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9.5h12v7.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 17V9.5Z"/>
+                <path d="M8 9.5 6.6 6.4M16 9.5l1.4-3.1"/>
+                <line x1="9.5" y1="13" x2="9.5" y2="15"/><line x1="14.5" y1="13" x2="14.5" y2="15"/>
+            </g>
+            <g id="i-harmony" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7.5 4.5C5.5 7 4.5 9.6 4.5 12s1 5 3 7.5"/>
+                <path d="M16.5 4.5c2 2.5 3 5.1 3 7.5s-1 5-3 7.5"/>
+                <path d="M9 9.5h6M9 14.5h6"/>
+            </g>
+            <g id="i-check" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4.5 12.5 9 17l10-10"/>
             </g>
             <g id="i-calendar" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3.5" y="5" width="17" height="16" rx="2.5"/>
@@ -217,17 +225,19 @@
                 <line x1="4" y1="10" x2="20" y2="10"/>
                 <circle cx="7.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/>
             </g>
-            <g id="i-clock" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+            <g id="i-live" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2.5" y="6.5" width="19" height="11" rx="5.5"/>
+                <line x1="7" y1="10.5" x2="13" y2="10.5"/>
+                <line x1="7" y1="13.8" x2="10.5" y2="13.8"/>
+                <circle cx="17" cy="12" r="2.4"/><line x1="17" y1="11" x2="17" y2="12"/>
             </g>
             <g id="i-cap" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2.5 8.5 12 4l9.5 4.5L12 13 2.5 8.5Z"/><path d="M6 10.5V16c0 1.5 2.7 2.8 6 2.8s6-1.3 6-2.8v-5.5"/>
+                <path d="M2.5 8.5 12 4l9.5 4.5L12 13 2.5 8.5Z"/>
+                <path d="M6 10.5V16c0 1.5 2.7 2.8 6 2.8s6-1.3 6-2.8v-5.5"/>
             </g>
-            <g id="i-moon" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/>
-            </g>
-            <g id="i-info" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="8.5"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r=".9" fill="currentColor" stroke="none"/>
+            <g id="i-shield" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3 5 6v5.5c0 4.4 3 8.2 7 9.5 4-1.3 7-5.1 7-9.5V6l-7-3Z"/>
+                <path d="M9 12l2 2 4-4"/>
             </g>
             <g id="i-code" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M8.5 8 4.5 12l4 4"/><path d="M15.5 8l4 4-4 4"/><line x1="13.5" y1="5.5" x2="10.5" y2="18.5"/>
@@ -236,12 +246,9 @@
                 <circle cx="6.5" cy="5.5" r="2.2"/><circle cx="6.5" cy="18.5" r="2.2"/><circle cx="17.5" cy="9" r="2.2"/>
                 <path d="M6.5 7.7v8.6"/><path d="M15.3 9H10a3.5 3.5 0 0 0-3.5 3.5"/>
             </g>
-            <g id="i-live" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2.5" y="6.5" width="19" height="11" rx="5.5"/>
-                <line x1="7" y1="10.5" x2="13" y2="10.5"/>
-                <line x1="7" y1="13.8" x2="10.5" y2="13.8"/>
-                <circle cx="17" cy="12" r="2.4"/>
-                <line x1="17" y1="11" x2="17" y2="12"/>
+            <g id="i-info" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.5"/><line x1="12" y1="11" x2="12" y2="16"/>
+                <circle cx="12" cy="8" r=".9" fill="currentColor" stroke="none"/>
             </g>
             <g id="i-back" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14.5 5.5 8 12l6.5 6.5"/>
@@ -254,10 +261,9 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-wrap justify-between items-center py-3">
                 <div class="flex items-center space-x-3">
-                    <img src="/assets/images/bar-logo.jpg" alt="唐山师范学院吧" class="w-10 h-10 rounded-full border-2 border-primary">
+                    <img src="/assets/images/bar-logo-sm.jpg" alt="唐山师范学院吧" class="w-10 h-10 rounded-full border-2 border-primary">
                     <a href="/index.html" class="text-primary font-bold text-xl md:text-2xl">唐山师范学院吧</a>
                 </div>
-
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="/index.html" class="text-gray-700 hover:text-primary font-medium transition-colors">首页</a>
                     <a href="/news.html" class="text-gray-700 hover:text-primary font-medium transition-colors">新闻动态</a>
@@ -284,197 +290,202 @@
     </nav>
 
     <main>
-        <!-- 头部 -->
+        <!-- ══ 首屏：图标 + 名称 + 一句话 + 下载 ══ -->
         <section class="zp-hero">
-            <div class="zp-wrap">
-                <img src="/assets/images/zsts-icon.png" alt="掌上唐师" class="zp-icon"
-                     width="84" height="84" onerror="this.style.display='none'">
-                <h1>掌上唐师</h1>
-                <p class="zp-sub">唐山师范学院校园助手</p>
-                <p class="zp-meta">课表 · 成绩 · 学分绩点 · 校历 · 实时公交 · 课程实况窗</p>
+            <div class="zp">
+                <img src="/assets/images/zsts-icon.png" alt="掌上唐师" class="zp-appicon"
+                     width="96" height="96" onerror="this.style.display='none'">
+                <h1 class="zp-name">掌上唐师</h1>
+                <p class="zp-tagline">唐山师范学院校园助手</p>
+                <p class="zp-feature-line">
+                    课表 · 成绩 · 学分绩点 · 校历 · 实时公交 · 课程实况窗
+                </p>
+
+                <!-- 两个下载按钮 -->
+                <div class="zp-cta">
+                    <a class="zp-btn zp-btn-primary" id="dl-android" href="/zstangshi.apk" download>
+                        <svg viewBox="0 0 24 24"><use href="#i-android"/></svg>
+                        <span class="zp-btn-text">
+                            <span>下载安卓版</span>
+                            <small id="ver-android">正在获取版本…</small>
+                        </span>
+                    </a>
+                    <a class="zp-btn zp-btn-ghost" id="dl-harmony"
+                       href="https://github.com/Chanmingfei/zstangshi/releases/tag/harmony-v4.1.0"
+                       target="_blank" rel="noopener">
+                        <svg viewBox="0 0 24 24"><use href="#i-harmony"/></svg>
+                        <span class="zp-btn-text">
+                            <span>下载鸿蒙版</span>
+                            <small id="ver-harmony">正在获取版本…</small>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="zp-under">
+                    <span><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>免费开源</span>
+                    <span><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>无广告</span>
+                    <span><svg viewBox="0 0 24 24"><use href="#i-check"/></svg>不收集个人信息</span>
+                </div>
             </div>
         </section>
 
-        <div class="zp-wrap">
-
-            <!-- 下载区：两个版本并列 -->
-            <div class="zp-dls">
-                <!-- 安卓版 -->
-                <div class="zp-dl">
-                    <div class="zp-dl-head">
-                        <div class="zp-badge"><svg viewBox="0 0 24 24"><use href="#i-phone"/></svg></div>
-                        <div>
-                            <h3>安卓版</h3>
-                            <div class="zp-ver" id="ver-android">正在获取版本号…</div>
-                        </div>
-                    </div>
-                    <div class="zp-btnrow">
-                        <a class="zp-btn zp-btn--primary" id="dl-android" href="/zstangshi.apk" download>
-                            <svg viewBox="0 0 24 24"><use href="#i-download"/></svg>下载安装包
-                        </a>
-                    </div>
-                    <div class="zp-dl-note">
-                        小米、OPPO、vivo、三星、一加等常规安卓手机。<br>
-                        <strong>系统要求</strong>：Android 8.0 及以上。
-                    </div>
-                </div>
-
-                <!-- 鸿蒙版 -->
-                <div class="zp-dl">
-                    <div class="zp-dl-head">
-                        <div class="zp-badge zp-badge--hm"><svg viewBox="0 0 24 24"><use href="#i-phone"/></svg></div>
-                        <div>
-                            <h3>鸿蒙版</h3>
-                            <div class="zp-ver" id="ver-harmony">正在获取版本号…</div>
-                        </div>
-                    </div>
-                    <div class="zp-btnrow">
-                        <a class="zp-btn zp-btn--primary" id="dl-harmony"
-                           href="https://github.com/Chanmingfei/zstangshi/releases/tag/harmony-v4.1.0" target="_blank" rel="noopener">
-                            <svg viewBox="0 0 24 24"><use href="#i-download"/></svg>下载安装包
-                        </a>
-                    </div>
-                    <div class="zp-dl-note">
-                        华为、荣耀等鸿蒙系统手机，桌面名「掌上唐师·鸿蒙版」。<br>
-                        <strong>提示</strong>：与安卓版签名冲突，需先卸载旧版再装。
-                    </div>
-                </div>
-            </div>
-
-            <!-- 怎么选 -->
+        <!-- ══ 怎么选版本 ══ -->
+        <section class="zp">
             <div class="zp-tip">
                 <svg viewBox="0 0 24 24"><use href="#i-info"/></svg>
                 <div>
                     不确定下哪个？打开手机 <strong>设置 → 关于手机</strong>：
-                    看到「HarmonyOS 版本」或「鸿蒙版本」选<strong>鸿蒙版</strong>，
-                    看到「Android 版本」或「MIUI / ColorOS / OriginOS」选<strong>安卓版</strong>。
+                    看到「HarmonyOS 版本」或「鸿蒙版本」选<strong>鸿蒙版</strong>；
+                    看到「Android 版本」或「MIUI / ColorOS / OriginOS / One UI」选<strong>安卓版</strong>。
                 </div>
             </div>
+        </section>
 
-            <!-- 截图 -->
-            <div class="zp-shots">
-                <figure class="zp-shot">
-                    <img src="/assets/images/zsts/01-home.jpg" alt="首页" width="440" height="968" loading="lazy" decoding="async">
-                    <figcaption>首页</figcaption>
-                </figure>
-                <figure class="zp-shot">
-                    <img src="/assets/images/zsts/02-timetable.jpg" alt="课表" width="440" height="968" loading="lazy" decoding="async">
-                    <figcaption>课表</figcaption>
-                </figure>
-                <figure class="zp-shot">
-                    <img src="/assets/images/zsts/03-grades.jpg" alt="成绩" width="440" height="968" loading="lazy" decoding="async">
-                    <figcaption>成绩</figcaption>
-                </figure>
-                <figure class="zp-shot">
-                    <img src="/assets/images/zsts/05-bus.jpg" alt="实时公交" width="440" height="968" loading="lazy" decoding="async">
-                    <figcaption>实时公交</figcaption>
-                </figure>
-            </div>
-
-            <!-- 简介 -->
-            <div class="zp-card">
-                <h2><svg viewBox="0 0 24 24"><use href="#i-quote"/></svg>这是什么</h2>
-                <p>
-                    教务系统的网页版在手机上要横屏、缩小、反复缩放，查一次课表得滑三层菜单；
-                    最后一节课记不住在哪个教室；明天有没有课，还得翻教学周历对着算是第几周；
-                    门口的公交到哪了，只能打开地图 App 再搜一遍站名。
-                </p>
-                <p>
-                    掌上唐师把这些直接摊平在首页：一早解锁就能看到今天第几门课、在哪个教室、还有多少分钟下课；
-                    通勤路上点开就能看到公交还有几站、几分钟到。
-                </p>
-                <p>
-                    它没有开屏广告，没有信息流，不申请与功能无关的权限。
-                </p>
-            </div>
-
-            <!-- 功能 -->
-            <div class="zp-feats">
-                <div class="zp-feat">
-                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-calendar"/></svg></div>
-                    <h4>课表</h4>
-                    <p>四色课程块、单双周、冲突并排，点击即可编辑</p>
-                </div>
-                <div class="zp-feat">
-                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-chart"/></svg></div>
-                    <h4>成绩与绩点</h4>
-                    <p>按学期筛选，含平时分与期末分明细</p>
-                </div>
-                <div class="zp-feat">
-                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-bus"/></svg></div>
-                    <h4>实时公交</h4>
-                    <p>附近站点、到站预测、首站发车时刻表</p>
-                </div>
-                <div class="zp-feat">
-                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-live"/></svg></div>
-                    <h4>课程实况窗</h4>
-                    <p>课前提醒推上系统胶囊，上课后秒级倒计时</p>
-                </div>
-                <div class="zp-feat">
-                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-cap"/></svg></div>
-                    <h4>校历与教务</h4>
-                    <p>教学周次、节假日、选课与推荐课表</p>
-                </div>
-                <div class="zp-feat">
-                    <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-moon"/></svg></div>
-                    <h4>深色模式</h4>
-                    <p>浅色、深色、跟随系统三种可选</p>
+        <!-- ══ 截图 ══ -->
+        <section class="zp-section">
+            <h2 class="zp-h2">界面预览</h2>
+            <p class="zp-sub">左右滑动查看全部 6 张</p>
+            <div class="zp-shots-wrap">
+                <div class="zp-shots">
+                    <figure class="zp-shot">
+                        <img src="/assets/images/zsts/poster-overview.jpg" alt="掌上唐师总览"
+                             width="720" height="960" loading="lazy" decoding="async">
+                        <figcaption>总览</figcaption>
+                    </figure>
+                    <figure class="zp-shot">
+                        <img src="/assets/images/zsts/poster-timetable.jpg" alt="课表"
+                             width="720" height="960" loading="lazy" decoding="async">
+                        <figcaption>课表</figcaption>
+                    </figure>
+                    <figure class="zp-shot">
+                        <img src="/assets/images/zsts/poster-bus.jpg" alt="实时公交"
+                             width="720" height="960" loading="lazy" decoding="async">
+                        <figcaption>实时公交</figcaption>
+                    </figure>
+                    <figure class="zp-shot">
+                        <img src="/assets/images/zsts/poster-live.jpg" alt="课程实况窗"
+                             width="720" height="960" loading="lazy" decoding="async">
+                        <figcaption>课程实况窗</figcaption>
+                    </figure>
+                    <figure class="zp-shot">
+                        <img src="/assets/images/zsts/poster-custom.jpg" alt="课表自定义"
+                             width="720" height="960" loading="lazy" decoding="async">
+                        <figcaption>课表自定义</figcaption>
+                    </figure>
+                    <figure class="zp-shot">
+                        <img src="/assets/images/zsts/poster-download.jpg" alt="下载引导"
+                             width="720" height="960" loading="lazy" decoding="async">
+                        <figcaption>安装引导</figcaption>
+                    </figure>
                 </div>
             </div>
+        </section>
 
-            <!-- 实况窗详解 -->
-            <div class="zp-card">
-                <h2><svg viewBox="0 0 24 24"><use href="#i-live"/></svg>课程实况窗</h2>
-                <p>
-                    课前几分钟，下一节课会出现在手机顶部的系统胶囊里 ——
-                    ColorOS 流体云、小米焦点通知、鸿蒙实况窗、Android 16 实况通知都支持。
-                </p>
-                <p>
-                    收起时显示「课程名 · 地点」，上课后自动切成倒计时；
-                    课间、下一节按边界时刻自动切换，不常驻后台，也不耗电。
-                    划掉即「本次不再提醒」，到下课时自动失效。
-                </p>
-                <p>
-                    提前提醒时长可以在「我的 → 课程实况窗」里调，效果先在设置页预览。
-                </p>
+        <!-- ══ 功能 ══ -->
+        <section class="zp-section">
+            <div class="zp">
+                <h2 class="zp-h2">能做什么</h2>
+                <p class="zp-sub">教务网页版在手机上要横屏、缩小、反复缩放，这些直接摊平到第一屏</p>
+                <div class="zp-feats">
+                    <div class="zp-feat">
+                        <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-calendar"/></svg></div>
+                        <h3>课表</h3>
+                        <p>四色课程块、单双周、冲突并排。左右滑翻周，点一下就能改教室和节次，也能自己加课。</p>
+                    </div>
+                    <div class="zp-feat">
+                        <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-chart"/></svg></div>
+                        <h3>成绩与绩点</h3>
+                        <p>按学期筛选，逐门列出成绩、学分、性质与绩点，含平时分与期末分明细。</p>
+                    </div>
+                    <div class="zp-feat">
+                        <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-bus"/></svg></div>
+                        <h3>实时公交</h3>
+                        <p>附近站点、到站预测、线路详情、首站发车时刻表，收藏线路按站点分组。</p>
+                    </div>
+                    <div class="zp-feat">
+                        <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-live"/></svg></div>
+                        <h3>课程实况窗</h3>
+                        <p>课前把下节课推上系统胶囊，上课后秒级倒计时。支持鸿蒙实况窗、ColorOS 流体云、小米焦点通知。</p>
+                    </div>
+                    <div class="zp-feat">
+                        <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-cap"/></svg></div>
+                        <h3>校历与教务</h3>
+                        <p>教学周次、节假日与调休标注；正方教务直连，同步课表、选课与推荐课表。</p>
+                    </div>
+                    <div class="zp-feat">
+                        <div class="zp-fi"><svg viewBox="0 0 24 24"><use href="#i-shield"/></svg></div>
+                        <h3>隐私</h3>
+                        <p>密码加密后直连教务，不经过第三方服务器。没有开屏广告，没有信息流。</p>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- 说明 -->
-            <div class="zp-card">
-                <h2><svg viewBox="0 0 24 24"><use href="#i-info"/></svg>说明</h2>
-                <p>
-                    本 App 由个人开发，与学校官方无关。账号密码只用于登录学校教务系统，
-                    经过加密后直接提交给教务，不经过任何第三方服务器。
-                    课表、成绩等数据只存在你手机本地。
-                </p>
-                <p>
-                    实时公交是唯一会联网查询的业务功能：只把定位坐标发给公交数据服务商用来查附近站点，
-                    不携带学号、姓名等任何身份信息。也可以拒绝定位，改用手动搜索线路。
-                </p>
-                <p>
-                    学工系统走应用内网页打开原页面，不解析、不留存任何数据。
-                    安装时若提示「未知来源」，是因为调试签名、未上架应用商店，属正常现象。
-                </p>
+        <!-- ══ 两个亮点 ══ -->
+        <section class="zp-section">
+            <div class="zp">
+                <div class="zp-spot">
+                    <div class="zp-spot-img">
+                        <img src="/assets/images/zsts/poster-live.jpg" alt="课程实况窗"
+                             width="720" height="960" loading="lazy" decoding="async">
+                    </div>
+                    <div class="zp-spot-body">
+                        <span class="zp-tag">重点功能</span>
+                        <h3>课前十分钟，手机顶上告诉你 3-518</h3>
+                        <p>下一节课会出现在系统胶囊里，收起态显示「课程名 · 地点」，上课后切成秒级倒计时。</p>
+                        <p>课间、下一节按边界时刻自动切换，不常驻后台也不耗电。划掉即「本次不再提醒」，到下课时自动失效。</p>
+                    </div>
+                </div>
+
+                <div class="zp-spot rev">
+                    <div class="zp-spot-img">
+                        <img src="/assets/images/zsts/poster-bus.jpg" alt="实时公交线路图"
+                             width="720" height="960" loading="lazy" decoding="async">
+                    </div>
+                    <div class="zp-spot-body">
+                        <span class="zp-tag">出门必备</span>
+                        <h3>35 站的路线图，手上划一划就看全</h3>
+                        <p>候车站自动标出「离我最近」，首末班、票价、全程站数都在一屏。20 秒自动刷新，进页面即取最新数据。</p>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- 版本对比 -->
-            <div class="zp-card">
-                <h2><svg viewBox="0 0 24 24"><use href="#i-info"/></svg>两个版本的区别</h2>
-                <p style="margin-bottom:12px">功能对齐，实现各自独立。鸿蒙专版按鸿蒙的能力边界单独改造。</p>
-                <p>
-                    <strong>安卓版</strong> 4.0.5 · 约 3.55 MB · 桌面名「掌上唐师」<br>
-                    <strong>鸿蒙版</strong> 4.1.0 · 约 1.66 MB · 桌面名「掌上唐师·鸿蒙版」
-                </p>
-                <p>
-                    两版包名相同但签名不同，<strong>不能互相覆盖安装</strong>。
-                    换版本前需要先卸载旧版，这会清掉本地课表与登录状态，装好后重新登录一次即可。
-                </p>
+        <!-- ══ 版本信息 ══ -->
+        <section class="zp-section">
+            <div class="zp">
+                <h2 class="zp-h2">安装信息</h2>
+                <p class="zp-sub">两个版本功能对齐，同包名，一台手机装一个就好</p>
+                <div class="zp-rows">
+                    <div class="zp-row">
+                        <span class="zp-row-k">标准版</span>
+                        <span class="zp-row-v">安卓 8.0 及以上 · 小米 / OPPO / vivo / 三星 / 一加 · 桌面名「掌上唐师」</span>
+                    </div>
+                    <div class="zp-row">
+                        <span class="zp-row-k">鸿蒙版</span>
+                        <span class="zp-row-v">鸿蒙 / HarmonyOS 手机 · 桌面名「掌上唐师·鸿蒙版」</span>
+                    </div>
+                    <div class="zp-row">
+                        <span class="zp-row-k">换版本</span>
+                        <span class="zp-row-v">两版签名不同不能覆盖安装。需先卸载旧版，这会清掉本地课表与登录状态，装好后重新登录一次。</span>
+                    </div>
+                    <div class="zp-row">
+                        <span class="zp-row-k">安装提示</span>
+                        <span class="zp-row-v">提示「未知来源」是因为调试签名、未上架应用商店，属正常现象。装完可在「关于」里核对版本类型。</span>
+                    </div>
+                    <div class="zp-row">
+                        <span class="zp-row-k">数据来源</span>
+                        <span class="zp-row-v">正方教务系统 · 教务处校历 · 公交数据服务商</span>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- 源码仓库 -->
-            <div class="zp-card">
-                <h2><svg viewBox="0 0 24 24"><use href="#i-code"/></svg>开源仓库</h2>
-                <p style="margin-bottom:14px">源码公开，欢迎 star、提 issue 或参与改进。</p>
+        <!-- ══ 开源 ══ -->
+        <section class="zp-section">
+            <div class="zp">
+                <h2 class="zp-h2">开源</h2>
+                <p class="zp-sub">源码公开，欢迎 star、提 issue 或参与改进</p>
                 <div class="zp-repos">
                     <a class="zp-repo" href="https://github.com/Chanmingfei/zstangshi" target="_blank" rel="noopener">
                         <svg viewBox="0 0 24 24"><use href="#i-code"/></svg>
@@ -491,29 +502,30 @@
                         </div>
                     </a>
                 </div>
-                <p style="margin-top:14px">
-                    历史版本与更新日志：<a href="https://github.com/Chanmingfei/zstangshi/releases" target="_blank" rel="noopener"
-                        style="color:#0465bc">全部版本</a>
-                </p>
             </div>
+        </section>
 
-            <div style="text-align:center">
-                <a href="/index.html" class="zp-back"><svg viewBox="0 0 24 24"><use href="#i-back"/></svg>返回官网首页</a>
+        <!-- ══ 页脚 ══ -->
+        <section class="zp">
+            <div style="text-align:center;margin-top:34px">
+                <a href="/index.html" class="zp-back">
+                    <svg viewBox="0 0 24 24"><use href="#i-back"/></svg>返回官网首页
+                </a>
             </div>
-
             <p class="zp-foot">
                 开发者：陈铭霏 · 唐山师范学院吧务组 荣誉出品<br>
-                非学校官方发布
+                非学校官方发布 · GPL-3.0 开源
             </p>
-        </div>
+            <div class="zp-bottom"></div>
+        </section>
     </main>
 
     <!-- 页脚 -->
-    <footer class="bg-primary text-white py-10" style="margin-top:40px">
+    <footer class="bg-primary text-white py-10">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="flex items-center mb-6 md:mb-0">
-                    <img src="/assets/images/bar-logo.jpg" alt="唐山师范学院吧" class="w-12 h-12 rounded-full border-2 border-white">
+                    <img src="/assets/images/bar-logo-sm.jpg" alt="唐山师范学院吧" class="w-12 h-12 rounded-full border-2 border-white">
                     <div class="ml-4">
                         <h3 class="text-lg font-semibold">唐山师范学院吧</h3>
                         <p class="text-sm text-white/80">吧务组官网（非学校官方）</p>
@@ -539,18 +551,8 @@
 
     var REPO = 'Chanmingfei/zstangshi';
     var API = 'https://api.github.com/repos/' + REPO + '/releases';
-    var CACHE_KEY = 'zsts_rel_cache_v1';
-    var CACHE_TTL = 30 * 60 * 1000;   // 30 分钟内复用缓存，避免频繁打 GitHub API
-
-    function fmtDate(iso) {
-        if (!iso) return '';
-        try {
-            var d = new Date(iso);
-            return d.getFullYear() + '-' +
-                   String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                   String(d.getDate()).padStart(2, '0');
-        } catch (e) { return ''; }
-    }
+    var CACHE_KEY = 'zsts_rel_cache_v2';
+    var CACHE_TTL = 30 * 60 * 1000;   // 30 分钟内复用缓存
 
     function fmtSize(bytes) {
         if (!bytes) return '';
@@ -570,10 +572,10 @@
     function writeCache(data) {
         try {
             localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data: data }));
-        } catch (e) { /* 隐私模式下写不进去，忽略 */ }
+        } catch (e) { /* 隐私模式忽略 */ }
     }
 
-    /* 从 release 列表里挑出两个平台的最新版 */
+    /* 从 release 列表挑出两个平台的最新版 */
     function pickLatest(releases) {
         var out = { android: null, harmony: null };
         releases.forEach(function (rel) {
@@ -594,11 +596,9 @@
             if (!slot || new Date(rel.published_at) > new Date(slot.published_at)) {
                 out[isHarmony ? 'harmony' : 'android'] = {
                     tag: tag,
-                    name: rel.name || tag,
-                    published_at: rel.published_at,
                     url: apk.browser_download_url,
                     size: apk.size,
-                    file: apk.name
+                    published_at: rel.published_at
                 };
             }
         });
@@ -612,10 +612,9 @@
             if (verEl) verEl.textContent = '暂无可用版本';
             return;
         }
-        var bits = [info.tag];
+        // 只显示版本号 + 体积，保持按钮内文字简短
+        var bits = [info.tag.replace(/^harmony-/i, '')];
         if (info.size) bits.push(fmtSize(info.size));
-        var d = fmtDate(info.published_at);
-        if (d) bits.push(d);
         if (verEl) verEl.textContent = bits.join(' · ');
 
         if (btn) {
@@ -628,9 +627,9 @@
 
     function fallback() {
         var a = document.getElementById('ver-android');
-        if (a) a.textContent = '点击下载最新版';
+        if (a) a.textContent = '约 3.6 MB · 点击下载';
         var h = document.getElementById('ver-harmony');
-        if (h) h.textContent = '点击前往下载页';
+        if (h) h.textContent = '约 1.7 MB · 前往下载页';
     }
 
     function load() {
@@ -640,6 +639,7 @@
             apply('harmony', cached.harmony);
             return;
         }
+
         if (!window.fetch) { fallback(); return; }
 
         var ctrl = window.AbortController ? new AbortController() : null;
